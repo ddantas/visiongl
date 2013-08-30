@@ -1,0 +1,18 @@
+
+/** vglCudaCopy
+
+    Copy of image in cuda context.
+*/
+
+// <<<input->height,384>>> (IO_PBO: VglImage* input, IO_PBO: VglImage* output)
+// (input->cudaPtr, output->cudaPtr, input->width, input->height, input->nChannels)
+
+template<typename T> 
+__global__ void global_Copy(T* input, T* output, int w, int h, int nChannels){
+    int offset = blockIdx.x * nChannels * w;
+    T* arr_in  = input + offset;
+    T* arr_out = output + offset;
+    for (int j = threadIdx.x; j < nChannels * w; j += blockDim.x){
+      arr_out[j] = arr_in[j];
+    }
+}
