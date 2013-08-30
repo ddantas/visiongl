@@ -1,4 +1,3 @@
-
 VisionGL
 
 The objective of this library is to provide an easy way to prototype and 
@@ -61,11 +60,7 @@ make cuda
 References
 
 [1] Daniel Oliveira Dantas, Junior Barrera
-Wrapper code generation for easy implementation of fast video processing operators
-VI Workshop de Visão Computacional, Presidente Prudente, 2010
-http://iris.sel.eesc.usp.br/wvc/anais_WVC2010/artigos/oral/72730.pdf
-
-[2] Daniel Oliveira Dantas, Junior Barrera
 Automatic generation of wrapper code for video processing functions
 Learning and Nonlinear models, Vol 9, Num 2, 2011
 http://www.deti.ufc.br/~lnlm/papers/vol9-no2-art5.pdf
+
