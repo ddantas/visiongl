@@ -29,8 +29,8 @@ void main(void){
   //c_imag = (gl_TexCoord[0].y - .5 + oy) * 2.0 * half_win;
   //c_real = gl_TexCoord[0].x * 2 * half_win + ox - half_win;
   //c_imag = gl_TexCoord[0].y * 2 * half_win + oy - half_win;
-  real = gl_TexCoord[0].x * 2 * half_win + ox - half_win;
-  imag = gl_TexCoord[0].y * 2 * half_win + oy - half_win;
+  real = gl_TexCoord[0].x * 2.0 * half_win + ox - half_win;
+  imag = gl_TexCoord[0].y * 2.0 * half_win + oy - half_win;
 
   for (i = 0.0; i < MAX_ITER; i++){
     //printf("iter[%d]: z = (%f, %f)\n", i, real, imag);
@@ -59,10 +59,13 @@ void main(void){
   }
 
   gl_FragColor.r = 1.0 - (i/MAX_ITER);
-  gl_FragColor.g = fract(i/20);
+  gl_FragColor.g = fract(i/20.0);
   if (i >= MAX_ITER)
-    gl_FragColor = 0.0;
-
+  {
+    gl_FragColor.r = 0.0;
+    gl_FragColor.g = 0.0;
+  }
+  gl_FragColor.b = 0.0;
 
 
 }
