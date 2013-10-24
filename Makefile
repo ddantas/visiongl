@@ -40,8 +40,6 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(OUTPUT_LIBDIR):$(CUDA_LIBDIR):$(OPENCV
 COMPILER_FLAGS   = -g -pg -DGL_GLEXT_PROTOTYPES -DGLX_GLXEXT_PROTOTYPES 
 OPENGL_LIBRARIES    = -lGL -lGLU -lglut 
 
-MY_LIBRARIES = -ltimer -lcalibrate 
-
 CC               = g++
 NVCC             = $(CUDA_PATH)/bin/nvcc
 
@@ -66,7 +64,6 @@ LINUXAMD64_LIB = $(NVCC) $(COMPILER_FLAGS) \
 LINUXAMD64_DEMO_FRACTAL = $(NVCC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINDIR)/demo_$(FRACTAL_NAME) \
                          src/demo/$(FRACTAL_NAME).cpp \
-                         src/demo/timer.cpp \
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS)
 
