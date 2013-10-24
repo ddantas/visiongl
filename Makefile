@@ -103,7 +103,6 @@ democam:
 
 
 rundemofrac:
-	echo $(LD_LIBRARY_PATH)
 	cd $(OUTPUT_BINDIR); ./demo_$(FRACTAL_NAME)
 
 rundemocam:

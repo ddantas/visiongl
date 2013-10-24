@@ -16,9 +16,12 @@
 //IplImage, cvLoadImage
 #include <opencv2/highgui/highgui_c.h>
 
+//time
+#include <time.h>
+
+//begin cameras
 #define MAX_CAM 4
 CvCapture *capture[MAX_CAM];
-
 //end Cameras
 
 void display(void);
@@ -171,11 +174,8 @@ int main(int argc, char** argv)
 {
   for (int i = 0; i < MAX_CAM; i++){
     capture[i] = 0;
-    capture[i] = cvCaptureFromCAM(i+1);
-    cvSetCaptureProperty(capture[i], CV_CAP_PROP_EXPOSURE, 0);
-    cvSetCaptureProperty(capture[i], CV_CAP_PROP_FPS, 125);
-    cvSetCaptureProperty(capture[i], CV_CAP_PROP_FRAME_WIDTH, 320);
-    cvSetCaptureProperty(capture[i], CV_CAP_PROP_FRAME_HEIGHT, 240);
+    capture[i] = cvCaptureFromCAM(i);
+    cvSetCaptureProperty(capture[i], CV_CAP_PROP_FPS, 30.0f);
     if (capture[i]){
       printf("Camera %d at %p\n", i, capture[i]);
       PrintCaptureProperty(capture[i]);
