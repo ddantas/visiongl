@@ -14,8 +14,7 @@
 #include <iostream>
 
 //GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+#include <GL/freeglut.h>
 /** vglForcesNewton
 
     Iterates n masses using newtons formula.

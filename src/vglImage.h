@@ -26,8 +26,7 @@
 
 //GL
 #include <GL/glew.h>
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+#include <GL/freeglut.h>
 
 
 #define VGL_WIN_X0   -1.0
@@ -162,14 +161,13 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1);
 {\
  GLenum status; \
  status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); \
- printf("%d", status); \
  switch(status) { \
  case GL_FRAMEBUFFER_COMPLETE_EXT: \
    break; \
  case GL_FRAMEBUFFER_UNSUPPORTED_EXT: \
    printf("framebuffer GL_FRAMEBUFFER_UNSUPPORTED_EXT\n");\
     /* you gotta choose different formats */ \
-   /*assert(0);*/ \
+   assert(0); \
    break; \
  case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT: \
    printf("framebuffer INCOMPLETE_ATTACHMENT\n");\

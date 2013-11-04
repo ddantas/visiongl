@@ -3,8 +3,7 @@
 
 //GL
 #include <GL/glew.h>
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+#include <GL/freeglut.h>
 
 //IplImage, cvLoadImage
 //#include <opencv2/core/core_c.h>

@@ -14,8 +14,8 @@
 #include <iostream>
 
 //GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 void shader_15_1(VglImage*  src, VglImage*  dst){
 

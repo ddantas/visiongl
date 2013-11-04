@@ -1,8 +1,7 @@
 
 //GL
 #include <GL/glew.h>
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+#include <GL/freeglut.h>
 
 #define VGL_MAX_INFO_LOG_SIZE 1000
 

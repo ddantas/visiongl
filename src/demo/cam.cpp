@@ -2,7 +2,6 @@
 //GL
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include <GL/freeglut_ext.h>
 
 // visiongl
 #include "vglLoadShader.h"
