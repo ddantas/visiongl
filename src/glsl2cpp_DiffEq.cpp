@@ -14,6 +14,7 @@
 #include <iostream>
 
 //GL
+#include <GL/glew.h>
 #include <GL/freeglut.h>
 /** vglForcesNewton
 
