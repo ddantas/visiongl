@@ -1,13 +1,12 @@
 
 //GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 // visiongl
 #include "vglLoadShader.h"
 #include "glsl2cpp_shaders.h"
 #include "glsl2cpp_Stereo.h"
-#include "glsl2cpp_DiffEq.h"
 #include "vglImage.h"
 #include "vglContext.h"
 #include "vglCudaImage.h"

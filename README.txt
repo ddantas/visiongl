@@ -24,8 +24,8 @@ will be empty (NULL or -1) and vice-versa.
 
 Compilation
 
-The library requires OpenCV 2.5 or superior, CUDA 4 or superior, and 
-freeglut 3 or superior.
+The library requires OpenCV 2.5 or superior, CUDA 4 or superior, 
+GLEW 1.6 or superior and freeglut 3 or superior.
 
 Please open the Makefile and edit the variables OPENCV_PATH, CUDA_PATH, 
 referring to the paths where OpenCV and CUDA are installed. Edit also

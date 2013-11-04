@@ -6,6 +6,9 @@
 ***                                                                ***
 *********************************************************************/
 
+#ifndef __VGLCONTEXT_H__
+#define __VGLCONTEXT_H__
+
 #include "vglImage.h"
 
 #define VGL_BLANK_CONTEXT 0
@@ -23,3 +26,5 @@ int vglCheckContext(VglImage* img, int context);
 int vglCheckContextForOutput(VglImage* img, int context);
 void vglPrintContext(int context, char* msg = "");
 void vglPrintContext(VglImage* img, char* msg = "");
+
+#endif

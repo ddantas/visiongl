@@ -13,10 +13,6 @@
 
 #include <iostream>
 
-//GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
-
 //kernels
 #include "src/kernel2cu_shaders.kernel"
 /** vglCudaCopy

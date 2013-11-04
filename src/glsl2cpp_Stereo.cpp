@@ -12,10 +12,6 @@
 #include "vglContext.h"
 
 #include <iostream>
-
-//GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
 /** Calculate absolute difference between img_ref and img_2. Disparities considered are in the closed interval [4*disparity, 4*disparity+3].
 
     The four differences are stored in the RGBA image dst.

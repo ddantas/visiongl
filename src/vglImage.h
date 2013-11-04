@@ -25,8 +25,8 @@
 #include <opencv2/core/types_c.h>
 
 //GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 
 #define VGL_WIN_X0   -1.0

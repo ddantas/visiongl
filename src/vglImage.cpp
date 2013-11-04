@@ -2,8 +2,9 @@
 #include <iostream>
 
 //GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+
 
 //IplImage, cvLoadImage
 //#include <opencv2/core/core_c.h>
@@ -209,6 +210,14 @@ int vglInit(int w, int h){
 
       glEnable(GL_TEXTURE_2D); //deve ficar depois de glutCreateWindow
       started = 1;
+
+      GLenum err = glewInit();
+      if (GLEW_OK != err)
+      {
+          /* Problem: glewInit failed, something is seriously wrong. */
+          fprintf(stderr, "vglInit: Error: %s\n", glewGetErrorString(err));
+      }
+      fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
       //glutDisplayFunc(display);
       //glutIdleFunc(display);

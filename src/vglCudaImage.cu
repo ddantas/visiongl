@@ -2,14 +2,13 @@
 //fprintf
 #include <iostream>
 
+#include "vglCudaImage.h"
+#include "vglContext.h"
+//#include "vglImage.h"
+
 //cuda
 //#include <cutil.h>
 #include <cuda_gl_interop.h>
-
-#include "vglCudaImage.h"
-#include "vglContext.h"
-#include "vglImage.h"
-
 
 /** vglCudaAllocPbo
 

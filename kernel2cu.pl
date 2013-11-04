@@ -868,10 +868,6 @@ print CUDA "
 #include \"vglContext.h\"\n
 #include <iostream>
 
-//GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
-
 //kernels
 #include \"$output.kernel\"
 ";

@@ -1,7 +1,16 @@
+/*********************************************************************
+***                                                                ***
+***  Header file vglLoadShader                                     ***
+***                                                                ***
+*********************************************************************/
+
+#ifndef __VGLLOADSHADER_H__
+#define __VGLLOADSHADER_H__
+
 
 //GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 #define VGL_MAX_INFO_LOG_SIZE 1000
 
@@ -15,3 +24,5 @@ GLchar *vglTextFileRead(char *fn) ;
 GLuint vglSingleShaderLoad(GLuint ShaderType, char* filename);
 GLuint vglShaderLoad(GLuint ShaderType, char* filename);
 GLuint vglProgramLoad(char* v_filename, char* f_filename);
+
+#endif

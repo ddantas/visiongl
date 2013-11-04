@@ -13,10 +13,6 @@
 
 #include <iostream>
 
-//GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
-
 void shader_15_1(VglImage*  src, VglImage*  dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
