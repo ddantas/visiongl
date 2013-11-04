@@ -1,6 +1,7 @@
 
 //GL
-#include <GL/freeglut_std.h>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 #include <GL/freeglut_ext.h>
 
 // visiongl
@@ -20,7 +21,7 @@
 #include <time.h>
 
 //begin cameras
-#define MAX_CAM 4
+#define MAX_CAM 1
 CvCapture *capture[MAX_CAM];
 //end Cameras
 
@@ -192,6 +193,7 @@ int main(int argc, char** argv)
 
   glutReshapeFunc(reshape);
   glutKeyboardFunc(keyboard);
+
 
   for (int i = 0; i < VGL_MAX_WINDOWS; i++){
     winname[i]  = (char*) malloc(255);

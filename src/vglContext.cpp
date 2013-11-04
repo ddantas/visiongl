@@ -5,7 +5,12 @@
 //printf, stdout
 #include <iostream>
 
+#ifdef __CUDA__
 #include "vglCudaImage.h"
+#elif __OPENCL__
+//#include "vglCLImage.h"
+#endif
+
 #include "vglContext.h"
 #include "vglImage.h"
 
@@ -33,7 +38,7 @@ int vglAddContext(VglImage* img, int context){
     Return 0 in case of error. Resulting context if successful.
  */
 int vglSetContext(VglImage* img, int context){
-  if (!vglIsContextUnique(context) and context != 0){
+  if (!vglIsContextUnique(context) && context != 0){
     fprintf(stderr, "vglSetContext: Error: context = %d is not unique\n", context);
     return 0;
   }
@@ -82,12 +87,15 @@ int vglCheckContext(VglImage* img, int context){
       if (vglIsInContext(img, VGL_RAM_CONTEXT)){
         vglUpload(img);
       }
+	  #ifdef __CUDA__
       else if (vglIsInContext(img, VGL_CUDA_CONTEXT)){
+		
         int ok = vglCudaToGl(img);
         if (!ok){
           fprintf(stderr, "vglCheckContext: error transfering from cuda to gl\n");
-	}
+		}
       }
+	  #endif
       else{
         fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to GL from invalid context\n");
         vglPrintImageInfo(img);
@@ -99,10 +107,16 @@ int vglCheckContext(VglImage* img, int context){
       printf("vglCheckContext: will transfer from cuda to gl\n");
       #endif
       if (vglIsInContext(img, VGL_GL_CONTEXT)){
+	  #ifdef __CUDA__
         int ok = vglGlToCuda(img);
         if (!ok){
           fprintf(stderr, "vglCheckContext: Error: unable to transfer from gl to cuda\n");
-	}
+		}
+	  #elif __OPENCL__
+		  fprintf(stderr, "vglCheckContext: Error: error because cuda context dont exists\n");
+	  #endif
+
+	
       }
       else{
         fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to CUDA from innvalid context\n");
@@ -133,11 +147,15 @@ int vglCheckContextForOutput(VglImage* img, int context){
       #if DEBUG_VGLCONTEXT
       printf("vglCheckContextForOutput: context is cuda, pbo = %d ptr = %x\n", img->cudaPbo, img->cudaPtr);
       #endif
-      if (img->cudaPbo == -1 or img->cudaPtr == 0){
+      if (img->cudaPbo == -1 || img->cudaPtr == 0){
         #if DEBUG_VGLCONTEXT
         printf("vglCheckContextForOutput: pbo == -1 so will allocate\n");
         #endif
-        vglCudaAlloc(img);
+		#ifdef __CUDA__
+        return vglCudaAlloc(img);
+		#elif __OPENCL__
+		return 0;
+		#endif
       }
     }
   }

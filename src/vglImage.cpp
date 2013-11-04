@@ -2,6 +2,7 @@
 #include <iostream>
 
 //GL
+#include <GL/glew.h>
 #include <GL/freeglut_std.h>
 #include <GL/freeglut_ext.h>
 
@@ -23,7 +24,7 @@
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
     Reset();
     int curr_id = Cycle();
-    if (split < VGL_MIN_WINDOW_SPLIT or split > VGL_MAX_WINDOW_SPLIT){
+    if (split < VGL_MIN_WINDOW_SPLIT || split > VGL_MAX_WINDOW_SPLIT){
       printf("VglNamedWindowList::RefreshAll(): Error: split = %d not between %d and %d. Using default, %d",
 	     split, VGL_MIN_WINDOW_SPLIT, VGL_MAX_WINDOW_SPLIT, VGL_DEFAULT_WINDOW_SPLIT);
       split = VGL_DEFAULT_WINDOW_SPLIT;
@@ -44,7 +45,7 @@ void VglNamedWindowList::Refresh(int win_index, int split){
 
     vglCheckContext(WindowList[win_index].image, VGL_GL_CONTEXT);
 
-    if (split < VGL_MIN_WINDOW_SPLIT or split > VGL_MAX_WINDOW_SPLIT){
+    if (split < VGL_MIN_WINDOW_SPLIT || split > VGL_MAX_WINDOW_SPLIT){
       printf("VglNamedWindowList::Refresh(): Error: split = %d not between %d and %d. Using default, %d",
 	     split, VGL_MIN_WINDOW_SPLIT, VGL_MAX_WINDOW_SPLIT, VGL_DEFAULT_WINDOW_SPLIT);
       split = VGL_DEFAULT_WINDOW_SPLIT;
@@ -180,7 +181,7 @@ void VglNamedWindowList::Refresh(int win_index, int split){
 /** Initialize GLUT and create output window with default size (1280, 960).
   */
 int vglInit(){
-  vglInit(1280, 960);
+  return vglInit(1280, 960);
 }
 
 /** Initialize GLUT and create output window with size (w, h).
@@ -199,15 +200,19 @@ int vglInit(int w, int h){
       glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
       glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
       glutInitWindowSize(w, h);
-      if (w < 10 and h < 10){
-        glutInitWindowPosition(-50, -50);
+      if (w < 10 && h < 10){
+        glutInitWindowPosition(50, 50);
       }
       else{
-        glutInitWindowPosition(-50, -50);
+        glutInitWindowPosition(50, 50);
       }
       window_id = glutCreateWindow("Main window");
 
       glEnable(GL_TEXTURE_2D); //deve ficar depois de glutCreateWindow
+
+	  //Inicializa o glew para habilitar as funções do gl que precisam de ponteiros internos
+	  glewInit(); 
+
       started = 1;
 
       //glutDisplayFunc(display);
@@ -237,7 +242,7 @@ void vglUpload(VglImage* image, int swapRGB){
 
 
   //printf("vglUpload: image context = %d\n", image->inContext);
-  if (!vglIsInContext(image, VGL_RAM_CONTEXT)  and 
+  if (!vglIsInContext(image, VGL_RAM_CONTEXT)  && 
       !vglIsInContext(image, VGL_BLANK_CONTEXT)    ){
     fprintf(stderr, "vglUpload: Error: image context = %d not in VGL_RAM_CONTEXT or VGL_BLANK_CONTEXT\n", image->inContext);
     return;
@@ -329,12 +334,13 @@ void vglUpload(VglImage* image, int swapRGB){
                  ipl->width, ipl->height, 0,
                  glFormat, glType, ipl->imageData);
   }
+  
 
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
 
   if (image->fbo == -1){
-    glGenFramebuffersEXT(1, &image->fbo);
+    glGenFramebuffersEXT(1,&image->fbo);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, image->fbo);
     if (glTarget == GL_TEXTURE_3D){
       glFramebufferTexture3DEXT(GL_FRAMEBUFFER_EXT,GL_COLOR_ATTACHMENT0_EXT, 
@@ -1292,6 +1298,8 @@ int SavePPM(char* filename, int w, int h, void* savebuf){
          fprintf(fp, "P6\n%d %d\n255\n", w, h);
          fwrite(savebuf, w * h * 3, 1, fp);
          fclose(fp);
+		 //return must be checked
+		 return 0;
 }
 
 
@@ -1301,7 +1309,7 @@ int SavePPM(char* filename, int w, int h, void* savebuf){
 int vglSavePPM(VglImage* img, char* filename){
     vglCheckContext(img, VGL_GL_CONTEXT);
     vglDownloadPPM(img);
-    SavePPM(filename, img->width, img->height, img->ipl->imageData);
+    return SavePPM(filename, img->width, img->height, img->ipl->imageData);
 }
 
 /** Save image data to PGM file, 1 channel, unsigned byte
@@ -1312,6 +1320,8 @@ int SavePGM(char* filename, int w, int h, void* savebuf){
          fprintf(fp, "P5\n%d %d\n255\n", w, h);
          fwrite(savebuf, w * h, 1, fp);
          fclose(fp);
+		//return must be checked
+		 return 0;
 }
 
 /** Save image to PGM file, 1 channel, unsigned byte
@@ -1320,7 +1330,7 @@ int SavePGM(char* filename, int w, int h, void* savebuf){
 int vglSavePGM(VglImage* img, char* filename){
     vglCheckContext(img, VGL_GL_CONTEXT);
     vglDownloadPGM(img);
-    SavePGM(filename, img->width, img->height, img->ipl->imageData);
+    return SavePGM(filename, img->width, img->height, img->ipl->imageData);
 }
 
 /** Load image data from PGM file, 1 channel, unsigned byte
@@ -1366,6 +1376,8 @@ int SaveYUV411(char* filename, int w, int h, void* savebuf){
          fprintf(fp, "P5\n%d %d\n255\n", w, h);
          fwrite(savebuf, w * h, 1, fp);
          fclose(fp);
+		 //return must be checked
+		 return 0;
 }
 
 /** Distance transform given by elementary cross.
@@ -1528,7 +1540,7 @@ void vglBaricenterVga(VglImage* src, double* x_avg /*= NULL*/, double* y_avg /*=
   int width  = 640;
   int height = 480;
 
-  if(src->width != 640 or src->height != 480){
+  if(src->width != 640 || src->height != 480){
       fprintf(stderr, "%s: %s: Error: image must be 640x480.\n", __FILE__, __FUNCTION__);
   }
 
@@ -1822,5 +1834,3 @@ void vglMultiInput_model(VglImage*  src0, VglImage*  src1, VglImage*  dst){
 
   vglSetContext(dst, VGL_GL_CONTEXT);
 }
-
-

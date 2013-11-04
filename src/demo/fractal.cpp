@@ -141,6 +141,13 @@ void display_fractal(void){
     int fps = showstats();
 }
 
+void display_try(void)
+{
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glColor3f(0.2,0.3,0.4);
+
+}
+
 int main(int argc, char** argv)
 {
   int w = 1200;
@@ -148,10 +155,11 @@ int main(int argc, char** argv)
 
   window_list  = new VglNamedWindowList();
   window_list->main_window_id = vglInit(1200, 860);
-      glutDisplayFunc(demo_fractal);
-      glutIdleFunc(demo_fractal);
-      glutReshapeFunc(reshape);
-      glutKeyboardFunc(keyboard);
+
+  glutDisplayFunc(display_fractal);
+  glutIdleFunc(display_fractal);
+  glutReshapeFunc(reshape);
+  glutKeyboardFunc(keyboard);
 
   for (int i = 0; i < VGL_MAX_WINDOWS; i++){
     winname[i]  = (char*) malloc(255);
@@ -159,6 +167,8 @@ int main(int argc, char** argv)
     sprintf(winname[i], "img[%d]", i);
   }
 
+  //glewExperimental = GL_TRUE;
+  
 
   img[0] = vglCreateImage(cvSize(w/3, h/3), IPL_DEPTH_32F, 3);
   vglClear(img[0], 0.0, 0.0, 0.0, 0.0);

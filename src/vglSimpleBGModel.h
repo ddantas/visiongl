@@ -4,7 +4,7 @@
 ***                                                                ***
 *********************************************************************/
 
-#include <vglImage.h>
+#include "vglImage.h"
 
 #define VGL_SIMPLEBG_STD_THRESHOLD      2.5   // lambda=2.5 is 99% 
 #define VGL_SIMPLEBG_WINDOW_SIZE        200   // learning rate; alpha = 1/WINDOW_SIZE 
