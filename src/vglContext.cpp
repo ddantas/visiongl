@@ -5,7 +5,10 @@
 //printf, stdout
 #include <iostream>
 
+#ifdef __CUDA__
 #include "vglCudaImage.h"
+#endif
+
 #include "vglContext.h"
 #include "vglImage.h"
 
@@ -82,17 +85,20 @@ int vglCheckContext(VglImage* img, int context){
       if (vglIsInContext(img, VGL_RAM_CONTEXT)){
         vglUpload(img);
       }
+#ifdef __CUDA__
       else if (vglIsInContext(img, VGL_CUDA_CONTEXT)){
         int ok = vglCudaToGl(img);
         if (!ok){
           fprintf(stderr, "vglCheckContext: error transfering from cuda to gl\n");
 	}
       }
+#endif
       else{
         fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to GL from invalid context\n");
         vglPrintImageInfo(img);
       }
     break;
+#ifdef __CUDA__
     case VGL_CUDA_CONTEXT:
       vglCheckContext(img, VGL_GL_CONTEXT);
       #if DEBUG_VGLCONTEXT
@@ -108,6 +114,7 @@ int vglCheckContext(VglImage* img, int context){
         fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to CUDA from innvalid context\n");
       }
     break;
+#endif
     default:
       fprintf(stderr, "vglCheckContext: Error: context = %d is not unique or invalid\n", context);
       return 0;
@@ -137,7 +144,11 @@ int vglCheckContextForOutput(VglImage* img, int context){
         #if DEBUG_VGLCONTEXT
         printf("vglCheckContextForOutput: pbo == -1 so will allocate\n");
         #endif
-        vglCudaAlloc(img);
+        #ifdef __CUDA__
+        return vglCudaAlloc(img);
+        #else
+        return 0;
+        #endif
       }
     }
   }
