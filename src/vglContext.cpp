@@ -159,6 +159,7 @@ int vglCheckContextForOutput(VglImage* img, int context){
       }
     }
   }
+  return 0;
 }
 
 

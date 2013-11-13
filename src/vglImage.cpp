@@ -183,7 +183,7 @@ int vglInit(){
   return vglInit(1280, 960);
 }
 
-/** Initialize GLUT and create output window with size (w, h).
+/** Initialize GLUT, GLEW, and checks the existence of extensions of OpenGL. Also create output window with size (w, h).
   */
 int vglInit(int w, int h){
     char* argv = new char[255];  
@@ -211,6 +211,13 @@ int vglInit(int w, int h){
 
 	  //Inicializa o glew para habilitar as funções do gl que precisam de ponteiros internos
 	  glewInit(); 
+
+	  if (GLEW_VERSION_1_3){
+		  if(!glewIsSupported("GL_EXT_framebuffer_object"))
+			  printf("glGenFramebuffersEXT not supported, the program may not work.\n");
+	  }
+	  else
+		  printf("OpenGL 1.3 not supported, the program may not work.\n");
 
       started = 1;
 
