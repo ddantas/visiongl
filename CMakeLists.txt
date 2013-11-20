@@ -13,7 +13,7 @@ set(visiongl_src src/vglImage.cpp src/vglSimpleBGModel.cpp src/vglLoadShader.cpp
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake-modules")
 
 #verifica se o sistema é windows
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if(WIN32)
 
 	#Procura pelas pastas lib e include dos packages glew, glut, opencv
 	find_package (MyGLEW REQUIRED)
