@@ -64,7 +64,7 @@ else()
 	message("OpenCV " ${OpenCV_LIBS} ${OpenCV_LIB_DIR} ${OpenCV_INCLUDE_DIRS} )
 
 	#adiciona as pastas de dependência de lib
-	link_directories(${GLEW_LIBRARIES} ${GLUT_LIBRARIES})
+	link_directories(${GLEW_LIBRARIES} ${GLUT_LIBRARIES} ${OpenCV_LIB_DIR_DBG})
 
 	#adiciona as pastas de dependência de headers
 	INCLUDE_DIRECTORIES( src/ ${GLEW_INCLUDE_PATH} ${GLUT_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR} )
