@@ -50,7 +50,7 @@ if (NOT GLEW_FOUND)
 		set(possible_paths 
 		  "/usr/"
 		  "/usr/lib"
-		  "/usr/lib/x86_64-linux-gnu
+		  "/usr/lib/x86_64-linux-gnu"
 		  #mycustompath
 		  "/home/visiongl/visiongl/glew"
 		  
