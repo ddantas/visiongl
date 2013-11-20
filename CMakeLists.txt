@@ -70,12 +70,12 @@ else()
 	INCLUDE_DIRECTORIES( src/ ${GLEW_INCLUDE_PATH} ${GLUT_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR} )
 
 	#cria o .object do visiongl, em alguns compiladores gera também a visiongl.lib
-	add_library(visiongl ${visiongl_src} )
+	add_library(visiongl ${visiongl_src} ${OpenCV_LIBS} ${GLUT_LIBRARIES} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
 
 	#cria um executável a partir do fractal.cpp
 	add_executable(visiongl_fractal src/demo/fractal.cpp)
 
 	#linka o executavel com as libs no linux ou outro sistema
-	target_link_libraries(visiongl_fractal visiongl ${OpenCV_LIBS} ${GLUT_LIBRARIES}  ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
+	target_link_libraries(visiongl_fractal visiongl ${OpenCV_LIBS} ${GLUT_LIBRARIES} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
 
 endif()
