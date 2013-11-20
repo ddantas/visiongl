@@ -3,11 +3,12 @@
 #  FREEGLUT_FOUND - System has GLEW
 #  FREEGLUT_INCLUDE_DIR - The GLEW include directory
 #  FREEGLUT_LIBRARY - The library needed to use GLEW
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.5)
+message("started finding freeglut")
 if (WIN32)
-	find_package(FREEGLUT)
+	find_package(FREEGLUT QUIET)
 	if (NOT FREEGLUT_FOUND)
-		message("Package freeglut not found, trying to find it somewhere, if you have any trouble, edit FindGlew.cmake in cmake-modules directory")
+		message("Package freeglut not found, trying to find it somewhere, if you have any trouble, edit FindMyFREEGLUT.cmake in cmake-modules directory")
 	
 		#please add here a possible path for you computer to find GLEW 
 		#if find_package isnt working // remembering, this paths are windows only

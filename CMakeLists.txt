@@ -10,23 +10,15 @@ project(visiongl)
 
 #visiongl_src é a variável que guarda todos os cpp, ao adicionar ou remover, mexer apenas aqui
 set(visiongl_src src/vglImage.cpp src/vglSimpleBGModel.cpp src/vglLoadShader.cpp src/vglContext.cpp src/glsl2cpp_Stereo.cpp src/glsl2cpp_shaders.cpp src/glsl2cpp_DiffEq.cpp src/glsl2cpp_BG.cpp)
-set(libglewpath "Put here the path to glew library")
-set(libglutpath "Put here the path to freeglut library")
-set(libglupath "Put here the path to GLu library")
-set(libopenglpath "Put here the path to opengl lib")
-
-set(opencvpath "Put here the path to opencv folder")
-
-set(includeglewpath "put here the path to glew include diretory")
-set(includeglutpath "put here the path to freeglut include diretory")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake-modules")
 
 #verifica se o sistema é windows
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
 	#Procura pelas pastas lib e include dos packages glew, glut, opencv
-	#find_package (GLEW REQUIRED)
-	#find_package (GLUT REQUIRED)
-	#find_package (OpenCV REQUIRED)
+	find_package (MyGLEW REQUIRED)
+	find_package (MyFREEGLUT REQUIRED)
+	find_package (OpenCV REQUIRED)
 
 	#depuracao
 	#message(${visiongl_src})
@@ -34,13 +26,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	#message("OpenCV " ${OpenCV_LIBS} ${OpenCV_LIB_DIR} ${OpenCV_INCLUDE_DIRS} )
 
 	#adiciona as pastas de dependência de lib
-	link_directories(${opencvpath}/build/x86/vc10/lib/)
+	link_directories(${opencv_lib_dir})
 
 	#adiciona as pastas de dependência de headers
-	INCLUDE_DIRECTORIES( src/ ${opencvpath}/build/include)
+	INCLUDE_DIRECTORIES( src/ ${opencv_include_dirs})
 
 	#cria o .object do visiongl, em alguns compiladores gera também a visiongl.lib
-	add_library(visiongl ${visiongl_src} ${libglewpath} ${libglutpath} ${opencvpath} ${opencvpath}/build/x86/vc10/lib/)
+	add_library(visiongl ${visiongl_src})
 
 	#cria um executável a partir do fractal.cpp
 	add_executable(visiongl_fractal src/demo/fractal.cpp)
@@ -62,7 +54,7 @@ else()
 
 	#Procura pelas pastas lib e include dos packages glew, glut, opencv
 	find_package (GLEW REQUIRED)
-	find_package (GLUT REQUIRED)
+	find_package (FREEGLUT REQUIRED)
 	find_package (OpenCV REQUIRED)
 	find_package (OpenGL REQUIRED)
 
