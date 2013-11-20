@@ -87,4 +87,6 @@ if (NOT GLEW_FOUND)
 			
 		endif()
 	endif()
+else()
+	message("Package Glew not found, trying to find it somewhere, if you have any trouble, edit FindGlew.cmake in cmake-modules directory")
 endif()
