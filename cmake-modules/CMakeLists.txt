@@ -6,6 +6,7 @@
 cmake_minimum_required(VERSION 2.7)
 find_package(GLEW)
 if (NOT GLEW_FOUND)
+	message("Package Glew not found, trying to find it somewhere, if you have any trouble, edit FindGlew.cmake in cmake-modules directory")
 	if (WIN32)
 		#please add here a possible path for you computer to find GLEW 
 		#if find_package isnt working // remembering, this paths are windows only
@@ -88,5 +89,5 @@ if (NOT GLEW_FOUND)
 		endif()
 	endif()
 else()
-	message("Package Glew not found, trying to find it somewhere, if you have any trouble, edit FindGlew.cmake in cmake-modules directory")
+	message("Glew lib and include found successful")
 endif()
