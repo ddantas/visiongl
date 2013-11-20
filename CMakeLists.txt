@@ -53,8 +53,8 @@ else()
 	message(${CMAKE_MODULE_PATH})
 
 	#Procura pelas pastas lib e include dos packages glew, glut, opencv
-	find_package (GLEW REQUIRED)
-	find_package (FREEGLUT REQUIRED)
+	find_package (MyGLEW REQUIRED)
+	find_package (MyFREEGLUT REQUIRED)
 	find_package (OpenCV REQUIRED)
 	find_package (OpenGL REQUIRED)
 
