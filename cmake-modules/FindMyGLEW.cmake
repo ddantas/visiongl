@@ -4,7 +4,7 @@
 #  GLEW_INCLUDE_DIR - The GLEW include directory
 #  GLEW_LIBRARY - The library needed to use GLEW
 find_package(GLEW)
-if (NOT GLEW_FOUND)
+if (NOT ${GLEW_FOUND})
 	message("Package Glew not found, trying to find it somewhere, if you have any trouble, edit FindMyGLEW.cmake in cmake-modules directory")
 	if (WIN32)
 		#please add here a possible path for you computer to find GLEW 
@@ -51,39 +51,38 @@ if (NOT GLEW_FOUND)
 		set(possible_paths 
 		  "/usr/"
 		  "/usr/lib"
-		  "/usr/lib/x86_64-linux-gnu"
+		  "/usr/include"
 		  #mycustompath
 		  "/home/visiongl/visiongl/glew"
 		  
 		)
 		
-		find_path(GLEW_INCLUDE_DIR NAMES gl/glew.h 
+		find_path(GLEW_INCLUDE_DIR NAMES GL/glew.h 
 			PATHS ${possible_paths} 
 			PATH_SUFFIXES "GLEW" "INCLUDE" "glew/include"
 			)
 		
 		find_library(GLEW_LIBRARY 
-		    NAMES libGLEW.so.1.8 libGLEW.so.1.7 libGLEW.so.1.6
-			      libGLEW.so.1.8.0 libGLEW.so.1.7.0 libGLEW.so.1.6.0
+                        NAMES libGLEW.so
 			PATHS ${possible_paths} 
-			PATH_SUFFIXES "GLEW" "LIB" "release" "glew/lib"
+			PATH_SUFFIXES "GLEW" "LIB" "release" "glew/lib" "x86_64-linux-gnu"
 			)
 		
-		message("glew include: " ${glew_include_dir})
-		message("glew library: " ${glew_library})
+		message("glew include: " ${GLEW_INCLUDE_DIR})
+		message("glew library: " ${GLEW_LIBRARY})
 		
 		if (NOT (${GLEW_INCLUDE_DIR} STREQUAL "GLEW_INCLUDE_DIR-NOTFOUND" AND ${GLEW_LIBRARY} STREQUAL "GLEW_LIBRARY-NOTFOUND"))
 			set(GLEW_FOUND TRUE)
 		endif()
 
-		if(NOT GLEW_FOUND)
+		if(NOT ${GLEW_FOUND})
 			
 			if(${GLEW_INCLUDE_DIR} STREQUAL "GLEW_INCLUDE_DIR-NOTFOUND")
 				set(GLEW_INCLUDE_DIR CACHE PATH "Path to the GLEW include directory")
 			endif()
 		
 			if(${GLEW_LIBRARY} STREQUAL "GLEW_LIBRARY-NOTFOUND")
-				set(GLEW_LIBRARY CACHE FILEPATH "Path to the GLEW library glew32.lib")
+				set(GLEW_LIBRARY CACHE FILEPATH "Path to the GLEW library libGLEW.so")
 			endif()
 			
 		endif()
