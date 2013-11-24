@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 2.5)
 
 find_package(OpenCV QUIET)
 if(NOT OpenCV_FOUND)
+	message("trying to find OpenCV")
 	if(WIN32)
 		set(possible_paths
 			$ENV{path}
@@ -68,6 +69,23 @@ if(NOT OpenCV_FOUND)
 		
 		message("OpenCV Include: " ${OPENCV_INCLUDE_DIR})
 		message("OpenCV Library: " ${OPENCV_LIBRARY})
+		
+		if (NOT (${OPENCV_INCLUDE_DIR} STREQUAL "OPENCV_INCLUDE_DIR-NOTFOUND" AND ${OPENCV_LIBRARY} STREQUAL "OPENCV_LIBRARY-NOTFOUND"))
+			set(OPENCV_FOUND TRUE)
+			message("opencv was found after some tries")
+		endif()
+
+		if(NOT OPENCV_FOUND)
+			
+			if(${OPENCV_INCLUDE_DIR} STREQUAL "OPENCV_INCLUDE_DIR-NOTFOUND")
+				set(OPENCV_INCLUDE_DIR CACHE PATH "Path to the OpenCV include directory")
+			endif()
+		
+			if(${OPENCV_LIBRARY} STREQUAL "OPENCV_LIBRARY-NOTFOUND")
+				set(OPENCV_LIBRARY CACHE PATH "Path to the OpenCV library folder")
+			endif()
+			
+		endif()
 
 	endif()
 	
