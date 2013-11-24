@@ -3,9 +3,9 @@
 #  OPENCV_FOUND - System has OpenCV
 #  OPENCV_INCLUDE_DIR - The OpenCV include directory
 #  OPENCV_LIBRARY - The library dir needed to use OpenCV
-cmake_minimum_required(VERSION 2.5)
 
 find_package(OpenCV QUIET)
+
 if(NOT OpenCV_FOUND)
 	message("trying to find OpenCV")
 	if(WIN32)
@@ -84,6 +84,8 @@ if(NOT OpenCV_FOUND)
 			if(${OPENCV_LIBRARY} STREQUAL "OPENCV_LIBRARY-NOTFOUND")
 				set(OPENCV_LIBRARY CACHE PATH "Path to the OpenCV library folder")
 			endif()
+			
+			message("opencv not found, set OPENCV_INCLUDE_DIR and OPENCV_LIBRARY cache variables")
 			
 		endif()
 
