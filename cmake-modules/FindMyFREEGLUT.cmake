@@ -10,7 +10,7 @@ if (WIN32)
 	if (NOT ${FREEGLUT_FOUND})
 		message("Package freeglut not found, trying to find it somewhere, if you have any trouble, edit FindMyFREEGLUT.cmake in cmake-modules directory")
 	
-		#please add here a possible path for you computer to find GLEW 
+		#please add here a possible path for you computer to find FreeGLUT 
 		#if find_package isnt working // remembering, this paths are windows only
 		set(possible_paths 
 		  $ENV{programfiles}
@@ -78,8 +78,8 @@ else()
 			PATH_SUFFIXES "GLUT" "LIB" "GLUT/lib"
 			)
 		
-		message("freeglut include: " ${glut_include_dir})
-		message("freeglut library: " ${glut_library})
+		message("freeglut include: " ${FREEGLUT_INCLUDE_DIR})
+		message("freeglut library: " ${FREEGLUT_LIBRARY})
 		
 		if (NOT (${FREEGLUT_INCLUDE_DIR} STREQUAL "FREEGLUT_INCLUDE_DIR-NOTFOUND" AND ${FREEGLUT_LIBRARY} STREQUAL "FREEGLUT_LIBRARY-NOTFOUND"))
 			set(FREEGLUT_FOUND TRUE)

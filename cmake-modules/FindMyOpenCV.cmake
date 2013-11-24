@@ -6,7 +6,7 @@
 
 find_package(OpenCV)
 
-if(NOT OpenCV_FOUND)
+if(NOT ${OpenCV_FOUND})
 	message("trying to find OpenCV")
 	if(WIN32)
 		set(possible_paths
@@ -34,7 +34,7 @@ if(NOT OpenCV_FOUND)
 			message("opencv was found after some tries")
 		endif()
 
-		if(NOT OPENCV_FOUND)
+		if(NOT ${OPENCV_FOUND})
 			
 			if(${OPENCV_INCLUDE_DIR} STREQUAL "OPENCV_INCLUDE_DIR-NOTFOUND")
 				set(OPENCV_INCLUDE_DIR CACHE PATH "Path to the OpenCV include directory")
@@ -75,7 +75,7 @@ if(NOT OpenCV_FOUND)
 			message("opencv was found after some tries")
 		endif()
 
-		if(NOT OPENCV_FOUND)
+		if(NOT ${OPENCV_FOUND})
 			
 			if(${OPENCV_INCLUDE_DIR} STREQUAL "OPENCV_INCLUDE_DIR-NOTFOUND")
 				set(OPENCV_INCLUDE_DIR CACHE PATH "Path to the OpenCV include directory")
