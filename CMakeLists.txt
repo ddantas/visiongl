@@ -64,13 +64,13 @@ else()
 	#message("OpenCV " ${OpenCV_LIBS} ${OpenCV_LIB_DIR} ${OpenCV_INCLUDE_DIRS} )
 
 	#adiciona as pastas de dependência de lib
-	link_directories(${GLEW_LIBRARIES} ${GLUT_LIBRARIES} ${OpenCV_LIB_DIR_DBG})
+	link_directories(${GLEW_LIBRARIES} ${OPENCV_LIBRARY})
 
 	#adiciona as pastas de dependência de headers
 	INCLUDE_DIRECTORIES( src/ ${GLEW_INCLUDE_PATH} ${GLUT_INCLUDE_DIR} ${OpenCV_INCLUDE_DIR} )
 
 	#cria o .object do visiongl, em alguns compiladores gera também a visiongl.lib
-	add_library(visiongl ${visiongl_src} ${GLUT_LIBRARIES} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
+	add_library(visiongl ${visiongl_src} ${FREEGLUT_INCLUDE_DIR} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
 
 	#cria um executável a partir do fractal.cpp
 	add_executable(visiongl_fractal src/demo/fractal.cpp)
