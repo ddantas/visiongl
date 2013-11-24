@@ -18,7 +18,7 @@ if(WIN32)
 	#Procura pelas pastas lib e include dos packages glew, glut, opencv
 	find_package (MyGLEW REQUIRED)
 	find_package (MyFREEGLUT REQUIRED)
-	find_package (OpenCV REQUIRED)
+	find_package (MyOpenCV REQUIRED)
 
 	#depuracao
 	#message(${visiongl_src})
@@ -55,13 +55,13 @@ else()
 	#Procura pelas pastas lib e include dos packages glew, glut, opencv
 	find_package (MyGLEW REQUIRED)
 	find_package (MyFREEGLUT REQUIRED)
-	find_package (OpenCV REQUIRED)
+	find_package (MyOpenCV REQUIRED)
 	find_package (OpenGL REQUIRED)
 
 	#depuracao
-	message(${visiongl_src})
-	message("Glew include dir: " ${GLEW_INCLUDE_PATH})
-	message("OpenCV " ${OpenCV_LIBS} ${OpenCV_LIB_DIR} ${OpenCV_INCLUDE_DIRS} )
+	#message(${visiongl_src})
+	#message("Glew include dir: " ${GLEW_INCLUDE_PATH})
+	#message("OpenCV " ${OpenCV_LIBS} ${OpenCV_LIB_DIR} ${OpenCV_INCLUDE_DIRS} )
 
 	#adiciona as pastas de dependência de lib
 	link_directories(${GLEW_LIBRARIES} ${GLUT_LIBRARIES} ${OpenCV_LIB_DIR_DBG})

@@ -63,7 +63,7 @@ if (NOT ${GLEW_FOUND})
 			)
 		
 		find_library(GLEW_LIBRARY 
-                        NAMES libGLEW.so
+            NAMES libGLEW.so
 			PATHS ${possible_paths} 
 			PATH_SUFFIXES "GLEW" "LIB" "release" "glew/lib" "x86_64-linux-gnu"
 			)
