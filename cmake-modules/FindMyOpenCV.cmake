@@ -4,7 +4,7 @@
 #  OPENCV_INCLUDE_DIR - The OpenCV include directory
 #  OPENCV_LIBRARY - The library dir needed to use OpenCV
 
-find_package(OpenCV QUIET)
+find_package(OpenCV)
 
 if(NOT OpenCV_FOUND)
 	message("trying to find OpenCV")
