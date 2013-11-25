@@ -54,7 +54,7 @@ if (WIN32)
 		message("FreeGLUT lib and include found successful")
 	endif()
 else()
-	find_package(GLUT)
+#	find_package(GLUT)
 	if (NOT GLUT_FOUND)
 		message("Package freeglut not found, trying to find it somewhere, if you have any trouble, edit FindGlew.cmake in cmake-modules directory")
 		#please add here a possible path for you computer to find FreeGLUT 
@@ -67,7 +67,7 @@ else()
 		  #mycustompath
 		)
 		
-		find_path(FREEGLUT_INCLUDE_DIR NAMES gl/freeglut.h
+		find_path(FREEGLUT_INCLUDE_DIR NAMES GL/freeglut.h
 			PATHS ${possible_paths} 
 			PATH_SUFFIXES "GLUT" "INCLUDE" "GLUT/include"
 			)
@@ -77,9 +77,6 @@ else()
 			PATHS ${possible_paths} 
 			PATH_SUFFIXES "GLUT" "LIB" "GLUT/lib"
 			)
-		
-		message("freeglut include: " ${FREEGLUT_INCLUDE_DIR})
-		message("freeglut library: " ${FREEGLUT_LIBRARY})
 		
 		if (NOT (${FREEGLUT_INCLUDE_DIR} STREQUAL "FREEGLUT_INCLUDE_DIR-NOTFOUND" AND ${FREEGLUT_LIBRARY} STREQUAL "FREEGLUT_LIBRARY-NOTFOUND"))
 			set(FREEGLUT_FOUND TRUE)
@@ -104,3 +101,5 @@ else()
 		message("found freeglut")
 	endif()
 endif()
+message("freeglut include: " ${FREEGLUT_INCLUDE_DIR})
+message("freeglut library: " ${FREEGLUT_LIBRARY})
