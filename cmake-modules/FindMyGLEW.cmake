@@ -9,24 +9,18 @@ if (NOT ${GLEW_FOUND})
 	if (WIN32)
 		#please add here a possible path for you computer to find GLEW 
 		#if find_package isnt working // remembering, this paths are windows only
-		set(possible_paths 
-		  "C:/Program Files/Microsoft Visual Studio"
-		  "$ENV{programfiles}/Microsoft Visual Studio"
-		  $ENV{programfiles}
-		  $ENV{path}
-		  #mycustompath
-		  "$ENV{userprofile}/Documents"
+		set(possible_paths
+			#mycustompath
+			"$ENV{userprofile}/Documents"
 		)
-		
-		find_path(GLEW_INCLUDE_DIR NAMES gl/glew.h 
+		message("WIN32")
+		find_path(GLEW_INCLUDE_DIR NAMES "GL/glew.h"
 			PATHS ${possible_paths} 
-			PATH_SUFFIXES "GLEW" "INCLUDE" "glew/include"
-			)
+			PATH_SUFFIXES "GLEW" "INCLUDE" "GLEW/include")
 		
-		find_library(GLEW_LIBRARY NAMES glew32.lib 
+		find_library(GLEW_LIBRARY NAMES "glew32.lib"
 			PATHS ${possible_paths} 
-			PATH_SUFFIXES "GLEW" "LIB" "release" "win32" "glew/lib/release/win32"
-			)
+			PATH_SUFFIXES "GLEW" "LIB" "release" "win32" "GLEW/lib/release/Win32")
 		
 		if (NOT (${GLEW_INCLUDE_DIR} STREQUAL "GLEW_INCLUDE_DIR-NOTFOUND" AND ${GLEW_LIBRARY} STREQUAL "GLEW_LIBRARY-NOTFOUND"))
 			set(GLEW_FOUND TRUE)
@@ -47,7 +41,6 @@ if (NOT ${GLEW_FOUND})
 		
 	else()
 		#please add here a possible path for you computer to find GLEW 
-		#if find_package isnt working // remembering, this paths are windows only
 		set(possible_paths 
 		  "/usr/"
 		  "/usr/lib"

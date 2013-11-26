@@ -20,16 +20,11 @@ if(WIN32)
 	find_package (MyFREEGLUT REQUIRED)
 	find_package (MyOpenCV REQUIRED)
 
-	#depuracao
-	#message(${visiongl_src})
-	#message("Glew include dir: " ${GLEW_INCLUDE_PATH})
-	#message("OpenCV " ${OPENCV_LIBS} ${OPENCV_LIB_DIR} ${OPENCV_INCLUDE_DIRS} )
-
 	#adiciona as pastas de dependência de lib
-	link_directories(${opencv_lib_dir})
+	link_directories(${OPENCV_LIBRARY})
 
 	#adiciona as pastas de dependência de headers
-	INCLUDE_DIRECTORIES( src/ ${opencv_include_dirs})
+	INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR})
 
 	#cria o .object do visiongl, em alguns compiladores gera também a visiongl.lib
 	add_library(visiongl ${visiongl_src})
@@ -39,18 +34,13 @@ if(WIN32)
 	add_executable(visiongl_cam src/demo/cam.cpp)
  
 	#linka o executável, com as libs
-	target_link_libraries(visiongl_cam visiongl ${OPENCV_LIBS} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES}/Release/Win32/glew32.lib)
-	target_link_libraries(visiongl_fractal visiongl ${OPENCV_LIBS} ${GLUT_LIBRARIES} ${GLEW_LIBRARIES}/Release/Win32/glew32.lib)
-	INSTALL(TARGETS visiongl visiongl_cam visiongl_fractal
-			RUNTIME DESTINATION bin
-			LIBRARY DESTINATION bin
-			ARCHIVE DESTINATION bin
-	)
+	target_link_libraries(visiongl_cam visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENCV_LIBRARIES})
+	target_link_libraries(visiongl_fractal visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENCV_LIBRARIES})
+	
 
 else()
 
-	set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
-	message(${CMAKE_MODULE_PATH})
+	#set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules)
 
 	#Procura pelas pastas lib e include dos packages glew, glut, opencv
 	find_package (MyGLEW REQUIRED)
@@ -58,27 +48,23 @@ else()
 	find_package (MyOpenCV REQUIRED)
 	find_package (OpenGL REQUIRED)
 
-	#depuracao
-	#message(${visiongl_src})
-	#message("Glew include dir: " ${GLEW_INCLUDE_PATH})
-	#message("OpenCV " ${OPENCV_LIBS} ${OPENCV_LIB_DIR} ${OPENCV_INCLUDE_DIRS} )
-
 	#adiciona as pastas de dependência de lib
-	link_directories(${GLEW_LIBRARIES} ${OPENCV_LIBRARY})
+	link_directories(${OPENCV_LIBRARY})
 
 	#adiciona as pastas de dependência de headers
 	INCLUDE_DIRECTORIES( src/ ${GLEW_INCLUDE_PATH} ${FREEGLUT_INCLUDE_DIR} ${OPENCV_INCLUDE_DIR} )
 
 	#cria o .object do visiongl, em alguns compiladores gera também a visiongl.lib
-	add_library(visiongl ${visiongl_src} ${FREEGLUT_INCLUDE_DIR} ${GLEW_LIBRARY} ${OPENGL_GLU_LIBRARY})
+	add_library(visiongl ${visiongl_src} ${FREEGLUT_INCLUDE_DIR} ${GLEW_LIBRARY} ${OPENGL_GLU_LIBRARY} ${OPENCV_LIBRARIES})
 
 	#cria um executável a partir do fractal.cpp
 	add_executable(visiongl_fractal src/demo/fractal.cpp)
-
+	
+	
 	#linka o executavel com as libs no linux ou outro sistema
         message(${FREEGLUT_LIBRARY})
         message(${GLEW_LIBRARY})
         message(${OPENGL_glu_LIBRARY})
-	target_link_libraries(visiongl_fractal visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
+	target_link_libraries(visiongl_fractal visiongl ${OPENCV_LIBRARIES}  ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
 
 endif()

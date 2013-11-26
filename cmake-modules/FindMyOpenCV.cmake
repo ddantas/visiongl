@@ -2,10 +2,10 @@
 # Once done this will define
 #  OPENCV_FOUND - System has OpenCV
 #  OPENCV_INCLUDE_DIR - The OpenCV include directory
-#  OPENCV_LIBRARY - The library dir needed to use OpenCV
+#  OPENCV_LIBRARY - The OpenCV lib directory
+#  OPENCV_LIBRARIES - The libraries of OpenCV with absolute path
 
 find_package(OpenCV)
-
 if(NOT ${OpenCV_FOUND})
 	message("trying to find OpenCV")
 	if(WIN32)
@@ -18,7 +18,7 @@ if(NOT ${OpenCV_FOUND})
 		
 		find_path(OPENCV_INCLUDE_DIR opencv/cv.h
 				PATHS ${possible_paths}
-				PATH_SUFFIXES "opencv" "include" "opencv/include"
+				PATH_SUFFIXES "opencv" "include" "opencv/build/include"
 		)
 		
 		find_path(OPENCV_LIBRARY NAMES opencv_highgui246.lib 
@@ -31,6 +31,11 @@ if(NOT ${OpenCV_FOUND})
 		
 		if (NOT (${OPENCV_INCLUDE_DIR} STREQUAL "OPENCV_INCLUDE_DIR-NOTFOUND" AND ${OPENCV_LIBRARY} STREQUAL "OPENCV_LIBRARY-NOTFOUND"))
 			set(OPENCV_FOUND TRUE)
+			set(OPENCV_LIBRARIES ${OPENCV_LIBRARY}/opencv_core246.lib
+								 ${OPENCV_LIBRARY}/opencv_highgui246.lib
+								 ${OPENCV_LIBRARY}/opencv_imgproc246.lib
+								 ${OPENCV_LIBRARY}/opencv_legacy246.lib
+				)
 			message("opencv was found after some tries")
 		endif()
 
@@ -72,6 +77,10 @@ if(NOT ${OpenCV_FOUND})
 		
 		if (NOT (${OPENCV_INCLUDE_DIR} STREQUAL "OPENCV_INCLUDE_DIR-NOTFOUND" AND ${OPENCV_LIBRARY} STREQUAL "OPENCV_LIBRARY-NOTFOUND"))
 			set(OPENCV_FOUND TRUE)
+			set(OPENCV_LIBRARIES ${OPENCV_LIBRARY}/libopencv_core.so
+								 ${OPENCV_LIBRARY}/libopencv_calib3d.so
+								 ${OPENCV_LIBRARY}/libopencv_contrib.so
+				)
 			message("opencv was found after some tries")
 		endif()
 
@@ -92,6 +101,5 @@ if(NOT ${OpenCV_FOUND})
 	endif()
 	
 else()
-	
-
+	message("Package found successfully")
 endif()
