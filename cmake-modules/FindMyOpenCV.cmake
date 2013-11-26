@@ -78,8 +78,9 @@ if(NOT ${OpenCV_FOUND})
 		if (NOT (${OPENCV_INCLUDE_DIR} STREQUAL "OPENCV_INCLUDE_DIR-NOTFOUND" AND ${OPENCV_LIBRARY} STREQUAL "OPENCV_LIBRARY-NOTFOUND"))
 			set(OPENCV_FOUND TRUE)
 			set(OPENCV_LIBRARIES ${OPENCV_LIBRARY}/libopencv_core.so
-								 ${OPENCV_LIBRARY}/libopencv_calib3d.so
-								 ${OPENCV_LIBRARY}/libopencv_contrib.so
+								 ${OPENCV_LIBRARY}/libopencv_highgui.so
+								 ${OPENCV_LIBRARY}/libopencv_imgproc.so
+								 ${OPENCV_LIBRARY}/libopencv_legacy.so
 				)
 			message("opencv was found after some tries")
 		endif()
