@@ -55,16 +55,24 @@ else()
 	INCLUDE_DIRECTORIES( src/ ${GLEW_INCLUDE_PATH} ${FREEGLUT_INCLUDE_DIR} ${OPENCV_INCLUDE_DIR} )
 
 	#cria o .object do visiongl, em alguns compiladores gera também a visiongl.lib
-	add_library(visiongl ${visiongl_src} ${FREEGLUT_INCLUDE_DIR} ${GLEW_LIBRARY} ${OPENGL_GLU_LIBRARY} ${OPENCV_LIBRARIES})
+	add_library(visiongl SHARED ${visiongl_src} ${FREEGLUT_INCLUDE_DIR} ${GLEW_LIBRARY} ${OPENGL_GLU_LIBRARY} ${OPENCV_LIBRARIES})
+        SET_TARGET_PROPERTIES(visiongl PROPERTIES PREFIX "lib/lib")
 
 	#cria um executável a partir do fractal.cpp
-	add_executable(visiongl_fractal src/demo/fractal.cpp)
+	add_executable(demo_fractal src/demo/fractal.cpp)
+        SET_TARGET_PROPERTIES(demo_fractal PROPERTIES PREFIX "bin/")
+
+	#cria um executável a partir do cam.cpp
+	add_executable(demo_cam src/demo/cam.cpp)
+        SET_TARGET_PROPERTIES(demo_cam PROPERTIES PREFIX "bin/")
 	
 	
 	#linka o executavel com as libs no linux ou outro sistema
         message(${FREEGLUT_LIBRARY})
         message(${GLEW_LIBRARY})
         message(${OPENGL_glu_LIBRARY})
-	target_link_libraries(visiongl_fractal visiongl ${OPENCV_LIBRARIES}  ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
+	target_link_libraries(demo_fractal visiongl ${OPENCV_LIBRARIES}  ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
+
+	target_link_libraries(demo_cam     visiongl ${OPENCV_LIBRARIES}  ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
 
 endif()
