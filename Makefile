@@ -24,10 +24,21 @@ OPENCV_INCLUDEDIR = $(OPENCV_PATH)/include/
 OPENCV_LIBDIR     = $(OPENCV_PATH)/lib
 OPENCV_LIBRARIES  = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
-CUDA_PATH       = /usr/local/cuda
-CUDA_INCLUDEDIR = $(CUDA_PATH)/include
-CUDA_LIBDIR     = $(CUDA_PATH)/lib64
-CUDA_LIBRARIES  = -lcudart
+
+WITH_CUDA = 1
+
+ifeq ($(WITH_CUDA), 1)
+	CUDA_DEF        = -D__CUDA__
+	CUDA_PATH       = /usr/local/cuda
+	CUDA_INCLUDEDIR = $(CUDA_PATH)/include
+	CUDA_LIBDIR     = $(CUDA_PATH)/lib64
+	CUDA_LIBRARIES  = -lcudart
+	CUDA_OPTIONS    = -Xcompiler
+	CUDA_FILES      = src/*.cu     
+	CC              = $(CUDA_PATH)/bin/nvcc 
+else
+	CC              = g++
+endif
 
 INSTALL_PATH       = $(HOME)/script
 INSTALL_INCLUDEDIR = $(INSTALL_PATH)/include
@@ -40,8 +51,6 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(OUTPUT_LIBDIR):$(CUDA_LIBDIR):$(OPENCV
 COMPILER_FLAGS   = -g -pg -DGL_GLEXT_PROTOTYPES -DGLX_GLXEXT_PROTOTYPES 
 OPENGL_LIBRARIES    = -lGLEW -lGLU -lGL -lglut 
 
-CC               = g++
-NVCC             = $(CUDA_PATH)/bin/nvcc
 
 LINUXAMD64_DIRS_LIBS =  -I $(INCLUDE_DIR) \
                         -L $(OUTPUT_LIBDIR) \
@@ -50,18 +59,19 @@ LINUXAMD64_DIRS_LIBS =  -I $(INCLUDE_DIR) \
                         -I $(OPENCV_INCLUDEDIR) \
                         -L $(OPENCV_LIBDIR) \
                            $(OPENCV_LIBRARIES) \
+                           $(CUDA_DEF) \
                         -I $(CUDA_INCLUDEDIR) \
                         -L $(CUDA_LIBDIR) \
                            $(CUDA_LIBRARIES)\
 
 
-LINUXAMD64_LIB = $(NVCC) $(COMPILER_FLAGS) \
-                        -shared -Xcompiler -fPIC \
+LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
+                        -shared $(CUDA_OPTIONS) -fPIC \
                         -o $(OUTPUT_LIBDIR)/lib$(BINARY_NAME).so \
-                          src/*.cu src/*.cpp \
+                          $(CUDA_FILES) src/*.cpp \
                          $(LINUXAMD64_DIRS_LIBS) $(CUDA_DIRS_LIBS) 
 
-LINUXAMD64_DEMO_FRACTAL = $(NVCC) $(COMPILER_FLAGS) \
+LINUXAMD64_DEMO_FRACTAL = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINDIR)/demo_$(FRACTAL_NAME) \
                          src/demo/$(FRACTAL_NAME).cpp \
                          -lvisiongl \
