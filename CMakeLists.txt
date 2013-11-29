@@ -30,12 +30,12 @@ if(WIN32)
 	add_library(visiongl ${visiongl_src})
 
 	#cria um executável a partir do fractal.cpp
-	add_executable(visiongl_fractal src/demo/fractal.cpp)
-	add_executable(visiongl_cam src/demo/cam.cpp)
+	add_executable(demo_fractal src/demo/fractal.cpp)
+	add_executable(demo_cam src/demo/cam.cpp)
  
 	#linka o executável, com as libs
-	target_link_libraries(visiongl_cam visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENCV_LIBRARIES})
-	target_link_libraries(visiongl_fractal visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENCV_LIBRARIES})
+	target_link_libraries(demo_cam visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENCV_LIBRARIES})
+	target_link_libraries(demo_fractal visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENCV_LIBRARIES})
 	
 
 else()
