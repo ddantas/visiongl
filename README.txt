@@ -1,4 +1,4 @@
-VisionGL
+        VisionGL
 
 The objective of this library is to provide an easy way to prototype and 
 implement image and video processing functions in CUDA and GLSL. The library
@@ -22,7 +22,7 @@ under demand. If the image is used only in OpenGL context, the CUDA handle
 will be empty (NULL or -1) and vice-versa.
 
 
-Compilation
+        Compilation
 
 The library requires OpenCV 2.4.0 or superior, CUDA 4 or superior, 
 GLEW 1.6 or superior and freeglut 3 or superior.
@@ -34,34 +34,43 @@ To install freeglut:
 apt-get install freeglut3 freeglut3-dev
 
 
-Please open the Makefile and edit the variables OPENCV_PATH, CUDA_PATH, 
+        Compilation using cmake
+
+Go to the root directory of the project and run:
+cmake .
+make
+
+
+        Compilation using Makefile_linux
+
+Please open Makefile_linux and edit the variables OPENCV_PATH, CUDA_PATH, 
 referring to the paths where OpenCV and CUDA are installed. Edit also
 INSTALL_PATH, referring to the path where the library and its include files
 will be installed.
 
 To build the library:
-make all
+make -f Makefile_linux all
 
 To install the library to INSTALL_PATH
-make install
+make -f Makefile_linux install
 
 To build the demos:
-make democam
-make demofrac
+make -f Makefile_linux democam
+make -f Makefile_linux demofrac
 
 To run the demos:
-make rundemocam
-make rundemofrac
+make -f Makefile_linux rundemocam
+make -f Makefile_linux rundemofrac
 
 To build the documentation:
 build dox
 
 To generate wrapper code after some shader is modified:
-make frag
-make frag_bg
-make frag_stereo
-make frag_diffeq
-make cuda
+make -f Makefile_linux frag
+make -f Makefile_linux frag_bg
+make -f Makefile_linux frag_stereo
+make -f Makefile_linux frag_diffeq
+make -f Makefile_linux cuda
 
 
 References
