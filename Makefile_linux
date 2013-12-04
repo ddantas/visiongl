@@ -19,13 +19,13 @@ OUTPUT_INCLUDEDIR  = $(OUTPUT_ROOTDIR)/include
 OUTPUT_BINDIR      = $(OUTPUT_ROOTDIR)/bin
 
 
-OPENCV_PATH       = $(HOME)/bin/opencv
+OPENCV_PATH       = /usr/local/opencv
 OPENCV_INCLUDEDIR = $(OPENCV_PATH)/include/
 OPENCV_LIBDIR     = $(OPENCV_PATH)/lib
 OPENCV_LIBRARIES  = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 1
+WITH_CUDA = 0
 
 ifeq ($(WITH_CUDA), 1)
 	CUDA_DEF        = -D__CUDA__

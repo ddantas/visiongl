@@ -148,10 +148,11 @@ int main(int argc, char** argv)
 
   window_list  = new VglNamedWindowList();
   window_list->main_window_id = vglInit(1200, 860);
-      glutDisplayFunc(demo_fractal);
-      glutIdleFunc(demo_fractal);
-      glutReshapeFunc(reshape);
-      glutKeyboardFunc(keyboard);
+
+  glutDisplayFunc(demo_fractal);
+  glutIdleFunc(demo_fractal);
+  glutReshapeFunc(reshape);
+  glutKeyboardFunc(keyboard);
 
   for (int i = 0; i < VGL_MAX_WINDOWS; i++){
     winname[i]  = (char*) malloc(255);

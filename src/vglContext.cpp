@@ -14,7 +14,7 @@
 
 #define DEBUG_VGLCONTEXT 0
 
-//#define vglIsContextUnique(x) ( (x>=1) and (x<=4) and (x!=3) )
+//#define vglIsContextUnique(x) ( (x>=1) && (x<=4) && (x!=3) )
 //#define vglIsInContext(img, x) ( (img)->inContext & (x) )
 
 /*  Call after copy. Context must be unique.
@@ -36,7 +36,7 @@ int vglAddContext(VglImage* img, int context){
     Return 0 in case of error. Resulting context if successful.
  */
 int vglSetContext(VglImage* img, int context){
-  if (!vglIsContextUnique(context) and context != 0){
+  if (!vglIsContextUnique(context) && context != 0){
     fprintf(stderr, "vglSetContext: Error: context = %d is not unique\n", context);
     return 0;
   }
@@ -140,7 +140,7 @@ int vglCheckContextForOutput(VglImage* img, int context){
       #if DEBUG_VGLCONTEXT
       printf("vglCheckContextForOutput: context is cuda, pbo = %d ptr = %x\n", img->cudaPbo, img->cudaPtr);
       #endif
-      if (img->cudaPbo == -1 or img->cudaPtr == 0){
+      if (img->cudaPbo == -1 || img->cudaPtr == 0){
         #if DEBUG_VGLCONTEXT
         printf("vglCheckContextForOutput: pbo == -1 so will allocate\n");
         #endif

@@ -103,13 +103,13 @@ GLchar *vglTextFileRead(char *fn) {
   GLchar *content = NULL;
   int f, count;
 
-  f = open(fn, O_RDONLY);
-  count = lseek(f, 0, SEEK_END);
-  close(f);
-
   if (fn != NULL) {
     fp = fopen(fn,"rt");
     if (fp != NULL) {
+
+      fseek(fp, 0, SEEK_END);
+      count = ftell(fp);
+      fseek(fp, 0, SEEK_SET);
 
       if (count > 0) {
         content = (GLchar *)malloc(sizeof(GLchar) * (count+1));

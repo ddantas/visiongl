@@ -16,9 +16,9 @@
 #define VGL_GL_CONTEXT 2
 #define VGL_CUDA_CONTEXT 4
 
-#define vglIsContextValid(x) ( (x>=1) and (x<=7) )
-#define vglIsContextUnique(x) ( (x>=0) and (x<=4) and (x!=3) )
-#define vglIsInContext(img, x) ( (img)->inContext & (x) or ((img)->inContext==0 and x==0))
+#define vglIsContextValid(x) ( (x>=1) && (x<=7) )
+#define vglIsContextUnique(x) ( (x>=0) && (x<=4) && (x!=3) )
+#define vglIsInContext(img, x) ( (img)->inContext & (x) || ((img)->inContext==0 && x==0))
 
 int vglAddContext(VglImage* img, int context);
 int vglSetContext(VglImage* img, int context);
