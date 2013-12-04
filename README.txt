@@ -25,7 +25,7 @@ will be empty (NULL or -1) and vice-versa.
         Compilation
 
 The library requires OpenCV 2.4.0 or superior, CUDA 4 or superior, 
-GLEW 1.6 or superior and freeglut 3 or superior.
+GLEW 1.6 or superior and freeglut 3 or superior. OpenGL is also required!
 
 To install GLEW:
 apt-get install libglew1.6 libglew1.6-dev
@@ -33,12 +33,30 @@ apt-get install libglew1.6 libglew1.6-dev
 To install freeglut:
 apt-get install freeglut3 freeglut3-dev
 
+To install OpenCV:
+apt-get install libopencv-dev
+
 
         Compilation using cmake
-
+On Linux:
+		
 Go to the root directory of the project and run:
 cmake .
 make
+
+On Windows:
+
+Go to the root directory of the project and run:
+cmake .
+
+Depending on what generator you have configured it'll create a solution or
+a project or a MinGW Makefile. Only tested with Microsoft Visual Studio 2010
+as generator. In this case, a solution will be built using the name "visiongl",
+just open the solution as usual on Visual Studio, and compile it, you're done.
+
+If you're willing to use Visual Studio 2010 as generator, use the following command:
+
+cmake . -G "Visual Studio 10"
 
 
         Compilation using Makefile_linux
