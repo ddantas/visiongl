@@ -5,6 +5,13 @@ cmake_minimum_required(VERSION 2.8)
 # Defining project name 
 project(visiongl)
 
+#creating target subdirectories
+file(MAKE_DIRECTORY $ENV{PWD}/bin $ENV{PWD}/lib)
+
+#creating links to FS
+execute_process(COMMAND ln -s ${PROJECT_SOURCE_DIR}/src/FS FS ERROR_QUIET)
+execute_process(COMMAND ln -s ${PROJECT_SOURCE_DIR}/src/FS bin/FS ERROR_QUIET)
+
 # visiongl_src stores the name of the source files
 set(visiongl_src src/vglImage.cpp src/vglSimpleBGModel.cpp src/vglLoadShader.cpp src/vglContext.cpp src/glsl2cpp_Stereo.cpp src/glsl2cpp_shaders.cpp src/glsl2cpp_DiffEq.cpp src/glsl2cpp_BG.cpp)
 set(visiongl_headers src/vglTail.h src/vglSimpleBGModel.h src/vglLoadShader.h src/vglImage.h src/vglHead.h src/vglContext.h src/glsl2cpp_Stereo.h src/glsl2cpp_shaders.h src/glsl2cpp_DiffEq.h src/glsl2cpp_BG.h)
@@ -95,3 +102,4 @@ else()
 	target_link_libraries(demo_cam     visiongl ${OPENCV_LIBRARIES}  ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
 
 endif()
+
