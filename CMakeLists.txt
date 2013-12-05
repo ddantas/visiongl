@@ -25,35 +25,26 @@ if(WIN32)
 	# Adding folders containing header files
 	INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR})
 	
-	# Add CUDA if applies
-	if (${WITH_CUDA}) # Creating object file of the library within CUDA
+	# Add CUDA support if required by user
+	if (${WITH_CUDA})
 		find_package(CUDA REQUIRED)
 		add_definitions(-D__CUDA__)
 		
 		list(APPEND CUDA_NVCC_FLAGS ${custom_cuda_flags})
 		list(APPEND CUDA_NVCC_FLAGS -Xcompiler)
 		
-		cuda_add_library(visiongl ${visiongl_src} ${visiongl_headers} ${visiongl_src_cuda})
+		cuda_add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers} ${visiongl_src_cuda})
 		
 	else() # Creating object file of the library without CUDA
-		add_library(visiongl ${visiongl_src} ${visiongl_headers})
+		add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers})
 	endif()
 
 	# Creating demo_fractal object files
-	if (${WITH_CUDA})
-		cuda_add_executable(demo_fractal src/demo/fractal.cpp)
-	else()
-		add_executable(demo_fractal src/demo/fractal.cpp)
-	endif()
-	
+	add_executable(demo_fractal src/demo/fractal.cpp)
         SET_TARGET_PROPERTIES(demo_fractal PROPERTIES PREFIX "bin/")
 
 	# Creating demo_cam object files
-	if (${WITH_CUDA})
-		cuda_add_executable(demo_cam src/demo/cam.cpp)
-	else()
-		add_executable(demo_cam src/demo/cam.cpp)
-	endif()
+	add_executable(demo_cam src/demo/cam.cpp)
         SET_TARGET_PROPERTIES(demo_cam PROPERTIES PREFIX "bin/")
  
 	# Linking executables
@@ -74,19 +65,20 @@ else()
 	link_directories(${OPENCV_LIBRARY})
 
 	# Adding folders containing header files
-	INCLUDE_DIRECTORIES( src/ ${GLEW_INCLUDE_PATH} ${FREEGLUT_INCLUDE_DIR} ${OPENCV_INCLUDE_DIR} )
+	INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR})
 
-	if (${WITH_CUDA}) # Creating object file of the library within CUDA
+	# Add CUDA support if required by user
+	if (${WITH_CUDA})
 		find_package(CUDA REQUIRED)
 		add_definitions(-D__CUDA__)
 		
 		list(APPEND CUDA_NVCC_FLAGS ${custom_cuda_flags})
 		list(APPEND CUDA_NVCC_FLAGS -Xcompiler)
 		
-		cuda_add_library(visiongl ${visiongl_src} ${visiongl_headers} ${visiongl_src_cuda})
+		cuda_add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers} ${visiongl_src_cuda})
 		
 	else() # Creating object file of the library without CUDA
-		add_library(visiongl ${visiongl_src} ${visiongl_headers})
+		add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers})
 	endif()
         SET_TARGET_PROPERTIES(visiongl PROPERTIES PREFIX "lib/lib")
 
