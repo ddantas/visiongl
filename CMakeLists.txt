@@ -4,9 +4,14 @@ cmake_minimum_required(VERSION 2.8)
 
 # Defining project name 
 project(visiongl)
+if(NOT DEFINED OpenCV_VERSION)
+message("No OpenCV_VERSION was given, if you want to set your own OpenCV Version in order to work, please type: cmake . -DOpenCV_VERSION=xxx")
+message("default OpenCV_VERSION: 246")
+set(OpenCV_VERSION 246)
+endif()
 
 #creating target subdirectories
-file(MAKE_DIRECTORY $ENV{PWD}/bin $ENV{PWD}/lib)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin ${CMAKE_BINARY_DIR}/lib)
 
 #creating links to FS
 execute_process(COMMAND ln -s ${PROJECT_SOURCE_DIR}/src/FS FS ERROR_QUIET)
@@ -18,7 +23,7 @@ set(visiongl_headers src/vglTail.h src/vglSimpleBGModel.h src/vglLoadShader.h sr
 set(visiongl_src_cuda src/vglCudaImage.cu src/kernel2cu_shaders.cu src/kernel2cu_shaders.h src/vglCudaImage.h)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake-modules")
 
-# Gererate Makefile for Windows
+# Generate Makefile for Windows
 if(WIN32)
 
 	# Looking for lib and include folders of glew, glut and opencv
@@ -40,10 +45,10 @@ if(WIN32)
 		list(APPEND CUDA_NVCC_FLAGS ${custom_cuda_flags})
 		list(APPEND CUDA_NVCC_FLAGS -Xcompiler)
 		
-		cuda_add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers} ${visiongl_src_cuda})
+		cuda_add_library(visiongl ${visiongl_src} ${visiongl_headers} ${visiongl_src_cuda})
 		
 	else() # Creating object file of the library without CUDA
-		add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers})
+		add_library(visiongl ${visiongl_src} ${visiongl_headers})
 	endif()
 
 	# Creating demo_fractal object files

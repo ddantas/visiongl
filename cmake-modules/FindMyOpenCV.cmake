@@ -4,7 +4,6 @@
 #  OPENCV_INCLUDE_DIR - The OpenCV include directory
 #  OPENCV_LIBRARY - The OpenCV lib directory
 #  OPENCV_LIBRARIES - The libraries of OpenCV with absolute path
-
 find_package(OpenCV)
 if(NOT ${OpenCV_FOUND})
 	message("trying to find OpenCV")
@@ -21,7 +20,7 @@ if(NOT ${OpenCV_FOUND})
 				PATH_SUFFIXES "opencv" "include" "opencv/build/include"
 		)
 		
-		find_path(OPENCV_LIBRARY NAMES opencv_highgui246.lib 
+		find_path(OPENCV_LIBRARY NAMES "opencv_highgui${OpenCV_VERSION}.lib"
 			PATHS ${possible_paths} 
 			PATH_SUFFIXES "opencv" "lib" "opencv/lib" "opencv/build/x86/vc10/lib"
 		)
@@ -31,10 +30,10 @@ if(NOT ${OpenCV_FOUND})
 		
 		if (NOT (${OPENCV_INCLUDE_DIR} STREQUAL "OPENCV_INCLUDE_DIR-NOTFOUND" AND ${OPENCV_LIBRARY} STREQUAL "OPENCV_LIBRARY-NOTFOUND"))
 			set(OPENCV_FOUND TRUE)
-			set(OPENCV_LIBRARIES ${OPENCV_LIBRARY}/opencv_core246.lib
-								 ${OPENCV_LIBRARY}/opencv_highgui246.lib
-								 ${OPENCV_LIBRARY}/opencv_imgproc246.lib
-								 ${OPENCV_LIBRARY}/opencv_legacy246.lib
+			set(OPENCV_LIBRARIES "${OPENCV_LIBRARY}/opencv_core${OpenCV_VERSION}.lib"
+								 "${OPENCV_LIBRARY}/opencv_highgui${OpenCV_VERSION}.lib"
+								 "${OPENCV_LIBRARY}/opencv_imgproc${OpenCV_VERSION}.lib"
+								 "${OPENCV_LIBRARY}/opencv_legacy${OpenCV_VERSION}.lib"
 				)
 			message("opencv was found after some tries")
 		endif()
