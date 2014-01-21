@@ -9,6 +9,10 @@
 #include "vglCudaImage.h"
 #endif
 
+#ifdef __OPENCL__
+#include "vglClImage.h"
+#endif
+
 #include "vglContext.h"
 #include "vglImage.h"
 
@@ -73,15 +77,35 @@ int vglCheckContext(VglImage* img, int context){
   }
   switch (context){
     case VGL_RAM_CONTEXT:
-      vglCheckContext(img, VGL_GL_CONTEXT);
-      if (vglIsInContext(img, VGL_GL_CONTEXT)){
-        vglDownload(img);        
+      printf("!!!!!!!!!!vglCheckContext: context = %d\n", img->inContext);
+#ifdef __OPENCL__
+      if (vglIsInContext(img, VGL_CL_CONTEXT)){
+printf("!!!!!!!!!!vglCheckContext: callin vglClDownload\n");
+        vglClDownload(img);
+      }
+      else
+#endif
+      if (!vglIsInContext(img, VGL_RAM_CONTEXT))
+      {
+printf("!!!!!!!!!!vglCheckContext: callin vglCheckContext VLG_CL_CONTEXT\n");
+        vglCheckContext(img, VGL_GL_CONTEXT);
+        if (vglIsInContext(img, VGL_GL_CONTEXT)){
+          vglDownload(img);
+        }
       }
       else{
         fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to RAM from invalid context\n");
       }
     break;
     case VGL_GL_CONTEXT:
+#ifdef __OPENCL__
+      if (vglIsInContext(img, VGL_CL_CONTEXT)){
+        vglClDownload(img);        
+        //if (!ok){
+        //  fprintf(stderr, "vglCheckContext: error transfering from cuda to gl\n");
+	//}
+      }
+#endif
       if (vglIsInContext(img, VGL_RAM_CONTEXT)){
         vglUpload(img);
       }
@@ -102,7 +126,7 @@ int vglCheckContext(VglImage* img, int context){
     case VGL_CUDA_CONTEXT:
       vglCheckContext(img, VGL_GL_CONTEXT);
       #if DEBUG_VGLCONTEXT
-      printf("vglCheckContext: will transfer from cuda to gl\n");
+      printf("vglCheckContext: will transfer from gl to cuda\n");
       #endif
       if (vglIsInContext(img, VGL_GL_CONTEXT)){
         int ok = vglGlToCuda(img);
@@ -111,12 +135,35 @@ int vglCheckContext(VglImage* img, int context){
 	}
       }
       else{
-        fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to CUDA from innvalid context\n");
+        fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to CUDA from invalid context\n");
+      }
+    break;
+#endif
+#ifdef __OPENCL__
+    case VGL_CL_CONTEXT:
+      printf("vglCheckContext: ENTROU NO OPENCL\n");
+      if (vglIsInContext(img, VGL_BLANK_CONTEXT)){
+        vglClUpload(img);
+      }
+      else{
+        vglCheckContext(img, VGL_RAM_CONTEXT);
+        #if DEBUG_VGLCONTEXT
+        printf("vglCheckContext: will transfer from ram to cl\n");
+        #endif
+        if (vglIsInContext(img, VGL_RAM_CONTEXT) || vglIsInContext(img, VGL_BLANK_CONTEXT)){
+          vglClUpload(img);
+          //if (!ok){
+          //  fprintf(stderr, "vglCheckContext: Error: unable to transfer from ram to cl\n");  
+         //}
+        }
+        else{
+          fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to CL from invalid context\n");
+        }
       }
     break;
 #endif
     default:
-      fprintf(stderr, "vglCheckContext: Error: context = %d is not unique or invalid\n", context);
+      fprintf(stderr, "vglCheckContext: Error: Trying to copy to invalid context = %d\n", context);
       return 0;
   }
   return img->inContext;
