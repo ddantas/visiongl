@@ -24,22 +24,27 @@ int main()
 	char* image_path = (char*) "../images/lena_std.tif";
 	VglImage* img = vglLoadImage(image_path,1,0);
 
+        vglCheckContext(img, VGL_CL_CONTEXT);
+
+	/*
         printf("-----calling vglClUpload\n");
-        vglClUpload(img);
+        //vglClUpload(img);
+        vglCheckContext(img, VGL_CL_CONTEXT);
         printf("-----called vglClUpload\n");
         cvSet(img->ipl, CV_RGB(255,0,0));
         cvSaveImage("../images/lena_conv33_red.tif", img->ipl);
 
+	float kernelMean[3][3] = { {0.0f/9.0f,0.0f/9.0f,0.0f/9.0f},{1.0f/9.0f,1.0f/9.0f,1.0f/9.0f},{0.0f/9.0f,0.0f/9.0f,0.0f/9.0f} }; //Operador blur
+	vglClConvolution(img, img, *kernelMean, 3, 3);
+
+
         printf("calling vglClDownload\n");
-        vglClDownload(img);
+        //vglClDownload(img);
+        //vglSetContext(img, VGL_CL_CONTEXT);
+        vglCheckContext(img, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lena_conv33_download.tif", img->ipl);
-
-
         //vglClPrintContext();	
-
-        exit(0);
-
-
+	*/
 
 	if (img == NULL)
 	{
@@ -60,8 +65,6 @@ int main()
 	printf("X 200\n");
 	t2 = clock();
 	printf("Primeira chamada da vglClConvolution: %.2f s \n", (t2-t1)/(double)CLOCKS_PER_SEC);
-
-
 
 	printf("X 300\n");
 	printf("CLBENCHMARH CHECKCONTEXT\n");
@@ -87,7 +90,7 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		vglClConvolution(img,out,*convolution,3,3,false);
+		vglClConvolution(img, out, *convolution, 3, 3);
 	}
 	t2 = clock();
 	printf("Tempo gasto para fazer 1000 convolucoes 3x3: %.2f s\n", (t2-t1)/(double)CLOCKS_PER_SEC);
@@ -101,15 +104,15 @@ int main()
 
 
 	//Mede o tempo para 1000 convoluções 5x5 sem a criação da operação
-	float convolution2[5][5] = { {1.0f/29.0f,2.0f/29.0f,3.0f/29.0f,2.0f/29.0f,1.0f/29.0f},
-								 {3.0f/29.0f,2.0f/29.0f,1.0f/29.0f,2.0f/29.0f,3.0f/29.0f},
-								 {1.0f/29.0f,2.0f/29.0f,3.0f/29.0f,2.0f/29.0f,1.0f/29.0f} };
+	float convolution2[5][5] = { {1.0f/29.0f, 2.0f/29.0f, 3.0f/29.0f, 2.0f/29.0f, 1.0f/29.0f},
+                                     {3.0f/29.0f, 2.0f/29.0f, 1.0f/29.0f, 2.0f/29.0f, 3.0f/29.0f},
+                                     {1.0f/29.0f, 2.0f/29.0f, 3.0f/29.0f, 2.0f/29.0f, 1.0f/29.0f} };
 	p = 0;
 	t1 = clock();
 	while (p < 1000)
 	{
 		p++;
-		vglClConvolution(img,out,*convolution,5,5,false);
+		vglClConvolution(img, out, *convolution, 5, 5);
 	}
 	t2 = clock();
 	printf("Tempo gasto para fazer 1000 convolucoes 5x5: %.2f s\n", (t2-t1)/(double)CLOCKS_PER_SEC);
@@ -128,7 +131,7 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		vglClThreshold(out,out,0.5f,false);
+		vglClThreshold(out, out, 0.5f);
 	}
 	t2 = clock();
 	printf("Tempo gasto para fazer 1000 threshold: %.2f s\n", (t2-t1)/(double)CLOCKS_PER_SEC);
@@ -147,7 +150,7 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		vglClInvert(out,out,false);
+		vglClInvert(out, out);
 	}
 	t2 = clock();
 	printf("Tempo gasto para fazer 1000 invert: %.2f s\n", (t2-t1)/(double)CLOCKS_PER_SEC);
@@ -194,7 +197,7 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		vglClUpload(img,true);
+		vglClUpload(img);
 	}
 	t2 = clock();
 	printf("Tempo gasto para fazer 1000 copia CPU->GPU, inclui conversão BGR->RGBA: %.2f s\n", (t2-t1)/(double)CLOCKS_PER_SEC);
@@ -229,7 +232,7 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		vglClCopy(img,out,false);
+		vglClCopy(img, out);
 	}
 	t2 = clock();
 	printf("Tempo gasto para fazer 1000 copia GPU->GPU: %.2f s\n", (t2-t1)/(double)CLOCKS_PER_SEC);
