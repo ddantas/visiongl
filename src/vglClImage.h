@@ -25,6 +25,7 @@ struct VglClContext
 };
 
 
+void vglClPrintContext(void);
 void vglClCheckError(cl_int error, char* name);
 void vglClInit();
 void vglClFlush();

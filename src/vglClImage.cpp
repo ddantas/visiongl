@@ -14,6 +14,15 @@
 
 static VglClContext cl;
 
+void vglClPrintContext(void)
+{
+  printf("cl_platform_id* platformId    = %p\n", cl.platformId);
+  printf("cl_device_id* deviceId        = %p\n", cl.deviceId);
+  printf("cl_context context            = %p\n", cl.context);
+  printf("cl_command_queue commandQueue = %p\n", cl.commandQueue);
+}
+
+
 void vglClCheckError(cl_int error, char* name)
 {
     if (error != CL_SUCCESS)
@@ -94,74 +103,80 @@ void vglClBuildDebug(cl_int err, cl_program program)
 
 void vglClUpload(VglImage* src)
 {
-	vglClUpload(src,false);
-}
+    if (!vglIsInContext(src, VGL_RAM_CONTEXT)  && 
+        !vglIsInContext(src, VGL_BLANK_CONTEXT)    ){
+      fprintf(stderr, "vglClUpload: Error: image context = %d not in VGL_RAM_CONTEXT or VGL_BLANK_CONTEXT\n", src->inContext);
+      return;
+    }
 
-void vglClUpload(VglImage* src, bool force_copy)
-{
-  if (!vglIsInContext(src, VGL_RAM_CONTEXT)  && 
-      !vglIsInContext(src, VGL_BLANK_CONTEXT)    ){
-    fprintf(stderr, "vglClUpload: Error: image context = %d not in VGL_RAM_CONTEXT or VGL_BLANK_CONTEXT\n", src->inContext);
-    return;
-  }
-	if (src->oclPtr == NULL || force_copy)
-	{
-		/*if (src->fbo != -1)
-		{
-			src->oclPtr = clCreateFromGLTexture2D(cl.context,CL_MEM_READ_WRITE,GL_TEXTURE_2D,0,src->fbo,&err);
-			vglClCheckError( err, (char*) "clCreateFromGlTexture2D interop" );
-			clEnqueueAcquireGLObjects(cl.commandQueue, 1, &src->oclPtr, 0,0,0);
-		}
-		else
-		{*/
+    if (src->oclPtr == NULL)
+    {
+        /*if (src->fbo != -1)
+        {
+          src->oclPtr = clCreateFromGLTexture2D(cl.context,CL_MEM_READ_WRITE,GL_TEXTURE_2D,0,src->fbo,&err);
+          vglClCheckError( err, (char*) "clCreateFromGlTexture2D interop" );
+          clEnqueueAcquireGLObjects(cl.commandQueue, 1, &src->oclPtr, 0,0,0);
+        }
+        else
+        {*/
 
+        printf("vglClUpload initializing oclPtr\n");
+        cl_int err;
+        cl_image_format format;
+        if (src->nChannels == 1)
+        {
+            format.image_channel_order = CL_R;
+            format.image_channel_data_type = CL_UNORM_INT8;
+        }
+        else
+        {
+            if (src->iplRGBA == NULL)
+            {
+                printf("creating RGBA\n");
+                src->iplRGBA = cvCreateImage(cvGetSize(src->ipl), IPL_DEPTH_8U, 4);
+            }
+            format.image_channel_order = CL_RGBA;
+            format.image_channel_data_type = CL_UNORM_INT8;
+        }
+    }
+ 
+    cvCvtColor(src->ipl, src->iplRGBA, CV_BGR2RGBA);
 
-	  printf("vglClUpload inicializando ocl\n");
-			cl_int err;
-			cl_image_format format;
-			if (src->nChannels == 1)
-			{
-				format.image_channel_order = CL_R;
-				format.image_channel_data_type = CL_UNORM_INT8;
-			}
-			else
-			{
-			  if (src->iplRGBA == NULL)
-			  {
-			    printf("criando RGBA\n");
-                                src->iplRGBA = cvCreateImage(cvGetSize(src->ipl), IPL_DEPTH_8U, 4);
-			  }
-			  format.image_channel_order = CL_RGBA;
-		          format.image_channel_data_type = CL_UNORM_INT8;
-			}
+    src->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, src->width, src->height, 0, NULL, &err);
+    vglClCheckError( err, (char*) "clCreateImage2D" );
 
-			src->oclPtr = clCreateImage2D(cl.context,CL_MEM_READ_WRITE, &format, src->width, src->height, NULL, NULL, &err);
-			vglClCheckError( err, (char*) "clCreateImage2D" );
+    size_t Origin[3] = { 0, 0, 0};
+    size_t Size3d[3] = { src->width, src->height, 1 };
 
-			size_t Origin[3] = { 0,0,0};
-			size_t Size3d[3] = { src->width,src->height,1 };
+    err = clEnqueueWriteImage( cl.commandQueue, src->oclPtr, CL_TRUE, Origin, Size3d,0,0, src->iplRGBA->imageData, 0, NULL, NULL );
+    vglClCheckError( err, (char*) "clEnqueueWriteImage" );
 
-			err = clEnqueueWriteImage( cl.commandQueue, src->oclPtr, CL_TRUE, Origin, Size3d,0,0, src->iplRGBA->imageData, 0, NULL, NULL );
-			vglClCheckError( err, (char*) "clEnqueueWriteImage" );
-		//}
-	}
-        vglAddContext(src, VGL_CL_CONTEXT);
-	printf("Contexto final %d",src->inContext);
+    vglAddContext(src, VGL_CL_CONTEXT);
+    printf("Final context: %d\n", src->inContext);
 }
 
 void vglClDownload(VglImage* img)
 {
+  //printf("vglClDownload: printing CL context\n");
+  //vglClPrintContext(); 
 	
-	size_t Origin[3] = { 0,0,0};
-	size_t Size3d[3] = { img->width,img->height,1 };
+  printf("vglClDownload: chk 100\n");
+	size_t Origin[3] = { 0, 0, 0};
+	size_t Size3d[3] = { img->width, img->height, 1 };
 
+  printf("vglClDownload: chk 200\n");
 	uchar* auxdst = (uchar*)malloc(img->width*img->height*4);
-	cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, auxdst, 0, NULL, NULL );
+
+	cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->iplRGBA->imageData, 0, NULL, NULL );
+  printf("vglClDownload: chk 300\n");
 	vglClCheckError( err_cl, (char*) "clEnqueueReadImage" );
 
-	img->iplRGBA->imageData = (char*) auxdst;
-	cvCvtColor(img->iplRGBA,img->ipl,CV_RGBA2BGR);
+	//img->iplRGBA->imageData = (char*) auxdst;
+  printf("vglClDownload: chk 400\n");
+	cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
+  printf("vglClDownload: chk 500\n");
         vglAddContext(img, VGL_RAM_CONTEXT);
+  printf("vglClDownload: chk 600\n");
 }
 
 void vglClCopy(VglImage* src, VglImage* dst)
@@ -190,7 +205,7 @@ void vglClCopy(VglImage* src, VglImage* dst, bool copyToRam)
 
 	static cl_program program = NULL;
 	if (program == NULL){
-		char* file_path = "CL/vglCopy.cl";
+	  char* file_path = (char*) "CL/vglCopy.cl";
 		std::ifstream file(file_path);
 		if(file.fail())
 		{
@@ -241,7 +256,7 @@ void vglClInvert(VglImage* src, VglImage* dst, bool copyToRam)
 
 	static cl_program program = NULL;
 	if (program == NULL){
-		char* file_path = "CL/vglInvert.cl";
+	  char* file_path = (char*) "CL/vglInvert.cl";
 		std::ifstream file(file_path);
 		if(file.fail())
 		{
@@ -293,13 +308,13 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh, bool copyToRam)
 	cl_mem mobj_C = NULL;
 	mobj_C = clCreateBuffer(cl.context,CL_MEM_READ_ONLY,sizeof(thresh),NULL,&err);
 	vglClCheckError( err, (char*) "clCreateBuffer thresh" );
-	err = clEnqueueWriteBuffer(cl.commandQueue,mobj_C,CL_TRUE,NULL,sizeof(thresh),&thresh,NULL,NULL,NULL);
+	err = clEnqueueWriteBuffer(cl.commandQueue, mobj_C, CL_TRUE, 0, sizeof(thresh), &thresh, 0, NULL, NULL);
 	vglClCheckError( err, (char*) "clEnqueueWriteBuffer thresh" );
 
 	static cl_program program = NULL;
 	if (program == NULL)
 	{
-		char* file_path = "CL/vglThreshold.cl";
+                char* file_path = (char*) "CL/vglThreshold.cl";
 		std::ifstream file(file_path);
 		if(file.fail())
 		{
@@ -357,25 +372,25 @@ void vglClConvolution(VglImage* src, VglImage* dst, float* convolution_window, i
 	cl_mem mobj_C = NULL;
 	mobj_C = clCreateBuffer(cl.context,CL_MEM_READ_ONLY,window_size_x*window_size_y*sizeof(float),NULL,&err);
 	vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-	err = clEnqueueWriteBuffer(cl.commandQueue,mobj_C,CL_TRUE,NULL,window_size_x*window_size_y*sizeof(float),convolution_window,NULL,NULL,NULL);
+	err = clEnqueueWriteBuffer(cl.commandQueue, mobj_C, CL_TRUE, 0, window_size_x*window_size_y*sizeof(float), convolution_window, 0, NULL, NULL);
 	vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
 	cl_mem mobj_D = NULL;
 	mobj_D = clCreateBuffer(cl.context,CL_MEM_READ_ONLY,sizeof(int),NULL,&err);
 	vglClCheckError( err, (char*) "clCreateBuffer window_size_x" );
-	err = clEnqueueWriteBuffer(cl.commandQueue,mobj_D,CL_TRUE,NULL,sizeof(int),&window_size_x,NULL,NULL,NULL);
+	err = clEnqueueWriteBuffer(cl.commandQueue, mobj_D, CL_TRUE, 0, sizeof(int), &window_size_x, 0, NULL, NULL);
 	vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_x" );
 
 	cl_mem mobj_E = NULL;
 	mobj_E = clCreateBuffer(cl.context,CL_MEM_READ_ONLY,sizeof(int),NULL,&err);
 	vglClCheckError( err, (char*) "clCreateBuffer window_size_y" );
-	err = clEnqueueWriteBuffer(cl.commandQueue,mobj_E,CL_TRUE,NULL,sizeof(int),&window_size_y,NULL,NULL,NULL);
+	err = clEnqueueWriteBuffer(cl.commandQueue, mobj_E, CL_TRUE, 0, sizeof(int), &window_size_y, 0, NULL, NULL);
 	vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_y" );
 
 	static cl_program program = NULL;
 	if (program == NULL)
 	{
-		char* file_path = "CL/vglConvolution.cl";
+                char* file_path = (char*) "CL/vglConvolution.cl";
 		std::ifstream file(file_path);
 		if(file.fail())
 		{

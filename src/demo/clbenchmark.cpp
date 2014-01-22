@@ -11,24 +11,33 @@
 
 int main()
 {
-	
-	printf("X\n");
+
+        //printf("main: printing CL context before init\n");
+        //vglClPrintContext();	
+
 	vglInit(50,50);
-	printf("X\n");
 	vglClInit();
 
-	printf("X\n");
+        //printf("main: printing CL context after init\n");
+        //vglClPrintContext();	
 
-	char* image_path = "../images/lena_std.tif";
+	char* image_path = (char*) "../images/lena_std.tif";
 	VglImage* img = vglLoadImage(image_path,1,0);
 
+        printf("-----calling vglClUpload\n");
         vglClUpload(img);
+        printf("-----called vglClUpload\n");
         cvSet(img->ipl, CV_RGB(255,0,0));
         cvSaveImage("../images/lena_conv33_red.tif", img->ipl);
 
+        printf("calling vglClDownload\n");
         vglClDownload(img);
         cvSaveImage("../images/lena_conv33_download.tif", img->ipl);
 
+
+        //vglClPrintContext();	
+
+        exit(0);
 
 
 
@@ -70,7 +79,6 @@ int main()
         cvSaveImage("../images/lena_conv33_img.tif", img->ipl);
 	printf("X 500\n");
 
-        exit(0);
 
 
 	//Mede o tempo para 1000 convoluções 3x3 sem a criação da operação
