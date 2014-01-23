@@ -105,7 +105,7 @@ LINUXAMD64_DEMO_CLBENCHMARK = $(CC) $(COMPILER_FLAGS) \
 
 
 
-GENERATE_HEADER = cat $(INCLUDE_DIR)/vglHead.h $(INCLUDE_DIR)/vglImage.h $(INCLUDE_DIR)/vglCudaImage.h $(INCLUDE_DIR)/vglContext.h $(INCLUDE_DIR)/vglSimpleBGModel.h $(INCLUDE_DIR)/glsl2cpp*.h $(INCLUDE_DIR)/kernel2cu*.h $(INCLUDE_DIR)/vglTail.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEDIR)/$(BINARY_NAME).h
+GENERATE_HEADER = cat $(INCLUDE_DIR)/vglHead.h $(INCLUDE_DIR)/vglImage.h $(INCLUDE_DIR)/vglCudaImage.h $(INCLUDE_DIR)/vglContext.h $(INCLUDE_DIR)/vglSimpleBGModel.h $(INCLUDE_DIR)/glsl2cpp*.h $(INCLUDE_DIR)/kernel2cu*.h $(INCLUDE_DIR)/cl2cpp*.h $(INCLUDE_DIR)/vglTail.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEDIR)/$(BINARY_NAME).h
 
 
 all:
@@ -158,6 +158,9 @@ frag_stereo:
 
 frag_diffeq:
 	./glsl2cpp.pl -o src/glsl2cpp_DiffEq -p FS_DiffEq src/FS_DiffEq/*.frag
+
+cl:
+	./cl2cpp.pl -o src/cl2cpp_shaders -p CL src/CL/*.cl
 
 run:
 	cd $(OUTPUT_BINDIR); ./$(BINARY_NAME)

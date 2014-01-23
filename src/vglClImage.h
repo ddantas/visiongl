@@ -32,14 +32,6 @@ void vglClFlush();
 void vglClBuildDebug(cl_int err, cl_program program);
 void vglClUpload(VglImage* src);
 void vglClUpload(VglImage* src, bool force_copy);
-void vglClCopy(VglImage* src, VglImage* dst, bool copyToRam);
-void vglClCopy(VglImage* src, VglImage* dst);
-void vglClInvert(VglImage* src, VglImage* dst, bool copyToRam);
-void vglClInvert(VglImage* src, VglImage* dst);
-void vglClThreshold(VglImage* src, VglImage* dst, float thresh, bool copyToRam);
-void vglClThreshold(VglImage* src, VglImage* dst, float thresh);
-void vglClConvolution(VglImage* src, VglImage* dst, float* convolution_window, int window_size_x, int window_size_y, bool copyToRam);
-void vglClConvolution(VglImage* src, VglImage* dst, float* convolution_window, int window_size_x, int window_size_y);
 void vglClDownload(VglImage* img);
 
 #endif

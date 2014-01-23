@@ -2,12 +2,14 @@
 
 #include "vglClImage.h"
 #include "vglContext.h"
+#include "cl2cpp_shaders.h"
 
 #include <opencv2/imgproc/types_c.h>
 #include <opencv2/imgproc/imgproc_c.h>
 #include <opencv2/highgui/highgui_c.h>
 
 #include <time.h>
+
 
 int main()
 {
@@ -26,23 +28,24 @@ int main()
 
         vglCheckContext(img, VGL_CL_CONTEXT);
 
-        {// pipeline test
+        if (0)
+        {// pipeline test 
           VglImage* img1 = vglCreateImage(img);
           vglClInvert(img, img1);
 
           VglImage* img2 = vglCreateImage(img);
-          float convolution[3][3] = { {0.0f/9.0f,0.0f/9.0f,0.0f/9.0f},{1.0f/9.0f,1.0f/9.0f,1.0f/9.0f},{0.0f/9.0f,0.0f/9.0f,0.0f/9.0f} }; //Operador blur
-          vglClConvolution(img1, img2, *convolution, 3, 3);
+          //float convolution[3][3] = { {0.0f/9.0f,0.0f/9.0f,0.0f/9.0f},{1.0f/9.0f,1.0f/9.0f,1.0f/9.0f},{0.0f/9.0f,0.0f/9.0f,0.0f/9.0f} }; //Operador blur
+          vglClBlurSq3(img1, img2);
 
           VglImage* img3 = vglCreateImage(img);
           vglClThreshold(img2, img3, .15f);
 
 
-          vglClCopy(img3, img);
+          vglClCopy(img2, img);
           vglCheckContext(img, VGL_RAM_CONTEXT);
-          cvSaveImage("../images/lena_pipeline.tif", img->ipl);
+          cvSaveImage("../images/lenaout_pipeline.tif", img->ipl);
 	}
-        exit(0);
+	// exit(0);
 
 
 
@@ -53,17 +56,17 @@ int main()
         vglCheckContext(img, VGL_CL_CONTEXT);
         printf("-----called vglClUpload\n");
         cvSet(img->ipl, CV_RGB(255,0,0));
-        cvSaveImage("../images/lena_conv33_red.tif", img->ipl);
+        cvSaveImage("../images/lenaout_conv33_red.tif", img->ipl);
 
-	float kernelMean[3][3] = { {0.0f/9.0f,0.0f/9.0f,0.0f/9.0f},{1.0f/9.0f,1.0f/9.0f,1.0f/9.0f},{0.0f/9.0f,0.0f/9.0f,0.0f/9.0f} }; //Operador blur
-	vglClConvolution(img, img, *kernelMean, 3, 3);
+	//float kernelMean[3][3] = { {0.0f/9.0f,0.0f/9.0f,0.0f/9.0f},{1.0f/9.0f,1.0f/9.0f,1.0f/9.0f},{0.0f/9.0f,0.0f/9.0f,0.0f/9.0f} }; //Operador blur
+	vglClBlurSq3(img, img);
 
 
         printf("calling vglClDownload\n");
         //vglClDownload(img);
         //vglSetContext(img, VGL_CL_CONTEXT);
         vglCheckContext(img, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_conv33_download.tif", img->ipl);
+        cvSaveImage("../images/lenaout_conv33_download.tif", img->ipl);
         //vglClPrintContext();	
 	*/
 
@@ -78,21 +81,21 @@ int main()
                 printf("Y\n");
 	}
 	VglImage* out = vglCreateImage(img);
-	float convolution[3][3] = { {1.0f/13.0f,2.0f/13.0f,1.0f/13.0f},{2.0f/13.0f,1.0f/13.0f,2.0f/13.0f},{1.0f/13.0f,2.0f/13.0f,1.0f/13.0f} }; //Operador blur
+	//float convolution[3][3] = { {1.0f/13.0f,2.0f/13.0f,1.0f/13.0f},{2.0f/13.0f,1.0f/13.0f,2.0f/13.0f},{1.0f/13.0f,2.0f/13.0f,1.0f/13.0f} }; //Operador blur
 	clock_t t1, t2;
 	t1 = clock();
-	vglClConvolution(img, out, *convolution, 3, 3);
+	vglClBlurSq3(img, out);
 	t2 = clock();
-	printf("Primeira chamada da vglClConvolution: %.2f s \n", (t2-t1)/(double)CLOCKS_PER_SEC);
+	printf("Primeira chamada da vglClBlurSq3: %.2f s \n", (t2-t1)/(double)CLOCKS_PER_SEC);
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_conv33_out.tif", out->ipl);
+        cvSaveImage("../images/lenaout_conv33_out.tif", out->ipl);
 
         vglClDownload(out);
-        cvSaveImage("../images/lena_conv33_out2.tif", out->ipl);
+        cvSaveImage("../images/lenaout_conv33_out2.tif", out->ipl);
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_conv33_img.tif", img->ipl);
+        cvSaveImage("../images/lenaout_conv33_img.tif", img->ipl);
 
 
 
@@ -102,16 +105,16 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		vglClConvolution(img, out, *convolution, 3, 3);
+		vglClBlurSq3(img, out);
 	}
 	t2 = clock();
 	printf("Tempo gasto para fazer 1000 convolucoes 3x3: %.2f s\n", (t2-t1)/(double)CLOCKS_PER_SEC);
 
 
         //vglCheckContext(out, VGL_RAM_CONTEXT);
-        //cvSaveImage("../images/lena_conv33_out.tif", out->ipl);
+        //cvSaveImage("../images/lenaout_conv33_out.tif", out->ipl);
         //vglCheckContext(img, VGL_RAM_CONTEXT);
-        //cvSaveImage("../images/lena_conv33_img.tif", img->ipl);
+        //cvSaveImage("../images/lenaout_conv33_img.tif", img->ipl);
 
 
 
@@ -124,14 +127,14 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		vglClConvolution(img, out, *convolution, 5, 5);
+		vglClBlurSq3(img, out);
 	}
 	t2 = clock();
 	printf("Tempo gasto para fazer 1000 convolucoes 5x5: %.2f s\n", (t2-t1)/(double)CLOCKS_PER_SEC);
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_conv55.tif", out->ipl);
+        cvSaveImage("../images/lenaout_conv55.tif", out->ipl);
 
 	//Mede o tempo para 1000 thresholds sem a criação da operação
 	t1 = clock();
@@ -150,7 +153,7 @@ int main()
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_thresh.tif", out->ipl);
+        cvSaveImage("../images/lenaout_thresh.tif", out->ipl);
 
 	//Mede o tempo para 1000 thresholds sem a criação da operação
 	t1 = clock();
@@ -171,7 +174,7 @@ int main()
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_invert.tif", out->ipl);
+        cvSaveImage("../images/lenaout_invert.tif", out->ipl);
 
 	//Mede o tempo para 1000 conversão RGB->Grayscale na CPU
 	p = 0;
@@ -186,7 +189,7 @@ int main()
 
 
         vglCheckContext(gray, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_rgbtogray.tif", gray->ipl);
+        cvSaveImage("../images/lenaout_rgbtogray.tif", gray->ipl);
 
 	//Mede o tempo para 1000 conversão RGB->RGBA na CPU
 	p = 0;
@@ -201,7 +204,7 @@ int main()
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_rgbtorgba.tif", out->iplRGBA);
+        cvSaveImage("../images/lenaout_rgbtorgba.tif", out->iplRGBA);
 
 	//Mede o tempo para 1000 copia CPU->GPU
 	p = 0;
@@ -216,7 +219,7 @@ int main()
 
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_upload.tif", img->ipl);
+        cvSaveImage("../images/lenaout_upload.tif", img->ipl);
 
 	//Mede o tempo para 1000 copia GPU->CPU
 	p = 0;
@@ -231,7 +234,7 @@ int main()
 
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_download.tif", img->ipl);
+        cvSaveImage("../images/lenaout_download.tif", img->ipl);
 
 	//Mede o tempo para 1000 copia GPU->GPU
 	t1 = clock();
@@ -251,7 +254,7 @@ int main()
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lena_clcopy.tif", out->ipl);
+        cvSaveImage("../images/lenaout_clcopy.tif", out->ipl);
 
 	//flush
 	vglClFlush();
