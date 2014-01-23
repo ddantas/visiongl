@@ -1,9 +1,13 @@
+/** Convolution of src image by mask. Result is stored in dst image.
+
+  */
+
 __kernel void convolution(__read_only image2d_t img_input,__write_only image2d_t img_output,__constant float* convolution_window, __constant int* window_size_x, __constant int* window_size_y)
 {
 	int2 coords = (int2)(get_global_id(0), get_global_id(1));
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
-						  CLK_ADDRESS_CLAMP_TO_EDGE | //Clamp to next edge
-						  CLK_FILTER_NEAREST; //Don't interpolate
+                              CLK_ADDRESS_CLAMP_TO_EDGE |   //Clamp to next edge
+                              CLK_FILTER_NEAREST;           //Don't interpolate
 	float4 result= (0,0,0,0);
 	
 	int factorx = floor((float)*window_size_x / 2.0f);

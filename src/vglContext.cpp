@@ -77,21 +77,18 @@ int vglCheckContext(VglImage* img, int context){
   }
   switch (context){
     case VGL_RAM_CONTEXT:
-      printf("!!!!!!!!!!vglCheckContext: context = %d\n", img->inContext);
       if (vglIsInContext(img, VGL_BLANK_CONTEXT)){
         vglAddContext(img, VGL_RAM_CONTEXT);
       }
       else
 #ifdef __OPENCL__
       if (vglIsInContext(img, VGL_CL_CONTEXT)){
-printf("!!!!!!!!!!vglCheckContext: callin vglClDownload\n");
         vglClDownload(img);
       }
       else
 #endif
       if (!vglIsInContext(img, VGL_RAM_CONTEXT))
       {
-printf("!!!!!!!!!!vglCheckContext: callin vglCheckContext VGL_CL_CONTEXT\n");
         vglCheckContext(img, VGL_GL_CONTEXT);
         if (vglIsInContext(img, VGL_GL_CONTEXT)){
           vglDownload(img);

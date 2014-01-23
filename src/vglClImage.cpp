@@ -184,7 +184,7 @@ void vglClCopy(VglImage* src, VglImage* dst)
 
 	static cl_program program = NULL;
 	if (program == NULL){
-	  char* file_path = (char*) "CL/vglCopy.cl";
+	  char* file_path = (char*) "CL/vglClCopy.cl";
 		std::ifstream file(file_path);
 		if(file.fail())
 		{
@@ -221,9 +221,6 @@ void vglClCopy(VglImage* src, VglImage* dst)
 	clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
 	vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 	
-	//if (copyToRam)
-        //    vglCheckContext(src, VGL_RAM_CONTEXT);
-
         vglSetContext(dst, VGL_CL_CONTEXT);
 }
 void vglClInvert(VglImage* src, VglImage* dst)
@@ -235,7 +232,7 @@ void vglClInvert(VglImage* src, VglImage* dst)
 
 	static cl_program program = NULL;
 	if (program == NULL){
-	  char* file_path = (char*) "CL/vglInvert.cl";
+	  char* file_path = (char*) "CL/vglClInvert.cl";
 		std::ifstream file(file_path);
 		if(file.fail())
 		{
@@ -290,7 +287,7 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh)
 	static cl_program program = NULL;
 	if (program == NULL)
 	{
-                char* file_path = (char*) "CL/vglThreshold.cl";
+                char* file_path = (char*) "CL/vglClThreshold.cl";
 		std::ifstream file(file_path);
 		if(file.fail())
 		{
@@ -361,7 +358,7 @@ void vglClConvolution(VglImage* src, VglImage* dst, float* convolution_window, i
 	static cl_program program = NULL;
 	if (program == NULL)
 	{
-                char* file_path = (char*) "CL/vglConvolution.cl";
+                char* file_path = (char*) "CL/vglClConvolution.cl";
 		std::ifstream file(file_path);
 		if(file.fail())
 		{
@@ -395,9 +392,9 @@ void vglClConvolution(VglImage* src, VglImage* dst, float* convolution_window, i
 	vglClCheckError( err, (char*) "clSetKernelArg B" );
 	err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float *) &mobj_C );
 	vglClCheckError( err, (char*) "clSetKernelArg C" );
-	err = clSetKernelArg( kernel, 3, sizeof( cl_mem ), (float *) &mobj_D );
+	err = clSetKernelArg( kernel, 3, sizeof( cl_mem ), (int   *) &mobj_D );
 	vglClCheckError( err, (char*) "clSetKernelArg D" );
-	err = clSetKernelArg( kernel, 4, sizeof( cl_mem ), (float *) &mobj_E );
+	err = clSetKernelArg( kernel, 4, sizeof( cl_mem ), (int   *) &mobj_E );
 	vglClCheckError( err, (char*) "clSetKernelArg E" );
 
 	size_t worksize[] = { src->width, src->height, 1 };

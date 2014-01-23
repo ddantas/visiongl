@@ -26,6 +26,27 @@ int main()
 
         vglCheckContext(img, VGL_CL_CONTEXT);
 
+        {// pipeline test
+          VglImage* img1 = vglCreateImage(img);
+          vglClInvert(img, img1);
+
+          VglImage* img2 = vglCreateImage(img);
+          float convolution[3][3] = { {0.0f/9.0f,0.0f/9.0f,0.0f/9.0f},{1.0f/9.0f,1.0f/9.0f,1.0f/9.0f},{0.0f/9.0f,0.0f/9.0f,0.0f/9.0f} }; //Operador blur
+          vglClConvolution(img1, img2, *convolution, 3, 3);
+
+          VglImage* img3 = vglCreateImage(img);
+          vglClThreshold(img2, img3, .15f);
+
+
+          vglClCopy(img3, img);
+          vglCheckContext(img, VGL_RAM_CONTEXT);
+          cvSaveImage("../images/lena_pipeline.tif", img->ipl);
+	}
+        exit(0);
+
+
+
+
 	/*
         printf("-----calling vglClUpload\n");
         //vglClUpload(img);
@@ -60,27 +81,18 @@ int main()
 	float convolution[3][3] = { {1.0f/13.0f,2.0f/13.0f,1.0f/13.0f},{2.0f/13.0f,1.0f/13.0f,2.0f/13.0f},{1.0f/13.0f,2.0f/13.0f,1.0f/13.0f} }; //Operador blur
 	clock_t t1, t2;
 	t1 = clock();
-	printf("X 100\n");
 	vglClConvolution(img, out, *convolution, 3, 3);
-	printf("X 200\n");
 	t2 = clock();
 	printf("Primeira chamada da vglClConvolution: %.2f s \n", (t2-t1)/(double)CLOCKS_PER_SEC);
 
-	printf("X 300\n");
-	printf("CLBENCHMARH CHECKCONTEXT\n");
         vglCheckContext(out, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lena_conv33_out.tif", out->ipl);
-
 
         vglClDownload(out);
         cvSaveImage("../images/lena_conv33_out2.tif", out->ipl);
 
-
-	printf("X 400\n");
-	printf("CLBENCHMARH CHECKCONTEXT\n");
         vglCheckContext(img, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lena_conv33_img.tif", img->ipl);
-	printf("X 500\n");
 
 
 
@@ -243,6 +255,6 @@ int main()
 
 	//flush
 	vglClFlush();
-	system("pause");
+	//system("pause");
 	return 0;
 }
