@@ -11,8 +11,15 @@
 #include "demo/timer.h"
 
 
-int main()
+int main(int argc, char** argv)
 {
+
+  printf("argc = %d\n", argc);
+  if (argc < 2){
+    fprintf(stderr, "Error: please type as first parameter image name\n");
+    exit(255);
+  }
+
 
         //printf("main: printing CL context before init\n");
         //vglClPrintContext();	
@@ -23,8 +30,14 @@ int main()
         //printf("main: printing CL context after init\n");
         //vglClPrintContext();	
 
-	char* image_path = (char*) "../images/lena_std.tif";
+	char* image_path = (char*) argv[1];
 	VglImage* img = vglLoadImage(image_path,1,0);
+
+  if (img == NULL){
+    fprintf(stderr, "Error: unable to open image %s\n", image_path);
+    exit(255);
+  }
+        
 
         vglCheckContext(img, VGL_CL_CONTEXT);
 

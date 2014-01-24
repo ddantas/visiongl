@@ -142,7 +142,7 @@ rundemocam:
 	cd $(OUTPUT_BINDIR); ./demo_$(CAM_NAME)
 
 rundemoclbenchmark:
-	cd $(OUTPUT_BINDIR); ./demo_$(CLBENCHMARK_NAME)
+	cd $(OUTPUT_BINDIR); ./demo_$(CLBENCHMARK_NAME) ../images/lena_std.tif
 
 cuda:
 	./kernel2cu.pl -o src/kernel2cu_shaders src/CUDA/*.kernel
