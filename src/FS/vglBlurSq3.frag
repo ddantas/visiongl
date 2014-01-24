@@ -32,7 +32,7 @@ void main(void){
   }
 
   gl_FragColor = ( +     pix[0] + 2.0*pix[1] +     pix[2]
-                   + 2.0*pix[3] +     pix[4] + 2.0*pix[5]
-                   +     pix[6] + 2.0*pix[7] +     pix[8]  ) / 13.0;
+                   + 2.0*pix[3] + 4.0*pix[4] + 2.0*pix[5]
+                   +     pix[6] + 2.0*pix[7] +     pix[8]  ) / 16.0;
 
 }

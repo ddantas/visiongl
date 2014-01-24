@@ -99,7 +99,7 @@ LINUXAMD64_DEMO_CAM = $(CC) $(COMPILER_FLAGS) \
 
 LINUXAMD64_DEMO_CLBENCHMARK = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINDIR)/demo_$(CLBENCHMARK_NAME) \
-                         src/demo/$(CLBENCHMARK_NAME).cpp \
+                         src/demo/$(CLBENCHMARK_NAME).cpp src/demo/timer.cpp \
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS) \
 

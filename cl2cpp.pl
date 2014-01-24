@@ -165,12 +165,12 @@ sub LineStartDirective { # ($line) {
   my $line = $_[0];
 
   $line =~ s#^\s*([a-zA-Z_]\w*)\s*##;
-  $directive = $1;
-  print "Directive type >>>$directive<<<\n";
-  if ($directive){
-    if (!($directive =~ m#^(SCALAR|ARRAY)$#))
+  my $result = $1;
+  print "Directive type >>>$result<<<\n";
+  if ($result){
+    if (!($result =~ m#^(SCALAR|ARRAY)$#))
     {
-      die "Directive $directive invalid. Valid directives are (SCALAR|ARRAY)\n";
+      die "Directive $result invalid. Valid directives are (SCALAR|ARRAY)\n";
     }
   }
   else{
@@ -189,7 +189,7 @@ sub LineStartType { # ($line) {
   my $line = $_[0];
 
   $line =~ s#^\s*([a-zA-Z_]\w*[\s*\**]*)##;
-  $result = $1;
+  my $result = $1;
   $result =~ s#\s##g;
   return ($result, $line);
 }
@@ -217,9 +217,9 @@ sub LineStartSize { # ($line) {
   my $line = $_[0];
 
   $line =~ s#^\s*\[\s*(.*)\s*\]##;
-  $result = $1;
+  my $result = $1;
   print "Found size >>>$result<<<\n";
-  return (result, $line);
+  return ($result, $line);
 }
 
 #############################################################################
@@ -373,11 +373,20 @@ sub ProcessClUniform { # ($line, $print) {
 # a kernel. The size is needed by the wrapper to calculate the buffer size. The buffer
 # size is passed as parameter to clCreateBuffer and clEnqueueWriteBuffer.
 #
-sub ProcessClDirectives { # ($directive, $variable) {
-  my $directive    = $_[0];
+sub ProcessClDirectives { # ($directives, $variable) {
+  my $directives   = $_[0];
   my $variable     = $_[1];
 
-  print "variables sizeaaaa = $#variable\n";
+  my $i = 0;
+  my $j = 0;
+
+  my $result_directive;
+  my $result_variable;
+  my $result_size;
+
+
+  print "ProcessClDirectives directives size = $#directives\n";
+  print "ProcessClDirectives variable size   = $#variable\n";
 
   for ($i = 0; $i <= $#variable; $i++){
     $is_array[$i] = 0;
@@ -387,10 +396,16 @@ sub ProcessClDirectives { # ($directive, $variable) {
 
   }
 
-  for ($i = 0; $i <= $#directive; $i++){
-    print "Processing directive comment[$i]: >>>>$directive[$i]<<<<\n";
 
-    ($result_directive, $directive[$i]) = LineStartDirective($directive[$i]);
+  print "ProcessClDirectives directives size = $#directives\n";
+  die;
+
+  for ($i = 0; $i <= $#directives; $i++){
+    print "###########################################################\n";
+    print "Processing directive comment[$i]: >>>>$directives[$i]<<<<\n";
+
+    ($result_directive, $directives[$i]) = LineStartDirective($directives[$i]);
+    print "1 Directive type = >>>$result_directive<<<\n";
     if (!$result_directive){
       die "Error: Start-of-line directive (SCALAR|ARRAY) not found\n";
     }
@@ -398,41 +413,114 @@ sub ProcessClDirectives { # ($directive, $variable) {
       print "After eliminating directive (SCALAR|ARRAY):\n$directives[$i]\n";
     }
 
-    ($result_variable, $directive[$i]) = LineStartVariable($directive[$i]);
+    ($result_variable, $directives[$i]) = LineStartVariable($directives[$i]);
+    print "2 Variable name = >>>$result_variable<<<\n";
     if (!$result_variable){
       die "Error: Start-of-line variable name not found\n";
     }
     else{
-      print "After eliminating variable name:\n$directive[$i]\n";
+      print "After eliminating variable name:\n$directives[$i]\n";
     }
 
+    print "3 Directive type = >>>$result_directive<<<\n";
     if ($result_directive eq "ARRAY"){
-      ($result_size, $directive[$i]) = LineStartSize($directive[$i]);
+      print "Searching size of ARRAY type directive\n";
+      ($result_size, $directives[$i]) = LineStartSize($directives[$i]);
       if (!$result_size){
         die "Error: Start-of-line size value not found\n";
       }
       else{
-        print "After eliminating size value:\n$directive[$i]\n";
+        print "After eliminating size value:\n$directives[$i]\n";
       }
-      $size[$i] = $result_size;
     }
 
-#    for ($j = 0; $j <= $#variables; $j++){
-#      if ($result_variable eq $variables[$j]){
-#        if ($result_directive eq "ARRAY"){
-#          $is_array[$i] = 1;
-#        }
-#      }
-#    }
-
-    print "Is array [$i]: $is_array[$i]\n";
-    print "Size     [$i]: $size[$i]\n";
-
+    print "FOR STARTING $#variable\n";
+    for ($j = 0; $j <= $#variable; $j++){
+      print ">>>$result_variable<<< == >>>$variable[$j]<<<\n";
+      if ($result_variable eq $variable[$j]){
+        if ($result_directive eq "ARRAY"){
+          $is_array[$j] = 1;
+          $size[$j] = $result_size;
+          print "Is array [$j]: $is_array[$j]\n";
+          print "Size     [$j]: $size[$j]\n";
+        }
+      }
+    }
   }
+
+    for ($j = 0; $j <= $#variable; $j++){
+          print "Is array [$j]: $is_array[$j]\n";
+          print "Size     [$j]: $size[$j]\n";
+    }
 
   return ($is_array, $size);
 
 }
+
+#############################################################################
+# ProcessClDirective
+#
+# Receives as input a CL directive and returns directive type, variable name and size.
+#
+# A CL Directive purpose is to specify the size of arrays passed as parameters to 
+# a kernel. The size is needed by the wrapper to calculate the buffer size. The buffer
+# size is passed as parameter to clCreateBuffer and clEnqueueWriteBuffer.
+#
+sub ProcessClDirective { # ($directive) {
+  my $directive   = $_[0];
+
+  my $i = 0;
+  my $j = 0;
+
+  my $result_directive;
+  my $result_variable;
+  my $result_size;
+  my $result_isarray;
+
+
+    print "ProcessingClDirective started###########################################################\n";
+    print "ProcessClDirective directives size = $#directive\n";
+    print "Processing directive comment[$i]: >>>>$directive<<<<\n";
+
+    ($result_directive, $directive) = LineStartDirective($directive);
+    print "1 Directive type = >>>$result_directive<<<\n";
+    if (!$result_directive){
+      die "Error: Start-of-line directive (SCALAR|ARRAY) not found\n";
+    }
+    else{
+      print "After eliminating directive (SCALAR|ARRAY):\n$directive\n";
+    }
+
+    ($result_variable, $directive) = LineStartVariable($directive);
+    print "2 Variable name = >>>$result_variable<<<\n";
+    if (!$result_variable){
+      die "Error: Start-of-line variable name not found\n";
+    }
+    else{
+      print "After eliminating variable name:\n$directive\n";
+    }
+
+    print "3 Directive type = >>>$result_directive<<<\n";
+    if ($result_directive eq "ARRAY"){
+      print "Searching size of ARRAY type directive\n";
+      ($result_size, $directive) = LineStartSize($directive);
+      if (!$result_size){
+        die "Error: Start-of-line size value not found\n";
+      }
+      else{
+        print "After eliminating size value:\n$directive\n";
+      }
+    }
+
+    my $result_isarray = 0;
+    if ($result_directive eq "ARRAY"){
+      $result_isarray = 1;
+    }
+
+  return ($result_isarray, $result_variable, $result_size);
+
+}
+
 #############################################################################
 # ProcessClHeader
 #
@@ -442,6 +530,13 @@ sub ProcessClDirectives { # ($directive, $variable) {
 sub ProcessClHeader { # ($line) {
   my $line          = $_[0];
 
+  my $result;
+  my $kernelname;
+  my $separator;
+  my $semantics;
+  my $type;
+  my $output;
+  my $variable;
 
   ($result, $line) = LineStartMain($line);
   if (!$result){
@@ -527,7 +622,7 @@ sub ProcessClHeader { # ($line) {
   }
   print "variable size ====== $#variable\n";
 
-  return ($semantics, $type, $variable, $kernelname);
+  return ($semantics, $type, $variable, $default, $kernelname);
 
 }
 
@@ -548,12 +643,29 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
   my $variable;
   my $default;
   my $uniform;
+  my $dircomment;
+  my $is_array;
+  my $size;
+
+  print "directive size = $#dircomment\n";
 
   undef $comment; 
   undef $semantics; 
   undef $type;
   undef $variable;
+  undef $default;
   undef $uniform;
+  undef $dircomment;
+  undef $is_array;
+  undef $size;
+
+  print "directive size = $#dircomment\n";
+  #print "directive 0 = $dircomment[0]\n";
+  #print "directive 1 = $dircomment[1]\n";
+  print "commment size = $#comment\n";
+  print "semantics size = $#semantics\n";
+  print "type size = $#type\n";
+  print "variable size = $#variable\n";
 
   open(CL, $filename);
   @list = <CL>;
@@ -567,19 +679,31 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
     print "Found this comment:\n$comment\n";
   }  
 
+  print "directive size = $#directive\n";
+
   my $i = 0;
+  my $catdirectives = "";
   do {
-    ($directive[$i], $line) = LineStartSingleLineComment($line);
-    if ($directive[$i]){
-      print ("Found directive: $directive[$i]\n");
+    ($dircomment[$i], $line) = LineStartSingleLineComment($line);
+    print "directive[$i] = >>$dircomment[$i]<< size = >>$#dircomment<<\n";
+    if ($dircomment[$i]){
+      print ("Found directive: $dircomment[$i]\n");
+      ($dirisarray[$i], $dirvar[$i], $dirsize[$i]) = ProcessClDirective($dircomment[$i]);
+      print ("ProcessClFile result = <$dirisarray[$i]> <$dirvar[$i]> <$dirsize[$i]>\n");
     }
     else{
       #print ("Directive not found\n");
     }
     $i++;
   }
-  while ($directive[$i-1]);
-  delete $directive[$i-1];
+  while ($dircomment[$i-1]);
+  delete $dircomment[$i-1];
+  print "DIRECTIVE SIZE AFTER LineStartSingleLineComment: $#dircomment\n";
+
+  print "Starting for to print directives found\n";
+  for($i = 0; $i <= $#dirvar; $i++){
+      print ("ProcessClFile result = <$dirisarray[$i]> <$dirvar[$i]> <$dirsize[$i]>\n");  
+  }
 
   ($perl_header, $line) = LineStartHeader($line);
   if (!$perl_header){
@@ -590,17 +714,48 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
     print "Found this header:\n$perl_header\n";
   }
 
-  ($semantics, $type, $variable, $kernelname) = ProcessClHeader($perl_header);
+  ($semantics, $type, $variable, $default, $kernelname) = ProcessClHeader($perl_header);
   print "variable sizeeeeee = $#variable\n";
+  print "ProcessClFile dircomment size = $#dircomment\n";
 
-  ($is_array, $size) = ProcessClDirectives($directive, $variable);
+
+  print "FOR STARTING $#variable\n";
+  for($i = 0; $i <= $#variable; $i++){
+    $is_array[$i] = 0;
+    $size[$i]     = 1;
+  }
+  print "FOR STARTING $#variable\n";
+  for($i = 0; $i <= $#variable; $i++){
+    for ($j = 0; $j <= $#dirvar; $j++){
+       print ">>>$variable[$i]<<< == >>>$dirvar[$j]<<<\n";
+       if ($variable[$i] eq $dirvar[$j] && $dirisarray[$j]){
+         $is_array[$i] = $dirisarray[$j];
+         $size[$i]     = $dirsize[$j];
+         print "Is array [$i]: $is_array[$i]\n";
+         print "Size     [$i]: $size[$i]\n";
+       }
+     }
+   }
+
+  my $j = 0;
 
   if ($kernelname ne $basename){
     die "Error: File basename \"$basename\" != kernel name \"$kernelname\". Please rename your kernel to \"$basename\"\n";
   }
-  $line = LineStartCleanComments($line);
+  #$line = LineStartCleanComments($line);
 
-  return  ($comment, $semantics, $type, $variable, $is_vector, $size);
+  print "\n";
+  for($i = 0; $i <= $#variable; $i++){
+    print "Semantics[$i]: " . ($semantics[$i] or "") . "\n";
+    print "Type     [$i]: $type[$i]\n";
+    print "Variable [$i]: $variable[$i]\n";
+    print "Default  [$i]: " . ($default[$i] or "") . "\n";
+    print "Array?   [$i]: $is_array[$i]\n";
+    print "Size     [$i]: $size[$i]\n";
+  }
+
+
+  return  ($comment, $semantics, $type, $variable, $is_array, $size);
 }
 
 #############################################################################
@@ -616,9 +771,10 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   my $type          = $_[3];
   my $variable      = $_[4];
   my $default       = $_[5];
-  my $uniform       = $_[6];
-  my $output        = $_[7];
-  my $cpp_read_path = $_[8];
+  my $is_array      = $_[6];
+  my $size          = $_[7];
+  my $output        = $_[8];
+  my $cpp_read_path = $_[9];
 
   my $i;
   my $first_framebuffer = "";
@@ -646,8 +802,12 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   }
 
   for ($i = 0; $i <= $#type; $i++){
-    print CPP "$type[$i] $variable[$i]";
-    print HEAD "$type[$i] $variable[$i]" . ($default[$i] or "");
+    my $p = "";
+    if ($is_array[$i]){
+      $p = "*";
+    }
+    print CPP "$type[$i]$p $variable[$i]";
+    print HEAD "$type[$i]$p $variable[$i]" . ($default[$i] or "");
     if ($i < $#type){
       print CPP ", ";
       print HEAD ", ";
@@ -671,13 +831,16 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   for ($i = 0; $i <= $#type; $i++){
     if ($type[$i] ne "VglImage*"){
         $var = $variable[$i];
+        my $e = "&";
+        if ($is_array[$i]){
+          $e = "";
+	}
         print CPP "
   cl_mem mobj_$var = NULL;
-  mobj_$var = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof($type[$i]), NULL, &err);
+  mobj_$var = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, ($size[$i])*sizeof($type[$i]), NULL, &err);
   vglClCheckError( err, (char*) \"clCreateBuffer $var\" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_$var, CL_TRUE, 0, sizeof($type[$i]), &$var, 0, NULL, NULL);
+  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_$var, CL_TRUE, 0, ($size[$i])*sizeof($type[$i]), $e$var, 0, NULL, NULL);
   vglClCheckError( err, (char*) \"clEnqueueWriteBuffer $var\" );
-
 ";
     } 
   }  
@@ -687,6 +850,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   if (program == NULL)
   {
     char* file_path = (char*) \"$cpp_read_path$basename\.cl\";
+    printf(\"Compiling %s\\n\", file_path);
     std::ifstream file(file_path);
     if(file.fail())
     {
@@ -864,7 +1028,7 @@ extern VglClContext cl;
 ";
 close CPP;
 
-my $i = 0;
+$i = 0;
 
 for ($i=$firstInputFile; $i<$nargs; $i++) {
     $fullname = $ARGV[$i];
@@ -892,7 +1056,7 @@ for ($i=$firstInputFile; $i<$nargs; $i++) {
 
     ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($ARGV[$i]);
 
-    PrintCppFile($basename, $comment, $semantics, $type, $variable, $default, $uniform, $output, $cpp_read_path);
+    PrintCppFile($basename, $comment, $semantics, $type, $variable, $default, $is_array, $size, $output, $cpp_read_path);
 
 }
 
