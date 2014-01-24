@@ -15,9 +15,10 @@
 #define VGL_RAM_CONTEXT 1
 #define VGL_GL_CONTEXT 2
 #define VGL_CUDA_CONTEXT 4
+#define VGL_CL_CONTEXT 8
 
-#define vglIsContextValid(x) ( (x>=1) && (x<=7) )
-#define vglIsContextUnique(x) ( (x>=0) && (x<=4) && (x!=3) )
+#define vglIsContextValid(x) ( (x>=1) && (x<=15) )
+#define vglIsContextUnique(x) ( (x==0) || (x==1) || (x==2) || (x==4) || (x==8) )
 #define vglIsInContext(img, x) ( (img)->inContext & (x) || ((img)->inContext==0 && x==0))
 
 int vglAddContext(VglImage* img, int context);

@@ -28,6 +28,10 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
+//CL
+#ifdef __OPENCL__
+#include <CL/cl.h>
+#endif
 
 #define VGL_WIN_X0   -1.0
 #define VGL_WIN_X1    1.0
@@ -60,6 +64,10 @@ class VglImage{
   GLuint    tex;
   void*     cudaPtr;
   GLuint    cudaPbo;
+#ifdef __OPENCL__
+  IplImage* iplRGBA;
+  cl_mem    oclPtr;
+#endif
   int       inContext;
 };
 

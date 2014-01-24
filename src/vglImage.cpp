@@ -473,6 +473,10 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int ha
   vglImage->tex = -1;
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
+#ifdef __OPENCL__
+  vglImage->iplRGBA = NULL;
+  vglImage->oclPtr = NULL;
+#endif
 
   vglSetContext(vglImage, VGL_BLANK_CONTEXT);
   vglUpload(vglImage);
@@ -779,6 +783,10 @@ VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
   vglImage->tex = -1;
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
+#ifdef __OPENCL__
+  vglImage->iplRGBA = NULL;
+  vglImage->oclPtr = NULL;
+#endif
 
   vglSetContext(vglImage, VGL_RAM_CONTEXT);
   vglUpload(vglImage);
