@@ -14,3 +14,4 @@ double TimerElapsed(int start = 0);
 void TimerStart(void);
 
 char* getTimeElapsed(void);
+char* getTimeElapsedInSeconds();

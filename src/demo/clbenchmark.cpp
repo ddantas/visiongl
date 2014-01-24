@@ -85,14 +85,11 @@ int main()
                 printf("Y\n");
 	}
 	VglImage* out = vglCreateImage(img);
-	//float convolution[3][3] = { {1.0f/13.0f,2.0f/13.0f,1.0f/13.0f},{2.0f/13.0f,1.0f/13.0f,2.0f/13.0f},{1.0f/13.0f,2.0f/13.0f,1.0f/13.0f} }; //Operador blur
-	long elapsed_us;
 
 	//Primeira chamada a blurSq3
 	TimerStart();
 	vglClBlurSq3(img, out);
-	//elapsed_us = TimerElapsed();
-	printf("Primeira chamada da vglClBlurSq3: %s \n", getTimeElapsed());
+	printf("Primeira chamada da vglClBlurSq3: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 blur 3x3 sem a criação da operação
 	int p = 0;
 	TimerStart();
@@ -101,8 +98,7 @@ int main()
 		p++;
 		vglClBlurSq3(img, out);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 blur 3x3: %s\n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 blur 3x3: %s\n", getTimeElapsedInSeconds());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -122,8 +118,7 @@ int main()
 	//Primeira chamada a vglClConvolution
 	TimerStart();
 	vglClConvolution(img, out, (float*) kernel33, 3, 3);
-	elapsed_us = TimerElapsed();
-	printf("Primeira chamada da vglClConvolution: %s\n", getTimeElapsed());
+	printf("Primeira chamada da vglClConvolution: %s\n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 convoluções 3x3 sem a criação da operação
 	p = 0;
 	TimerStart();
@@ -132,7 +127,7 @@ int main()
 		p++;
 		vglClConvolution(img, out, (float*) kernel33, 3, 3);
 	}
-	printf("Tempo gasto para fazer 1000 convolucoes 3x3: %s \n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 convolucoes 3x3: %s \n", getTimeElapsedInSeconds());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -147,7 +142,7 @@ int main()
 		p++;
 		vglClConvolution(img, out, (float*) kernel55, 5, 5);
 	}
-	printf("Tempo gasto para fazer 1000 convolucoes 5x5: %s\n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 convolucoes 5x5: %s\n", getTimeElapsedInSeconds());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -156,7 +151,7 @@ int main()
 	//Primeira chamada a threshold
 	TimerStart();
 	vglClThreshold(img,out,0.5f);
-	printf("Primeira chamada da vglClThreshold: %s \n", getTimeElapsed());
+	printf("Primeira chamada da vglClThreshold: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 thresholds sem a criação da operação
 	p = 0;
 	TimerStart();
@@ -165,7 +160,7 @@ int main()
 		p++;
 		vglClThreshold(out, out, 0.5f);
 	}
-	printf("Tempo gasto para fazer 1000 threshold: %s\n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 threshold: %s\n", getTimeElapsedInSeconds());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -174,8 +169,7 @@ int main()
 	//Primeira chamada a vglClInvert
 	TimerStart();
 	vglClInvert(img,out);
-	elapsed_us = TimerElapsed();
-	printf("Primeira chamada da vglClInvert: %s \n", getTimeElapsed());
+	printf("Primeira chamada da vglClInvert: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 invert sem a criação da operação
 	p = 0;
 	TimerStart();
@@ -184,7 +178,7 @@ int main()
 		p++;
 		vglClInvert(out, out);
 	}
-	printf("Tempo gasto para fazer 1000 invert: %s\n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 invert: %s\n", getTimeElapsedInSeconds());
 	VglImage* gray = vglCreateImage(img);
 	gray->ipl = cvCreateImage(cvGetSize(gray->ipl),IPL_DEPTH_8U,1);
 
@@ -194,7 +188,7 @@ int main()
 	//Primeira chamada a vglClCopy
 	TimerStart();
 	vglClCopy(img,out);
-	printf("Primeira chamada da vglClCopy: %s \n", getTimeElapsed());
+	printf("Primeira chamada da vglClCopy: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 copia GPU->GPU
 	p = 0;
 	TimerStart();
@@ -203,7 +197,7 @@ int main()
 		p++;
 		vglClCopy(img, out);
 	}
-	printf("Tempo gasto para fazer 1000 copia GPU->GPU: %s\n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 copia GPU->GPU: %s\n", getTimeElapsedInSeconds());
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_clcopy.tif", out->ipl);
@@ -216,7 +210,7 @@ int main()
 		p++;
 		cvCvtColor(img->ipl,gray->ipl, CV_BGR2GRAY);
 	}
-	printf("Tempo gasto para fazer 1000 conversões BGR->Gray: %s\n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 conversões BGR->Gray: %s\n", getTimeElapsedInSeconds());
 
 
         vglCheckContext(gray, VGL_RAM_CONTEXT);
@@ -230,7 +224,7 @@ int main()
 		p++;
 		cvCvtColor(img->ipl,out->iplRGBA, CV_BGR2RGBA);
 	}
-	printf("Tempo gasto para fazer 1000 conversões BGR->RGBA: %s\n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 conversões BGR->RGBA: %s\n", getTimeElapsedInSeconds());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -244,7 +238,7 @@ int main()
 		p++;
 		vglClUpload(img);
 	}
-	printf("Tempo gasto para fazer 1000 copia CPU->GPU, inclui conversão BGR->RGBA: %s\n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 copia CPU->GPU: %s\n", getTimeElapsedInSeconds());
 
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
@@ -258,7 +252,7 @@ int main()
 		p++;
 		vglClDownload(img);
 	}
-	printf("Tempo gasto para fazer 1000 copia GPU->CPU inclui conversão RGBA->BGR: %s\n", getTimeElapsed());
+	printf("Tempo gasto para fazer 1000 copia GPU->CPU: %s\n", getTimeElapsedInSeconds());
 
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
