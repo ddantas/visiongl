@@ -1,5 +1,4 @@
-
-
+#define __OPENCL__
 #include "vglClImage.h"
 #include "vglContext.h"
 #include "cl2cpp_shaders.h"
@@ -9,6 +8,11 @@
 #include <opencv2/highgui/highgui_c.h>
 
 #include "demo/timer.h"
+#include <ctime>
+
+#include <fstream>
+
+//#include "demo/timer.h"
 
 
 int main()
@@ -23,10 +27,10 @@ int main()
         //printf("main: printing CL context after init\n");
         //vglClPrintContext();	
 
-	char* image_path = (char*) "../images/lena_std.tif";
+	char* image_path = (char*) "../images/lena_1024.tif";
 	VglImage* img = vglLoadImage(image_path,1,0);
 
-        vglCheckContext(img, VGL_CL_CONTEXT);
+        //vglCheckContext(img, VGL_CL_CONTEXT);
 
         if (0)
         {// pipeline test 
@@ -87,8 +91,8 @@ int main()
 	//Primeira chamada a blurSq3
 	TimerStart();
 	vglClBlurSq3(img, out);
-	elapsed_us = TimerElapsed();
-	printf("Primeira chamada da vglClBlurSq3: %.6f ms \n", elapsed_us/1000.0);
+	//elapsed_us = TimerElapsed();
+	printf("Primeira chamada da vglClBlurSq3: %s \n", getTimeElapsed());
 	//Mede o tempo para 1000 blur 3x3 sem a criação da operação
 	int p = 0;
 	TimerStart();
@@ -98,7 +102,7 @@ int main()
 		vglClBlurSq3(img, out);
 	}
 	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 blur 3x3: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 blur 3x3: %s\n", getTimeElapsed());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -119,7 +123,7 @@ int main()
 	TimerStart();
 	vglClConvolution(img, out, (float*) kernel33, 3, 3);
 	elapsed_us = TimerElapsed();
-	printf("Primeira chamada da vglClConvolution: %.6f ms \n", elapsed_us/1000.0);
+	printf("Primeira chamada da vglClConvolution: %s\n", getTimeElapsed());
 	//Mede o tempo para 1000 convoluções 3x3 sem a criação da operação
 	p = 0;
 	TimerStart();
@@ -128,8 +132,7 @@ int main()
 		p++;
 		vglClConvolution(img, out, (float*) kernel33, 3, 3);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 convolucoes 3x3: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 convolucoes 3x3: %s \n", getTimeElapsed());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -144,8 +147,7 @@ int main()
 		p++;
 		vglClConvolution(img, out, (float*) kernel55, 5, 5);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 convolucoes 5x5: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 convolucoes 5x5: %s\n", getTimeElapsed());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -154,8 +156,7 @@ int main()
 	//Primeira chamada a threshold
 	TimerStart();
 	vglClThreshold(img,out,0.5f);
-	elapsed_us = TimerElapsed();
-	printf("Primeira chamada da vglClThreshold: %.6f ms \n", elapsed_us/1000.0);
+	printf("Primeira chamada da vglClThreshold: %s \n", getTimeElapsed());
 	//Mede o tempo para 1000 thresholds sem a criação da operação
 	p = 0;
 	TimerStart();
@@ -164,8 +165,7 @@ int main()
 		p++;
 		vglClThreshold(out, out, 0.5f);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 threshold: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 threshold: %s\n", getTimeElapsed());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -175,7 +175,7 @@ int main()
 	TimerStart();
 	vglClInvert(img,out);
 	elapsed_us = TimerElapsed();
-	printf("Primeira chamada da vglClInvert: %.6f ms \n", elapsed_us/1000.0);
+	printf("Primeira chamada da vglClInvert: %s \n", getTimeElapsed());
 	//Mede o tempo para 1000 invert sem a criação da operação
 	p = 0;
 	TimerStart();
@@ -184,8 +184,7 @@ int main()
 		p++;
 		vglClInvert(out, out);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 invert: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 invert: %s\n", getTimeElapsed());
 	VglImage* gray = vglCreateImage(img);
 	gray->ipl = cvCreateImage(cvGetSize(gray->ipl),IPL_DEPTH_8U,1);
 
@@ -195,8 +194,7 @@ int main()
 	//Primeira chamada a vglClCopy
 	TimerStart();
 	vglClCopy(img,out);
-	elapsed_us = TimerElapsed();
-	printf("Primeira chamada da vglClCopy: %.6f ms \n", elapsed_us/1000.0);
+	printf("Primeira chamada da vglClCopy: %s \n", getTimeElapsed());
 	//Mede o tempo para 1000 copia GPU->GPU
 	p = 0;
 	TimerStart();
@@ -205,8 +203,7 @@ int main()
 		p++;
 		vglClCopy(img, out);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 copia GPU->GPU: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 copia GPU->GPU: %s\n", getTimeElapsed());
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_clcopy.tif", out->ipl);
@@ -219,8 +216,7 @@ int main()
 		p++;
 		cvCvtColor(img->ipl,gray->ipl, CV_BGR2GRAY);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 conversões BGR->Gray: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 conversões BGR->Gray: %s\n", getTimeElapsed());
 
 
         vglCheckContext(gray, VGL_RAM_CONTEXT);
@@ -234,8 +230,7 @@ int main()
 		p++;
 		cvCvtColor(img->ipl,out->iplRGBA, CV_BGR2RGBA);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 conversões BGR->RGBA: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 conversões BGR->RGBA: %s\n", getTimeElapsed());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -249,8 +244,7 @@ int main()
 		p++;
 		vglClUpload(img);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 copia CPU->GPU, inclui conversão BGR->RGBA: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 copia CPU->GPU, inclui conversão BGR->RGBA: %s\n", getTimeElapsed());
 
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
@@ -264,8 +258,7 @@ int main()
 		p++;
 		vglClDownload(img);
 	}
-	elapsed_us = TimerElapsed();
-	printf("Tempo gasto para fazer 1000 copia GPU->CPU inclui conversão RGBA->BGR: %.2f s\n", elapsed_us/1000000.0);
+	printf("Tempo gasto para fazer 1000 copia GPU->CPU inclui conversão RGBA->BGR: %s\n", getTimeElapsed());
 
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
@@ -275,6 +268,6 @@ int main()
 
 	//flush
 	vglClFlush();
-	//system("pause");
+	system("pause");
 	return 0;
 }
