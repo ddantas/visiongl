@@ -27,7 +27,6 @@ if(NOT ${OpenCV_FOUND})
 		
 		message("OpenCV Include: " ${OPENCV_INCLUDE_DIR})
 		message("OpenCV Library: " ${OPENCV_LIBRARY})
-		message("OpenCV Debug:   " opencv_highgui${OpenCV_VERSION}.lib)
 		
 		if (NOT (${OPENCV_INCLUDE_DIR} STREQUAL "OPENCV_INCLUDE_DIR-NOTFOUND" AND ${OPENCV_LIBRARY} STREQUAL "OPENCV_LIBRARY-NOTFOUND"))
 			set(OPENCV_FOUND TRUE)
