@@ -27,7 +27,7 @@ int main()
         //printf("main: printing CL context after init\n");
         //vglClPrintContext();	
 
-	char* image_path = (char*) "../images/lena_1024.tif";
+	char* image_path = (char*) "../images/lena_std.tif";
 	VglImage* img = vglLoadImage(image_path,1,0);
 
         //vglCheckContext(img, VGL_CL_CONTEXT);

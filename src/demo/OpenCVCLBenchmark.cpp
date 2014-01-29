@@ -5,22 +5,14 @@
 #include <opencv2/ocl/ocl.hpp>
 
 #include "demo/timer.h"
-#include <ctime>
-
 #include <fstream>
 
-//#include "demo/timer.h"
 using namespace std;
 using namespace cv;
-void teste(const cv::ocl::oclMat &src, const cv::ocl::oclMat &out)
-{
-	printf("Recebida imagem de dimensão : %d x %d",src.cols,src.rows);
-}
-
 
 int main()
 {
-	char* image_path = (char*) "../images/lena_1024.tif";
+	char* image_path = (char*) "../images/lena_std.tif";
 	IplImage* imgx = cvLoadImage(image_path,1);
 	cv::Mat imgxm = cv::Mat(imgx);
 	cvtColor(imgxm,imgxm,CV_BGR2RGBA);
@@ -72,7 +64,7 @@ int main()
                                     {1.0f/256.0f,  4.0f/256.0f,  6.0f/256.0f,  4.0f/256.0f, 1.0f/256.0f}, }; //blur 5x5
 
 
-	//Primeira chamada a vglClConvolution
+	//Primeira chamada a Convolution
 	
 	CvMat* cvkernel33;
 	cvkernel33 = cvCreateMat(3,3,CV_32F);
@@ -126,7 +118,7 @@ int main()
 	TimerStart();
 	ocl::oclMat aux(img);
 	ocl::cvtColor(img,img,CV_RGBA2GRAY);
-	ocl::threshold(img,out,0.5f,255,3);
+	ocl::threshold(img,out,128,255);
 	
 	printf("Primeira chamada da cvThreshold: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 thresholds sem a criação da operação
@@ -135,7 +127,7 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		ocl::threshold(img,out,0.5f,255,3);
+		ocl::threshold(img,out,128,255);
 	}
 	printf("Tempo gasto para fazer 1000 threshold: %s\n", getTimeElapsedInSeconds());
 
