@@ -154,9 +154,10 @@ int main()
 		cv::imwrite("../images/lenaout_invert.png", saveout,saveparams);
 
 	TimerStart();
-	cv::Mat cpmat(1,1,CV_8UC1,Scalar(1));
+	/*cv::Mat cpmat(1,1,CV_8UC1,Scalar(1));
 	cv::Ptr<ocl::FilterEngine_GPU> copy = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4,cpmat);
-	copy->apply(img,out);
+	copy->apply(img,out);*/
+	img.copyTo(out);
 	printf("Primeira chamada da cvCopy: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 copia GPU->GPU
 	p = 0;
@@ -164,7 +165,7 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		copy->apply(img,out);
+		img.copyTo(out);
 	}
 	printf("Tempo gasto para fazer 1000 copia GPU->GPU: %s\n", getTimeElapsedInSeconds());
 
@@ -173,22 +174,25 @@ int main()
 		cv::imwrite("../images/lenaout_copy.png", saveout,saveparams);
 
 	//Mede o tempo para 1000 copia CPU->GPU
+	img.create(Size(10,10),CV_8UC4);
+	ocl::oclMat x;
 	p = 0;
 	TimerStart();
 	while (p < 1000)
 	{
 		p++;
-		ocl::oclMat x(imgxm);
+		x = *new ocl::oclMat(imgxm);
 	}
 	printf("Tempo gasto para fazer 1000 copia CPU->GPU %s\n", getTimeElapsedInSeconds());
 
 	//Mede o tempo para 1000 copia GPU->CPU
+	cv::Mat x2;
 	p = 0;
 	TimerStart();
 	while (p < 1000)
 	{
 		p++;
-		cv::Mat x(img);
+		x2 = *new cv::Mat(img);
 	}
 	printf("Tempo gasto para fazer 1000 copia GPU->CPU %s\n", getTimeElapsedInSeconds());
 
