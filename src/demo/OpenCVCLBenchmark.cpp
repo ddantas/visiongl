@@ -1,6 +1,8 @@
 #define __OPENCL__
+#include <opencv2/legacy.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui/highgui_c.h>
 #include <opencv2/nonfree/ocl.hpp>
 #include <opencv2/ocl/ocl.hpp>
 
@@ -13,8 +15,7 @@ using namespace cv;
 int main()
 {
 	char* image_path = (char*) "../images/lena_std.tif";
-	IplImage* imgx = cvLoadImage(image_path,1);
-	cv::Mat imgxm = cv::Mat(imgx);
+	cv::Mat imgxm = imread(image_path,1);
 	cvtColor(imgxm,imgxm,CV_BGR2RGBA);
 	ocl::oclMat img(imgxm), out(imgxm);
 
@@ -66,23 +67,20 @@ int main()
 
 	//Primeira chamada a Convolution
 	
-	CvMat* cvkernel33;
-	cvkernel33 = cvCreateMat(3,3,CV_32F);
+        Mat cvkernel33 = (Mat_<float>(3,3) << 1/9.0, 1/9.0, 1/9.0, 
+                                              1/9.0, 1/9.0, 1/9.0, 
+	                                      1/9.0, 1/9.0, 1/9.0  );
 
-	for(int i = 0; i < 3; i++)
-		for(int j = 0; j < 3; j++)
-			cvSet2D(cvkernel33,i,j,cvScalar(kernel33[i][j]));
+        Mat cvkernel55 = (Mat_<float>(3,3) << 1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                              1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                              1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                              1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                              1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0  );
 
-	CvMat* cvkernel55;
-	cvkernel55 = cvCreateMat(5,5,CV_32F);
-	
-	for(int i = 0; i < 5; i++)
-		for(int j = 0; j < 5; j++)
-			cvSet2D(cvkernel55,i,j,cvScalar(kernel55[i][j]));
 	
 	TimerStart();
-	cv::Ptr<ocl::FilterEngine_GPU> filter33 = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4,cvkernel33);
-	cv::Ptr<ocl::FilterEngine_GPU> filter55 = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4,cvkernel55);
+	cv::Ptr<ocl::FilterEngine_GPU> filter33 = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4, cvkernel33);
+	cv::Ptr<ocl::FilterEngine_GPU> filter55 = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4, cvkernel55);
 	filter33->apply(img,out);
 	printf("Primeira chamada da Filter2D com kernel 3x3: %s\n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 convoluções 3x3 sem a criação da operação

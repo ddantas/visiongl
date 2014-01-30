@@ -75,9 +75,9 @@ double TimerElapsed(int start){
 	  QueryPerformanceCounter(Tpf);
   }
   return double((Tpf->QuadPart - Tps->QuadPart)/freq);
-
-#endif
 }
+#endif
+
 
 /** \brief Timer start.
 

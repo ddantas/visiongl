@@ -10,6 +10,8 @@ CUDA_NAME          = vglcuda
 FRACTAL_NAME       = fractal
 CAM_NAME           = cam
 CLBENCHMARK_NAME   = clbenchmark
+CVBENCHMARK_NAME   = opencvbenchmark
+CVCLBENCHMARK_NAME = OpenCVCLBenchmark
 
 ROOTDIR            = .
 INCLUDE_DIR        = $(ROOTDIR)/src
@@ -103,6 +105,18 @@ LINUXAMD64_DEMO_CLBENCHMARK = $(CC) $(COMPILER_FLAGS) \
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS) \
 
+LINUXAMD64_DEMO_CVBENCHMARK = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINDIR)/demo_$(CVBENCHMARK_NAME) \
+                         src/demo/$(CVBENCHMARK_NAME).cpp src/demo/timer.cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS) \
+
+LINUXAMD64_DEMO_CVCLBENCHMARK = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINDIR)/demo_$(CVCLBENCHMARK_NAME) \
+                         src/demo/$(CVCLBENCHMARK_NAME).cpp src/demo/timer.cpp \
+                         -lvisiongl -lopencv_ocl \
+                         $(LINUXAMD64_DIRS_LIBS) \
+
 
 
 GENERATE_HEADER = cat $(INCLUDE_DIR)/vglHead.h $(INCLUDE_DIR)/vglImage.h $(INCLUDE_DIR)/vglCudaImage.h $(INCLUDE_DIR)/vglContext.h $(INCLUDE_DIR)/vglSimpleBGModel.h $(INCLUDE_DIR)/glsl2cpp*.h $(INCLUDE_DIR)/kernel2cu*.h $(INCLUDE_DIR)/cl2cpp*.h $(INCLUDE_DIR)/vglTail.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEDIR)/$(BINARY_NAME).h
@@ -131,6 +145,8 @@ democam:
 
 democlbenchmark:
 	$(LINUXAMD64_DEMO_CLBENCHMARK)
+	$(LINUXAMD64_DEMO_CVBENCHMARK)
+	$(LINUXAMD64_DEMO_CVCLBENCHMARK)
 
 .PHONY: lib
 
