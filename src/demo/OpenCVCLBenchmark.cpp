@@ -166,7 +166,7 @@ int main()
 		p++;
 		copy->apply(img,out);
 	}
-	printf("Tempo gasto para fazer 1000 copia CPU->CPU: %s\n", getTimeElapsedInSeconds());
+	printf("Tempo gasto para fazer 1000 copia GPU->GPU: %s\n", getTimeElapsedInSeconds());
 
         saveout = *new cv::Mat(out);
 		cvtColor(saveout,saveout,CV_RGBA2BGR);
