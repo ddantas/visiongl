@@ -1,9 +1,5 @@
-#define __OPENCL__
-#include <opencv2/legacy.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/highgui/highgui_c.h>
-#include <opencv2/nonfree/ocl.hpp>
 #include <opencv2/ocl/ocl.hpp>
 
 #include "demo/timer.h"
@@ -14,8 +10,9 @@ using namespace cv;
 
 int main()
 {
-	char* image_path = (char*) "../images/lena_std.tif";
+	char* image_path = (char*) "../images/lena_1024.tif";
 	cv::Mat imgxm = imread(image_path,1);
+
 	cvtColor(imgxm,imgxm,CV_BGR2RGBA);
 	ocl::oclMat img(imgxm), out(imgxm);
 
@@ -38,7 +35,7 @@ int main()
 	Size ksize(3,3);
 	TimerStart();
 	ocl::blur(img,out,ksize);
-	printf("Primeira chamada da cvSmooth: %s \n", getTimeElapsedInSeconds());
+	printf("Primeira chamada de Blur: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 blur 3x3 sem a criação da operação
 	int p = 0;
 	TimerStart();
@@ -47,42 +44,30 @@ int main()
 		p++;
 		ocl::blur(img,out,ksize);
 	}
-	printf("Tempo gasto para fazer 1000 blur 3x3: %s\n", getTimeElapsedInSeconds());
+	printf("Tempo gasto para fazer 1000 Blur 3x3: %s\n", getTimeElapsedInSeconds());
 
 		cv::Mat saveout(out);
 		cvtColor(saveout,saveout,CV_RGBA2BGR);
         cv::imwrite("../images/lenaout_blur33.png", saveout,saveparams);
 		
-
-        // Kernels para convolucao
-	float kernel33[3][3]    = { {1.0f/16.0f, 2.0f/16.0f, 1.0f/16.0f},
-                                    {2.0f/16.0f, 4.0f/16.0f, 2.0f/16.0f},
-                                    {1.0f/16.0f, 2.0f/16.0f, 1.0f/16.0f}, }; //blur 3x3
-	float kernel55[5][5]    = { {1.0f/256.0f,  4.0f/256.0f,  6.0f/256.0f,  4.0f/256.0f, 1.0f/256.0f},
-                                    {4.0f/256.0f, 16.0f/256.0f, 24.0f/256.0f, 16.0f/256.0f, 4.0f/256.0f},
-                                    {6.0f/256.0f, 24.0f/256.0f, 36.0f/256.0f, 24.0f/256.0f, 6.0f/256.0f},
-                                    {4.0f/256.0f, 16.0f/256.0f, 24.0f/256.0f, 16.0f/256.0f, 4.0f/256.0f},
-                                    {1.0f/256.0f,  4.0f/256.0f,  6.0f/256.0f,  4.0f/256.0f, 1.0f/256.0f}, }; //blur 5x5
-
-
 	//Primeira chamada a Convolution
 	
-        Mat cvkernel33 = (Mat_<float>(3,3) << 1/9.0, 1/9.0, 1/9.0, 
-                                              1/9.0, 1/9.0, 1/9.0, 
+    Mat cvkernel33 = (Mat_<float>(3,3) << 1/9.0, 1/9.0, 1/9.0, 
+                                          1/9.0, 1/9.0, 1/9.0, 
 	                                      1/9.0, 1/9.0, 1/9.0  );
 
-        Mat cvkernel55 = (Mat_<float>(3,3) << 1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
-                                              1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
-                                              1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
-                                              1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
-                                              1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0  );
+   Mat cvkernel55 = (Mat_<float>(5,5) << 1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                         1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                         1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                         1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                         1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0  );
 
 	
 	TimerStart();
 	cv::Ptr<ocl::FilterEngine_GPU> filter33 = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4, cvkernel33);
 	cv::Ptr<ocl::FilterEngine_GPU> filter55 = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4, cvkernel55);
 	filter33->apply(img,out);
-	printf("Primeira chamada da Filter2D com kernel 3x3: %s\n", getTimeElapsedInSeconds());
+	printf("Primeira chamada da Convolucao com kernel 3x3: %s\n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 convoluções 3x3 sem a criação da operação
 	p = 0;
 	TimerStart();
@@ -114,25 +99,24 @@ int main()
 
 	//Primeira chamada a threshold
 	TimerStart();
-	ocl::oclMat aux(img);
-	ocl::cvtColor(img,img,CV_RGBA2GRAY);
-	ocl::threshold(img,out,128,255);
+	Mat cverode33 = getStructuringElement(MORPH_CROSS, Size( 3, 3 ));
+	ocl::erode(img,out,cverode33);
 	
-	printf("Primeira chamada da cvThreshold: %s \n", getTimeElapsedInSeconds());
+	printf("Primeira chamada da Erode: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 thresholds sem a criação da operação
 	p = 0;
 	TimerStart();
 	while (p < 1000)
 	{
 		p++;
-		ocl::threshold(img,out,128,255);
+		ocl::erode(img,out,cverode33);
 	}
-	printf("Tempo gasto para fazer 1000 threshold: %s\n", getTimeElapsedInSeconds());
+	printf("Tempo gasto para fazer 1000 Erode: %s\n", getTimeElapsedInSeconds());
 
 		saveout = *new cv::Mat(out);
-		//cvtColor(saveout,saveout,CV_RGBA2BGR);
+		cvtColor(saveout,saveout,CV_RGBA2BGR);
 		cv::imwrite("../images/lenaout_thresh.png", saveout,saveparams);
-	img = aux;
+	
 	//Primeira chamada a vglClInvert
 	TimerStart();
 	ocl::bitwise_not(img,out);
@@ -152,18 +136,17 @@ int main()
 		cv::imwrite("../images/lenaout_invert.png", saveout,saveparams);
 
 	TimerStart();
-	/*cv::Mat cpmat(1,1,CV_8UC1,Scalar(1));
-	cv::Ptr<ocl::FilterEngine_GPU> copy = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4,cpmat);
-	copy->apply(img,out);*/
+	
 	img.copyTo(out);
-	printf("Primeira chamada da cvCopy: %s \n", getTimeElapsedInSeconds());
+	printf("Primeira chamada da Copy: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 copia GPU->GPU
 	p = 0;
 	TimerStart();
+	ocl::oclMat x1(img.size(), CV_8UC4);
 	while (p < 1000)
 	{
 		p++;
-		img.copyTo(out);
+		img.copyTo(x1);
 	}
 	printf("Tempo gasto para fazer 1000 copia GPU->GPU: %s\n", getTimeElapsedInSeconds());
 
@@ -172,16 +155,16 @@ int main()
 		cv::imwrite("../images/lenaout_copy.png", saveout,saveparams);
 
 	//Mede o tempo para 1000 copia CPU->GPU
-	img.create(Size(10,10),CV_8UC4);
+	
 	ocl::oclMat x;
 	p = 0;
 	TimerStart();
 	while (p < 1000)
 	{
 		p++;
-		x = *new ocl::oclMat(imgxm);
+		img.upload(imgxm);
 	}
-	printf("Tempo gasto para fazer 1000 copia CPU->GPU %s\n", getTimeElapsedInSeconds());
+	printf("Tempo gasto para fazer 1000 copia CPU->GPU(Upload) %s\n", getTimeElapsedInSeconds());
 
 	//Mede o tempo para 1000 copia GPU->CPU
 	cv::Mat x2;
@@ -190,9 +173,9 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		x2 = *new cv::Mat(img);
+		img.download(x2);
 	}
-	printf("Tempo gasto para fazer 1000 copia GPU->CPU %s\n", getTimeElapsedInSeconds());
+	printf("Tempo gasto para fazer 1000 copia GPU->CPU(Download) %s\n", getTimeElapsedInSeconds());
 
 	system("pause");
 	return 0;
