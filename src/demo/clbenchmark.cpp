@@ -149,18 +149,19 @@ int main()
         cvSaveImage("../images/lenaout_conv55.tif", out->ipl);
 
 	//Primeira chamada a threshold
+	float erodemask[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
 	TimerStart();
-	vglClThreshold(img,out,0.5f);
-	printf("Primeira chamada da vglClThreshold: %s \n", getTimeElapsedInSeconds());
+	vglClErosion(img,out,erodemask,3,3);
+	printf("Primeira chamada da vglClErosion: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 thresholds sem a criação da operação
 	p = 0;
 	TimerStart();
 	while (p < 1000)
 	{
 		p++;
-		vglClThreshold(out, out, 0.5f);
+		vglClErosion(img,out,erodemask,3,3);
 	}
-	printf("Tempo gasto para fazer 1000 threshold: %s\n", getTimeElapsedInSeconds());
+	printf("Tempo gasto para fazer 1000 erosions: %s\n", getTimeElapsedInSeconds());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);

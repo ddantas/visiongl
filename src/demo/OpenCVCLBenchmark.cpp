@@ -34,7 +34,8 @@ int main()
 	//Primeira chamada a blurSq3
 	Size ksize(3,3);
 	TimerStart();
-	ocl::blur(img,out,ksize);
+	ocl::GaussianBlur(img,out,Size(3,3),0);
+	//ocl::blur(img,out,ksize);
 	printf("Primeira chamada de Blur: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para 1000 blur 3x3 sem a criação da operação
 	int p = 0;
@@ -42,7 +43,8 @@ int main()
 	while (p < 1000)
 	{
 		p++;
-		ocl::blur(img,out,ksize);
+		//ocl::blur(img,out,ksize);
+		ocl::GaussianBlur(img,out,Size(3,3),0);
 	}
 	printf("Tempo gasto para fazer 1000 Blur 3x3: %s\n", getTimeElapsedInSeconds());
 
@@ -56,11 +58,11 @@ int main()
                                           1/9.0, 1/9.0, 1/9.0, 
 	                                      1/9.0, 1/9.0, 1/9.0  );
 
-   Mat cvkernel55 = (Mat_<float>(5,5) << 1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
-                                         1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
-                                         1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
-                                         1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
-                                         1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0  );
+    Mat cvkernel55 = (Mat_<float>(5,5) << 1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                          1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                          1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                          1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+                                          1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0  );
 
 	
 	TimerStart();

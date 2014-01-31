@@ -32,3 +32,5 @@ void vglClInvert(VglImage* img_input, VglImage* img_output);
   */
 void vglClThreshold(VglImage* src, VglImage* dst, float thresh);
 
+void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+
