@@ -10,7 +10,11 @@
 #include "demo/timer.h"
 #include <fstream>
 
-
+/*
+	argv[1] = input_image_path
+	argv[2] = number of operations to execute
+	argv[3] = output_image_path
+*/
 int main(int argc, char* argv[])
 {
 	printf("Usage: OpenCVCLBenchmark lena_1024.tiff 1000 output.out\n");
@@ -123,14 +127,14 @@ int main(int argc, char* argv[])
 	while (p < limite)
 	{
 		p++;
-		vglClInvert(out, out);
+		vglClInvert(img, out);
 	}
 	fprintf(f,"Tempo gasto para fazer %d invert: %s\n",limite, getTimeElapsedInSeconds());
 	VglImage* gray = vglCreateImage(img);
 	gray->ipl = cvCreateImage(cvGetSize(gray->ipl),IPL_DEPTH_8U,1);
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lenaout_invert.tif", out->ipl);
+        cvSaveImage("../images/lenaout_invert", out->ipl);
 
 	//Primeira chamada a vglClCopy
 	TimerStart();
