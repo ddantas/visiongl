@@ -10,10 +10,19 @@
 using namespace cv;
 
 
-int main()
+int main(int argc, char* argv[])
 {
-	char* image_path = (char*) "../images/lena_1024.tif";
+	printf("Usage: OpenCVCLBenchmark lena_1024.tiff 1000 output.out\n");
+	printf("for this example, will run the program for lena_1024.tiff using 1000 operations each and output benchmark at output.out\n");
+	if (argc != 4)
+	{
+		printf("bad arguments, read usage again %d \n", argc);
+		exit(1);
+	}
+	int limite = atoi(argv[2]);
+	char* image_path = argv[1];
 	cv::Mat img = imread(image_path,1);
+	FILE* f = fopen(argv[3],"w");
 	
 	vector<int> saveparams;
 	saveparams.push_back(CV_IMWRITE_PNG_COMPRESSION);
@@ -21,33 +30,27 @@ int main()
 	
 	if (img.data == NULL)
 	{
-                printf("Y\n");
-		std::string str("cvLoadImage/File not found: ");
-                printf("Y\n");
+        std::string str("cvLoadImage/File not found: ");
 		str.append(image_path);
-                printf("Y\n");
 		printf("%s",str.c_str());
-                printf("Y\n");
 	}
 	cv::Mat out(img.cols,img.rows,CV_8UC3);
 
 	//Primeira chamada a blurSq3
 	TimerStart();
 	cv::GaussianBlur(img,out,Size(3,3),0);
-	printf("Primeira chamada da Blur: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 blur 3x3 sem a criação da operação
+	fprintf(f,"Primeira chamada da Blur: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" blur 3x3 sem a criação da operação
 	int p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		cv::GaussianBlur(img,out,Size(3,3),0);
 	}
-	printf("Tempo gasto para fazer 1000 Blur 3x3: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d Blur 3x3: %s\n",limite, getTimeElapsedInSeconds());
 
-
-        //vglCheckContext(out, VGL_RAM_CONTEXT);
-        cv::imwrite("../images/lenaout_blur33.png", out,saveparams);
+    cv::imwrite("../images/lenaout_blur33.png", out,saveparams);
 
     // Kernels para convolucao
 	
@@ -64,72 +67,65 @@ int main()
 	
 	TimerStart();
 	cv::filter2D(img,out,-1, cvkernel33);
-	printf("Primeira chamada da Filter2D com kernel 3x3: %s\n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 convoluções 3x3 sem a criação da operação
+	fprintf(f,"Primeira chamada da Filter2D com kernel 3x3: %s\n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" convoluções 3x3 sem a criação da operação
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		cv::filter2D(img,out,-1, cvkernel33);
 	}
-	printf("Tempo gasto para fazer 1000 convolucoes 3x3: %s \n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d convolucoes 3x3: %s \n",limite, getTimeElapsedInSeconds());
 
 
         cv::imwrite("../images/lenaout_conv33.png", out,saveparams);
 
-	//Mede o tempo para 1000 convoluções 5x5 sem a criação da operação
+	//Mede o tempo para "limite" convoluções 5x5 sem a criação da operação
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		cv::filter2D(img,out,-1, cvkernel55);
 	}
-	printf("Tempo gasto para fazer 1000 convolucoes 5x5: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d convolucoes 5x5: %s\n",limite, getTimeElapsedInSeconds());
 
-
-        //vglCheckContext(out, VGL_RAM_CONTEXT);
-        cv::imwrite("../images/lenaout_conv55.png", out,saveparams);
-
+    cv::imwrite("../images/lenaout_conv55.png", out,saveparams);
 	
 	//Primeira chamada a threshold
 	TimerStart();
 	Mat cverode33 = getStructuringElement(MORPH_CROSS, Size( 3, 3 ));
 	cv::erode(img,out,cverode33);
-	printf("Primeira chamada da cvThreshold: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 thresholds sem a criação da operação
+	fprintf(f,"Primeira chamada da cv::Erode : %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" thresholds sem a criação da operação
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		cv::erode(img,out,cverode33);
 	}
-	printf("Tempo gasto para fazer 1000 threshold: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d Erosions: %s\n",limite, getTimeElapsedInSeconds());
 
 
-        //vglCheckContext(out, VGL_RAM_CONTEXT);
-        cv::imwrite("../images/lenaout_erode33.png", out,saveparams);
+    cv::imwrite("../images/lenaout_erode33.png", out,saveparams);
 	
-	
-	//Primeira chamada a vglClInvert
+
+	//invert
 	TimerStart();
 	
-	/*for(int i = 0; i < img->width; i++)
-			for(int j = 0; j < img->height; j++)
-				cvSet(out,cvScalar(255-cvGet2D(img,i,j).val[0],255-cvGet2D(img,i,j).val[1],255-cvGet2D(img,i,j).val[2]));*/
 	cv::bitwise_not(img,out);
-	printf("Primeira chamada da Invert: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 invert sem a criação da operação
+	fprintf(f,"Primeira chamada da Invert: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" invert sem a criação da operação
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		cv::bitwise_not(img,out);
 	}
-	printf("Tempo gasto para fazer 1000 Invert: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d Invert: %s\n",limite, getTimeElapsedInSeconds());
 
 	    //vglCheckContext(out, VGL_RAM_CONTEXT);
 		cv::imwrite("../images/lenaout_invert33.png", out,saveparams);
@@ -137,87 +133,45 @@ int main()
 	//Primeira chamada a vglClCopy
 	TimerStart();
 	img.copyTo(out);
-	printf("Primeira chamada da cvCopy: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 copia GPU->GPU
+	fprintf(f,"Primeira chamada da cvCopy: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" copia GPU->GPU
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		img.copyTo(out);
 	}
-	printf("Tempo gasto para fazer 1000 copia CPU->CPU: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d copia CPU->CPU: %s\n",limite, getTimeElapsedInSeconds());
 
-        //vglCheckContext(out, VGL_RAM_CONTEXT);
-		cv::imwrite("../images/lenaout_copy.png", out,saveparams);
+	cv::imwrite("../images/lenaout_copy.png", out,saveparams);
 
 	cv::Mat gray(img.cols,img.rows,CV_8UC1);	
-	//Mede o tempo para 1000 conversão RGB->Grayscale na CPU
+	//Mede o tempo para "limite" conversão RGB->Grayscale na CPU
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		cvtColor(img,gray, CV_BGR2GRAY);
 	}
-	printf("Tempo gasto para fazer 1000 conversões BGR->Gray: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d conversões BGR->Gray: %s\n",limite, getTimeElapsedInSeconds());
 
-	
-        //vglCheckContext(gray, VGL_RAM_CONTEXT);
-		cv::imwrite("../images/lenaout_rgbtogray.png", gray,saveparams);
+	cv::imwrite("../images/lenaout_rgbtogray.png", gray,saveparams);
 
 	cv::Mat RGBA(img.cols,img.rows,CV_8UC4);	
-	//Mede o tempo para 1000 conversão RGB->RGBA na CPU
+	//Mede o tempo para "limite" conversão RGB->RGBA na CPU
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		cvtColor(img,RGBA, CV_BGR2RGBA);
 	}
-	printf("Tempo gasto para fazer 1000 conversões BGR->RGBA: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d conversões BGR->RGBA: %s\n",limite, getTimeElapsedInSeconds());
 
-	
-        //vglCheckContext(out, VGL_RAM_CONTEXT);
-		cv::imwrite("../images/lenaout_rgbtorgba.png", RGBA,saveparams);
+	cv::imwrite("../images/lenaout_rgbtorgba.png", RGBA,saveparams);
 
-
-	system("pause");
-	exit(0);
-	
-	/*
-	//Mede o tempo para 1000 copia CPU->GPU
-	p = 0;
-	TimerStart();
-	while (p < 1000)
-	{
-		p++;
-		vglClUpload(img);
-	}
-	printf("Tempo gasto para fazer 1000 copia CPU->GPU, inclui conversão BGR->RGBA: %s\n", getTimeElapsed());
-
-
-        vglCheckContext(img, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lenaout_upload.tif", img->ipl);
-
-	//Mede o tempo para 1000 copia GPU->CPU
-	p = 0;
-	TimerStart();
-	while (p < 1000)
-	{
-		p++;
-		vglClDownload(img);
-	}
-	printf("Tempo gasto para fazer 1000 copia GPU->CPU inclui conversão RGBA->BGR: %s\n", getTimeElapsed());
-
-
-        vglCheckContext(img, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lenaout_download.tif", img->ipl);
-
-
-
-	//flush
-	vglClFlush();*/
-	system("pause");
+	fclose(f);
 	return 0;
 }

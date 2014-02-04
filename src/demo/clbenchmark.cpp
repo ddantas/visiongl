@@ -8,103 +8,53 @@
 #include <opencv2/highgui/highgui_c.h>
 
 #include "demo/timer.h"
-#include <ctime>
-
 #include <fstream>
 
-//#include "demo/timer.h"
 
-
-int main()
+int main(int argc, char* argv[])
 {
-
-        //printf("main: printing CL context before init\n");
-        //vglClPrintContext();	
-
+	printf("Usage: OpenCVCLBenchmark lena_1024.tiff 1000 output.out\n");
+	printf("for this example, will run the program for lena_1024.tiff using 1000 operations each and output benchmark at output.out\n");
+	
+	if (argc != 4)
+	{
+		printf("bad arguments, read usage again\n");
+		exit(1);
+	}
 	vglInit(50,50);
 	vglClInit();
 
-        //printf("main: printing CL context after init\n");
-        //vglClPrintContext();	
-
-	char* image_path = (char*) "../images/lena_std.tif";
+	int limite = atoi(argv[2]);
+	char* image_path = argv[1];
+	FILE* f = fopen(argv[3],"w");
 	VglImage* img = vglLoadImage(image_path,1,0);
-
-        //vglCheckContext(img, VGL_CL_CONTEXT);
-
-        if (0)
-        {// pipeline test 
-          VglImage* img1 = vglCreateImage(img);
-          vglClInvert(img, img1);
-
-          VglImage* img2 = vglCreateImage(img);
-          //float convolution[3][3] = { {0.0f/9.0f,0.0f/9.0f,0.0f/9.0f},{1.0f/9.0f,1.0f/9.0f,1.0f/9.0f},{0.0f/9.0f,0.0f/9.0f,0.0f/9.0f} }; //Operador blur
-          vglClBlurSq3(img1, img2);
-
-          VglImage* img3 = vglCreateImage(img);
-          vglClThreshold(img2, img3, .15f);
-
-
-          vglClCopy(img2, img);
-          vglCheckContext(img, VGL_RAM_CONTEXT);
-          cvSaveImage("../images/lenaout_pipeline.tif", img->ipl);
-	}
-	// exit(0);
-
-
-
-
-	/*
-        printf("-----calling vglClUpload\n");
-        //vglClUpload(img);
-        vglCheckContext(img, VGL_CL_CONTEXT);
-        printf("-----called vglClUpload\n");
-        cvSet(img->ipl, CV_RGB(255,0,0));
-        cvSaveImage("../images/lenaout_conv33_red.tif", img->ipl);
-
-	//float kernelMean[3][3] = { {0.0f/9.0f,0.0f/9.0f,0.0f/9.0f},{1.0f/9.0f,1.0f/9.0f,1.0f/9.0f},{0.0f/9.0f,0.0f/9.0f,0.0f/9.0f} }; //Operador blur
-	vglClBlurSq3(img, img);
-
-
-        printf("calling vglClDownload\n");
-        //vglClDownload(img);
-        //vglSetContext(img, VGL_CL_CONTEXT);
-        vglCheckContext(img, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lenaout_conv33_download.tif", img->ipl);
-        //vglClPrintContext();	
-	*/
 
 	if (img == NULL)
 	{
-                printf("Y\n");
-		std::string str("cvLoadImage/File not found: ");
-                printf("Y\n");
+        std::string str("cvLoadImage/File not found: ");
 		str.append(image_path);
-                printf("Y\n");
-		vglClCheckError(-1,(char*) str.c_str());
-                printf("Y\n");
+		printf("%s",str.c_str());
 	}
 	VglImage* out = vglCreateImage(img);
 
 	//Primeira chamada a blurSq3
 	TimerStart();
 	vglClBlurSq3(img, out);
-	printf("Primeira chamada da vglClBlurSq3: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 blur 3x3 sem a criação da operação
+	fprintf(f,"Primeira chamada da vglClBlurSq3: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" blur 3x3 sem a criação da operação
 	int p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		vglClBlurSq3(img, out);
 	}
-	printf("Tempo gasto para fazer 1000 blur 3x3: %s\n", getTimeElapsedInSeconds());
-
+	fprintf(f,"Tempo gasto para fazer %d blur 3x3: %s\n",limite, getTimeElapsedInSeconds());
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_blur33.tif", out->ipl);
 
-        // Kernels para convolucao
+    // Kernels para convolucao
 	float kernel33[3][3]    = { {1.0f/16.0f, 2.0f/16.0f, 1.0f/16.0f},
                                     {2.0f/16.0f, 4.0f/16.0f, 2.0f/16.0f},
                                     {1.0f/16.0f, 2.0f/16.0f, 1.0f/16.0f}, }; //blur 3x3
@@ -118,68 +68,64 @@ int main()
 	//Primeira chamada a vglClConvolution
 	TimerStart();
 	vglClConvolution(img, out, (float*) kernel33, 3, 3);
-	printf("Primeira chamada da vglClConvolution: %s\n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 convoluções 3x3 sem a criação da operação
+	fprintf(f,"Primeira chamada da vglClConvolution: %s\n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" convoluções 3x3 sem a criação da operação
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		vglClConvolution(img, out, (float*) kernel33, 3, 3);
 	}
-	printf("Tempo gasto para fazer 1000 convolucoes 3x3: %s \n", getTimeElapsedInSeconds());
-
+	fprintf(f,"Tempo gasto para fazer %d convolucoes 3x3: %s \n",limite, getTimeElapsedInSeconds());
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_conv33.tif", out->ipl);
 
-
 	//Mede o tempo para 1000 convoluções 5x5 sem a criação da operação
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		vglClConvolution(img, out, (float*) kernel55, 5, 5);
 	}
-	printf("Tempo gasto para fazer 1000 convolucoes 5x5: %s\n", getTimeElapsedInSeconds());
-
+	fprintf(f,"Tempo gasto para fazer %d convolucoes 5x5: %s\n",limite, getTimeElapsedInSeconds());
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_conv55.tif", out->ipl);
 
-	//Primeira chamada a threshold
+	//Primeira chamada a Erosion
 	float erodemask[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
 	TimerStart();
 	vglClErosion(img,out,erodemask,3,3);
-	printf("Primeira chamada da vglClErosion: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 thresholds sem a criação da operação
+	fprintf(f,"Primeira chamada da vglClErosion: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" erosions sem a criação da operação
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		vglClErosion(img,out,erodemask,3,3);
 	}
-	printf("Tempo gasto para fazer 1000 erosions: %s\n", getTimeElapsedInSeconds());
-
+	fprintf(f,"Tempo gasto para fazer %d erosions: %s\n",limite, getTimeElapsedInSeconds());
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lenaout_thresh.tif", out->ipl);
+        cvSaveImage("../images/lenaout_erosion.tif", out->ipl);
 
 	//Primeira chamada a vglClInvert
 	TimerStart();
 	vglClInvert(img,out);
-	printf("Primeira chamada da vglClInvert: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 invert sem a criação da operação
+	fprintf(f,"Primeira chamada da vglClInvert: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" invert sem a criação da operação
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		vglClInvert(out, out);
 	}
-	printf("Tempo gasto para fazer 1000 invert: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d invert: %s\n",limite, getTimeElapsedInSeconds());
 	VglImage* gray = vglCreateImage(img);
 	gray->ipl = cvCreateImage(cvGetSize(gray->ipl),IPL_DEPTH_8U,1);
 
@@ -189,80 +135,75 @@ int main()
 	//Primeira chamada a vglClCopy
 	TimerStart();
 	vglClCopy(img,out);
-	printf("Primeira chamada da vglClCopy: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para 1000 copia GPU->GPU
+	fprintf(f,"Primeira chamada da vglClCopy: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" copias GPU->GPU
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		vglClCopy(img, out);
 	}
-	printf("Tempo gasto para fazer 1000 copia GPU->GPU: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d copia GPU->GPU: %s\n",limite, getTimeElapsedInSeconds());
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_clcopy.tif", out->ipl);
 
-	//Mede o tempo para 1000 conversão RGB->Grayscale na CPU
+	//Mede o tempo para "limite" conversão RGB->Grayscale na CPU
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		cvCvtColor(img->ipl,gray->ipl, CV_BGR2GRAY);
 	}
-	printf("Tempo gasto para fazer 1000 conversões BGR->Gray: %s\n", getTimeElapsedInSeconds());
-
+	fprintf(f,"Tempo gasto para fazer %d conversões BGR->Gray: %s\n", limite, getTimeElapsedInSeconds());
 
         vglCheckContext(gray, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_rgbtogray.tif", gray->ipl);
 
-	//Mede o tempo para 1000 conversão RGB->RGBA na CPU
+	//Mede o tempo para limite conversão RGB->RGBA na CPU
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		cvCvtColor(img->ipl,out->iplRGBA, CV_BGR2RGBA);
 	}
-	printf("Tempo gasto para fazer 1000 conversões BGR->RGBA: %s\n", getTimeElapsedInSeconds());
+	fprintf(f,"Tempo gasto para fazer %d conversões BGR->RGBA: %s\n", limite, getTimeElapsedInSeconds());
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_rgbtorgba.tif", out->iplRGBA);
 
-	//Mede o tempo para 1000 copia CPU->GPU
+	//Mede o tempo para "limite" copia CPU->GPU
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		vglClUpload(img);
 	}
-	printf("Tempo gasto para fazer 1000 copia CPU->GPU: %s\n", getTimeElapsedInSeconds());
-
+	fprintf(f,"Tempo gasto para fazer %d copia CPU->GPU: %s\n", limite, getTimeElapsedInSeconds());
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_upload.tif", img->ipl);
 
-	//Mede o tempo para 1000 copia GPU->CPU
+	//Mede o tempo para "limite" copia GPU->CPU
 	p = 0;
 	TimerStart();
-	while (p < 1000)
+	while (p < limite)
 	{
 		p++;
 		vglClDownload(img);
 	}
-	printf("Tempo gasto para fazer 1000 copia GPU->CPU: %s\n", getTimeElapsedInSeconds());
-
+	fprintf(f,"Tempo gasto para fazer %d copia GPU->CPU: %s\n", limite, getTimeElapsedInSeconds());
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_download.tif", img->ipl);
 
-
-
 	//flush
+	fclose(f);
 	vglClFlush();
-	system("pause");
 	return 0;
 }
