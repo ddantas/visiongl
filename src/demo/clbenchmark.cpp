@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 	gray->ipl = cvCreateImage(cvGetSize(gray->ipl),IPL_DEPTH_8U,1);
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lenaout_invert", out->ipl);
+        cvSaveImage("../images/lenaout_invert.tif", out->ipl);
 
 	//Primeira chamada a vglClCopy
 	TimerStart();
