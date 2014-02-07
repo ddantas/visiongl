@@ -25,7 +25,7 @@ __kernel void vglClErosion(__read_only image2d_t img_input,
 	{
 		for(int j = -factory; j <= factory; j++)
 		{
-		float4 p = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + i));
+		float4 p = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
 		if (convolution_window[conv_controller] != 0)
 			pmin = min(p,pmin);
 		conv_controller++;
