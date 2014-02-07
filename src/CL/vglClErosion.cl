@@ -19,14 +19,17 @@ __kernel void vglClErosion(__read_only image2d_t img_input,
 	
 	int factorx = floor((float)*window_size_x / 2.0f);
 	int factory = floor((float)*window_size_y / 2.0f);
+	int conv_controller = 0;
 	float4 pmin = (1.0,1.0,1.0,1.0);
-	for(int i = 0; i < *window_size_x * *window_size_y; i++)
+	for(int i = -factorx; i <= factorx; i++)
 	{
-		int xi = (i / *window_size_x) - factorx;
-		int yi = (i % *window_size_y) - factory;
-		float4 p = read_imagef(img_input, smp, (int2)(coords.x + xi,coords.y + yi));
-		if (convolution_window[i] != 0)
+		for(int j = -factory; j <= factory; j++)
+		{
+		float4 p = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + i));
+		if (convolution_window[conv_controller] != 0)
 			pmin = min(p,pmin);
+		conv_controller++;
+		}
 	}
 	write_imagef(img_output,coords,pmin);
 }

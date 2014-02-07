@@ -20,13 +20,16 @@ __kernel void vglClConvolution(__read_only image2d_t img_input,
 	
 	int factorx = floor((float)*window_size_x / 2.0f);
 	int factory = floor((float)*window_size_y / 2.0f);
-	for(int i = 0; i < *window_size_x * *window_size_y; i++)
+	int conv_controller = 0;
+	for(int i = -factorx; i <= factorx; i++)
 	{
-		int xi = (i / *window_size_x) - factorx;
-		int yi = (i % *window_size_y) - factory;
-		float4 p = read_imagef(img_input, smp, (int2)(coords.x + xi,coords.y + yi));
-		p.xyz *= convolution_window[i];
-		result += p;
+		for(int j = -factory; j <= factory; j++)
+		{
+			float4 p = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
+			p.xyz *= convolution_window[conv_controller];
+			result += p;
+			conv_controller++;
+		}
 	}
 	write_imagef(img_output,coords,result);
 }
