@@ -13,15 +13,13 @@
 /*
 	argv[1] = input_image_path
 	argv[2] = number of operations to execute
-	argv[3] = output_image_path
 */
 int main(int argc, char* argv[])
 {
-	printf("Usage: OpenCVCLBenchmark lena_1024.tiff 1000\n");
-	printf("for this example, will run the program for lena_1024.tiff using 1000 operations\n");
-	
 	if (argc != 3)
 	{
+		printf("Usage: OpenCVCLBenchmark lena_1024.tiff 1000\n");
+		printf("for this example, will run the program for lena_1024.tiff using 1000 operations\n");
 		printf("bad arguments, read usage again\n");
 		exit(1);
 	}

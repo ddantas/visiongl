@@ -8,14 +8,18 @@
 using namespace std;
 using namespace cv;
 
+
+/*
+	argv[1] = input_image_path
+	argv[2] = number of operations to execute
+*/
 int main(int argc, char* argv[])
 {
-	printf("Usage: OpenCVCLBenchmark lena_1024.tif 1000\n");
-	printf("for this example, will run the program for lena_1024.tif using 1000 operations each\n");
 	if (argc != 3)
 	{
+		printf("Usage: OpenCVCLBenchmark lena_1024.tif 1000\n");
+		printf("for this example, will run the program for lena_1024.tif using 1000 operations each\n");
 		printf("bad arguments, read usage again\n");
-		system("pause");
 		exit(1);
 	}
 	int limite = atoi(argv[2]);
