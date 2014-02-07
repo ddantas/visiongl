@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 
 		cv::Mat saveout(out);
 		cvtColor(saveout,saveout,CV_RGBA2BGR);
-        cv::imwrite("images/lenaout_blur33.png", saveout,saveparams);
+        cv::imwrite("../images/lenaout_blur33.png", saveout,saveparams);
 		
 	//Primeira chamada a Convolution
 	
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 		
 		saveout = *new cv::Mat(out);
 		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("images/lenaout_conv33.png", saveout,saveparams);
+		cv::imwrite("../images/lenaout_conv33.png", saveout,saveparams);
 
 	//Mede o tempo para limite convoluções 5x5 sem a criação da operação
 	p = 0;
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 		
 		saveout = *new cv::Mat(out);
 		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("images/lenaout_conv55.png", saveout,saveparams);
+		cv::imwrite("../images/lenaout_conv55.png", saveout,saveparams);
 
 	//Primeira chamada a threshold
 	TimerStart();
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 
 		saveout = *new cv::Mat(out);
 		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("images/lenaout_erosion.png", saveout,saveparams);
+		cv::imwrite("../images/lenaout_erosion.png", saveout,saveparams);
 	
 	//Primeira chamada a vglClInvert
 	TimerStart();
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
 
 		saveout = *new cv::Mat(out);
 		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("images/lenaout_invert.png", saveout,saveparams);
+		cv::imwrite("../images/lenaout_invert.png", saveout,saveparams);
 
 	TimerStart();
 	
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 
         saveout = *new cv::Mat(out);
 		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("images/lenaout_copy.png", saveout,saveparams);
+		cv::imwrite("../images/lenaout_copy.png", saveout,saveparams);
 
 	//Mede o tempo para limite copia CPU->GPU
 	
