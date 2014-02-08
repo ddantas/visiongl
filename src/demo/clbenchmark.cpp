@@ -25,9 +25,9 @@ int main(int argc, char* argv[])
 	}
 	vglInit(50,50);
 	vglClInit();
-
 	int limite = atoi(argv[2]);
 	char* image_path = argv[1];
+	printf("VisionCL on %s for %d operations\n\n",image_path,limite);
 	
 	VglImage* img = vglLoadImage(image_path,1,0);
 

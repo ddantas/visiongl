@@ -22,8 +22,10 @@ int main(int argc, char* argv[])
 		printf("bad arguments, read usage again\n");
 		exit(1);
 	}
+
 	int limite = atoi(argv[2]);
 	char* image_path = argv[1];
+	printf("OpenCVCLBenchmark on %s for %d operations\n\n",image_path,limite);
 	cv::Mat imgxm = imread(image_path,1);
 
 	cvtColor(imgxm,imgxm,CV_BGR2RGBA);
