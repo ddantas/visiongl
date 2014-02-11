@@ -142,7 +142,6 @@ int vglCheckContext(VglImage* img, int context){
 #endif
 #ifdef __OPENCL__
     case VGL_CL_CONTEXT:
-      printf("vglCheckContext: ENTROU NO OPENCL\n");
       if (vglIsInContext(img, VGL_BLANK_CONTEXT)){
         vglClUpload(img);
       }

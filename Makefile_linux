@@ -5,107 +5,139 @@
 # ddantas 5/7/2013
 #
 
-BINARY_NAME        = visiongl
-CUDA_NAME          = vglcuda
-FRACTAL_NAME       = fractal
-CAM_NAME           = cam
-CLBENCHMARK_NAME   = clbenchmark
+BINARY_NAME          = visiongl
+CUDA_NAME            = vglcuda
+FRACTAL_NAME         = fractal
+CAM_NAME             = cam
+BENCHMARK_CL_NAME    = benchmark_cl
+BENCHMARK_CV_NAME    = benchmark_cv
+BENCHMARK_CVOCL_NAME = benchmark_cvocl
 
-ROOTDIR            = .
-INCLUDE_DIR        = $(ROOTDIR)/src
+ROOTPATH           = .
+INCLUDE_PATH       = $(ROOTPATH)/src
+INCLUDE_DIR        = -I $(INCLUDE_PATH)
 
-OUTPUT_ROOTDIR     = $(ROOTDIR)
-OUTPUT_LIBDIR      = $(OUTPUT_ROOTDIR)/lib
-OUTPUT_INCLUDEDIR  = $(OUTPUT_ROOTDIR)/include
-OUTPUT_BINDIR      = $(OUTPUT_ROOTDIR)/bin
+OUTPUT_ROOTPATH    = $(ROOTPATH)
+OUTPUT_INCLUDEPATH = $(OUTPUT_ROOTPATH)/include
+OUTPUT_LIBPATH     = $(OUTPUT_ROOTPATH)/lib
+OUTPUT_BINPATH     = $(OUTPUT_ROOTPATH)/bin
+OUTPUT_INCLUDEDIR  = -I $(OUTPUT_INCLUDEPATH)
+OUTPUT_LIBDIR      = -L $(OUTPUT_LIBPATH)
 
 
-OPENCV_PATH       = /usr/local/opencv/
-OPENCV_INCLUDEDIR = $(OPENCV_PATH)/include/
-OPENCV_LIBDIR     = $(OPENCV_PATH)/lib
-OPENCV_LIBRARIES  = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
-
-OPENCL_PATH       = /usr/local/cuda/
-OPENCL_INCLUDEDIR = $(OPENCL_PATH)/include/
-#OPENCL_LIBDIR     = $(OPENCL_PATH)/lib
-OPENCL_LIBRARIES  = -lOpenCL
+OPENCV_PATH        = /usr/local/opencv/
+OPENCV_INCLUDEPATH = $(OPENCV_PATH)/include/
+OPENCV_LIBPATH     = $(OPENCV_PATH)/lib
+OPENCV_INCLUDEDIR  = -I $(OPENCV_INCLUDEPATH)
+OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
+OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
 WITH_CUDA = 0
-WITH_OPENCL = 1
+WITH_OPENCL = 0
 
 ifeq ($(WITH_OPENCL), 1)
 	OPENCL_DEF        = -D__OPENCL__
 endif
 
 ifeq ($(WITH_CUDA), 1)
-	CUDA_DEF        = -D__CUDA__
-	CUDA_PATH       = /usr/local/cuda
-	CUDA_INCLUDEDIR = $(CUDA_PATH)/include
-	CUDA_LIBDIR     = $(CUDA_PATH)/lib64
-	CUDA_LIBRARIES  = -lcudart
-	CUDA_OPTIONS    = -Xcompiler
-	CUDA_FILES      = src/*.cu     
-	CC              = $(CUDA_PATH)/bin/nvcc 
+	CUDA_DEF         = -D__CUDA__
+	CUDA_PATH        = /usr/local/cuda
+	CUDA_INCLUDEPATH = $(CUDA_PATH)/include
+	CUDA_LIBPATH     = $(CUDA_PATH)/lib64
+	CUDA_INCLUDEDIR  = -I $(CUDA_INCLUDEPATH)
+	CUDA_LIBDIR      = -L $(CUDA_LIBPATH)
+	CUDA_LIBRARIES   = -lcudart
+	CUDA_OPTIONS     = -Xcompiler
+	CUDA_FILES       = src/*.cu     
+	CC               = $(CUDA_PATH)/bin/nvcc 
 else
 	CC              = g++
 endif
 
-INSTALL_PATH       = $(HOME)/script
-INSTALL_INCLUDEDIR = $(INSTALL_PATH)/include
-INSTALL_LIBDIR     = $(INSTALL_PATH)/lib
+ifeq ($(WITH_OPENCL), 1)
+        OPENCL_PATH        = /usr/local/cuda/
+        OPENCL_INCLUDEPATH = $(OPENCL_PATH)/include/
+       #OPENCL_LIBPATH     = $(OPENCL_PATH)/lib
+        OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
+       #OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
+        OPENCL_LIBRARIES   = -lOpenCL
+        OPENCL_FILES = src/cl2cpp_shaders.cpp src/vglClImage.cpp
+endif
 
-OPENGL_LIBDIR = /usr/X11R6/lib
+VGL_FILES = src/glsl2cpp_shaders.cpp src/vglContext.cpp src/vglSimpleBGModel.cpp src/glsl2cpp_BG.cpp src/glsl2cpp_Stereo.cpp src/vglImage.cpp src/vglLoadShader.cpp
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(OUTPUT_LIBDIR):$(CUDA_LIBDIR):$(OPENCV_LIBDIR):$(INSTALL_LIBDIR)
+
+INSTALL_PATH        = $(HOME)/script
+INSTALL_INCLUDEPATH = $(INSTALL_PATH)/include
+INSTALL_LIBPATH     = $(INSTALL_PATH)/lib
+
+OPENGL_LIBDIR = -L /usr/X11R6/lib
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(CUDA_LIBPATH):$(OPENCV_LIBPATH):$(INSTALL_LIBPATH)
 
 COMPILER_FLAGS   = -g -pg -DGL_GLEXT_PROTOTYPES -DGLX_GLXEXT_PROTOTYPES 
 OPENGL_LIBRARIES    = -lGLEW -lGLU -lGL -lglut 
 
 
-LINUXAMD64_DIRS_LIBS =  -I $(INCLUDE_DIR) \
-                        -L $(OUTPUT_LIBDIR) \
-                        -L $(OPENGL_LIBDIR) \
-                           $(OPENGL_LIBRARIES) \
-                        -I $(OPENCV_INCLUDEDIR) \
-                        -L $(OPENCV_LIBDIR) \
-                           $(OPENCV_LIBRARIES) \
-                           $(CUDA_DEF) \
-                        -I $(CUDA_INCLUDEDIR) \
-                        -L $(CUDA_LIBDIR) \
-                           $(CUDA_LIBRARIES)\
-                           $(OPENCL_DEF) \
-                        -I $(OPENCL_INCLUDEDIR) \
-                           $(OPENCL_LIBRARIES) \
+LINUXAMD64_DIRS_LIBS =  $(INCLUDE_DIR) \
+                        $(OUTPUT_LIBDIR) \
+                        $(OPENGL_LIBDIR) \
+                        $(OPENGL_LIBRARIES) \
+                        $(OPENCV_INCLUDEDIR) \
+                        $(OPENCV_LIBDIR) \
+                        $(OPENCV_LIBRARIES) \
+                        $(CUDA_DEF) \
+                        $(CUDA_INCLUDEDIR) \
+                        $(CUDA_LIBDIR) \
+                        $(CUDA_LIBRARIES)\
+                        $(OPENCL_DEF) \
+                        $(OPENCL_INCLUDEDIR) \
+                        $(OPENCL_LIBRARIES) \
 
 
 LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
                         -shared $(CUDA_OPTIONS) -fPIC \
-                        -o $(OUTPUT_LIBDIR)/lib$(BINARY_NAME).so \
-                          $(CUDA_FILES) src/*.cpp \
+                        -o $(OUTPUT_LIBPATH)/lib$(BINARY_NAME).so \
+                          $(CUDA_FILES) $(VGL_FILES) $(OPENCL_FILES) \
                          $(LINUXAMD64_DIRS_LIBS) $(CUDA_DIRS_LIBS) 
 
 LINUXAMD64_DEMO_FRACTAL = $(CC) $(COMPILER_FLAGS) \
-                        -o $(OUTPUT_BINDIR)/demo_$(FRACTAL_NAME) \
+                        -o $(OUTPUT_BINPATH)/demo_$(FRACTAL_NAME) \
                          src/demo/$(FRACTAL_NAME).cpp \
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS)
 
 LINUXAMD64_DEMO_CAM = $(CC) $(COMPILER_FLAGS) \
-                        -o $(OUTPUT_BINDIR)/demo_$(CAM_NAME) \
+                        -o $(OUTPUT_BINPATH)/demo_$(CAM_NAME) \
                          src/demo/$(CAM_NAME).cpp \
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS)
 
-LINUXAMD64_DEMO_CLBENCHMARK = $(CC) $(COMPILER_FLAGS) \
-                        -o $(OUTPUT_BINDIR)/demo_$(CLBENCHMARK_NAME) \
-                         src/demo/$(CLBENCHMARK_NAME).cpp src/demo/timer.cpp \
+ifeq ($(WITH_OPENCL), 1)
+        LINUXAMD64_DEMO_BENCHMARK_CL = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_CL_NAME) \
+                         src/demo/$(BENCHMARK_CL_NAME).cpp src/demo/timer.cpp \
                          -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS) \
+
+endif
+
+LINUXAMD64_DEMO_BENCHMARK_CV = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_CV_NAME) \
+                         src/demo/$(BENCHMARK_CV_NAME).cpp src/demo/timer.cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS) \
+
+LINUXAMD64_DEMO_BENCHMARK_CVOCL = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_CVOCL_NAME) \
+                         src/demo/$(BENCHMARK_CVOCL_NAME).cpp src/demo/timer.cpp \
+                         -lvisiongl -lopencv_ocl \
                          $(LINUXAMD64_DIRS_LIBS) \
 
 
 
-GENERATE_HEADER = cat $(INCLUDE_DIR)/vglHead.h $(INCLUDE_DIR)/vglImage.h $(INCLUDE_DIR)/vglCudaImage.h $(INCLUDE_DIR)/vglContext.h $(INCLUDE_DIR)/vglSimpleBGModel.h $(INCLUDE_DIR)/glsl2cpp*.h $(INCLUDE_DIR)/kernel2cu*.h $(INCLUDE_DIR)/cl2cpp*.h $(INCLUDE_DIR)/vglTail.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEDIR)/$(BINARY_NAME).h
+GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
 
 
 all:
@@ -116,8 +148,8 @@ lib:
 	$(LINUXAMD64_LIB)
 
 install: all
-	cp $(OUTPUT_INCLUDEDIR)/$(BINARY_NAME).h $(INSTALL_INCLUDEDIR)
-	cp $(OUTPUT_LIBDIR)/lib$(BINARY_NAME).so $(INSTALL_LIBDIR)
+	cp $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h $(INSTALL_INCLUDEPATH)
+	cp $(OUTPUT_LIBPATH)/lib$(BINARY_NAME).so $(INSTALL_LIBPATH)
 
 dox: all
 	doxygen $(BINARY_NAME).dox
@@ -129,20 +161,24 @@ demofrac:
 democam:
 	$(LINUXAMD64_DEMO_CAM)
 
-democlbenchmark:
-	$(LINUXAMD64_DEMO_CLBENCHMARK)
+demobenchmark:
+	$(LINUXAMD64_DEMO_BENCHMARK_CL)
+	$(LINUXAMD64_DEMO_BENCHMARK_CV)
+	$(LINUXAMD64_DEMO_BENCHMARK_CVOCL)
 
 .PHONY: lib
 
 
 rundemofrac:
-	cd $(OUTPUT_BINDIR); ./demo_$(FRACTAL_NAME)
+	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)
 
 rundemocam:
-	cd $(OUTPUT_BINDIR); ./demo_$(CAM_NAME)
+	cd $(OUTPUT_BINPATH); ./demo_$(CAM_NAME)
 
-rundemoclbenchmark:
-	cd $(OUTPUT_BINDIR); ./demo_$(CLBENCHMARK_NAME) ../images/lena_std.tif
+rundemobenchmark:
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 1000
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 1000
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 1000
 
 cuda:
 	./kernel2cu.pl -o src/kernel2cu_shaders src/CUDA/*.kernel
@@ -163,13 +199,13 @@ cl:
 	./cl2cpp.pl -o src/cl2cpp_shaders -p CL src/CL/*.cl
 
 run:
-	cd $(OUTPUT_BINDIR); ./$(BINARY_NAME)
+	cd $(OUTPUT_BINPATH); ./$(BINARY_NAME)
 
 runtestcam:
-	cd $(OUTPUT_BINDIR); ./$(TESTCAM_NAME)
+	cd $(OUTPUT_BINPATH); ./$(TESTCAM_NAME)
 
 debug:
-	cd $(OUTPUT_BINDIR); ddd ./$(BINARY_NAME)
+	cd $(OUTPUT_BINPATH); ddd ./$(BINARY_NAME)
 
 bkp:
 	rm -f bkp.tgz

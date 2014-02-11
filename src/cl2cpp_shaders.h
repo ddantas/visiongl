@@ -22,6 +22,11 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
   */
 void vglClCopy(VglImage* img_input, VglImage* img_output);
 
+/** Erosion of src image by mask. Result is stored in dst image.
+
+  */
+void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+
 /** Negative of src image. Result is stored in dst image.
 
   */
