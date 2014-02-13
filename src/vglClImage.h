@@ -13,6 +13,7 @@
 #ifdef __OPENCL__
 
 #include <CL/cl.h>
+#include <CL/cl_gl.h>
 
 #include "vglImage.h"
 

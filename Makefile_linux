@@ -32,7 +32,6 @@ OPENCV_INCLUDEDIR  = -I $(OPENCV_INCLUDEPATH)
 OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
-
 WITH_CUDA = 0
 WITH_OPENCL = 0
 
@@ -132,6 +131,7 @@ LINUXAMD64_DEMO_BENCHMARK_CV = $(CC) $(COMPILER_FLAGS) \
 LINUXAMD64_DEMO_BENCHMARK_CVOCL = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_CVOCL_NAME) \
                          src/demo/$(BENCHMARK_CVOCL_NAME).cpp src/demo/timer.cpp \
+>>>>>>> upstream/master
                          -lvisiongl -lopencv_ocl \
                          $(LINUXAMD64_DIRS_LIBS) \
 
