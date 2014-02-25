@@ -12,6 +12,13 @@
 //#include <opencv2/core/core_c.h>
 //#include <opencv2/highgui/highgui_c.h>
 
+
+// cl-gl interoperability
+#include <CL/cl_gl.h>
+#ifdef __linux__
+    #include <GL/glx.h>
+#endif
+
 VglClContext cl;
 
 void vglClPrintContext(void)
@@ -57,7 +64,24 @@ void vglClInit()
 	vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
 	//precisa adicionar a propriedade CL_KHR_gl_sharing no contexto e pra isso precisará do id do contexto do GL que deverá ser o parametro window
 	//cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
-	cl.context = clCreateContext(NULL,1,cl.deviceId,NULL, NULL, &err );
+
+
+#ifdef __linux__
+        cl_context_properties properties[] = {
+        CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
+        CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
+        CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0], 
+        0 };
+#elif defined WIN32
+        cl_context_properties properties[] = {
+        CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext(),
+        CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
+        CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0],
+        0 };
+#endif
+        cl.context = clCreateContext(properties,1,cl.deviceId,NULL, NULL, &err );
+
+        //cl.context = clCreateContext(NULL,1,cl.deviceId,NULL, NULL, &err );
 	vglClCheckError(err, (char*) "clCreateContext GPU");
 
 	cl.commandQueue = clCreateCommandQueue( cl.context, *cl.deviceId, 0, &err );
