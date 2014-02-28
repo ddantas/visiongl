@@ -128,8 +128,8 @@ void vglDownloadPPM(VglImage* image);
 void vglDownloadFBO(VglImage* image);
 void vglDownloadFaster(VglImage* image/*, VglImage* buf*/);
 VglImage* vglLoadImage(char* filename, int iscolor = 1, int has_mipmap = 0);
-void vglPrintImageInfo(VglImage* image);
-void iplPrintImageInfo(IplImage* ipl);
+void vglPrintImageInfo(VglImage* image, char* msg = NULL);
+void iplPrintImageInfo(IplImage* ipl, char* msg = NULL);
 void vglCopyImageTex(VglImage* src, VglImage* dst);
 void vglAxis(void);
 void vglCopyImageTexVFS(VglImage* src, VglImage* dst);
@@ -214,8 +214,9 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1);
   static GLenum errCode; \
   const GLubyte *errString; \
   if ((errCode = glGetError()) != GL_NO_ERROR) { \
-    errString = gluErrorString(errCode); \
-    printf ("OpenGL Error: %s at %s:%d\n", errString,  __FILE__,__LINE__); \
+    /*errString = gluErrorString(errCode);*/     \
+    errString = glGetString(errCode); \
+    printf ("OpenGL Error %x: %s at %s:%d\n", errCode, errString,  __FILE__,__LINE__); \
     exit(1); \
   } \
 } \

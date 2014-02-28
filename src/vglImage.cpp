@@ -299,7 +299,7 @@ void vglUpload(VglImage* image, int swapRGB){
   glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-  ERRCHECK()
+  //ERRCHECK()
 
   // MIPMAPPING!!!!
   if (has_mipmap){
@@ -308,7 +308,7 @@ void vglUpload(VglImage* image, int swapRGB){
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
   }
-  ERRCHECK()
+  //ERRCHECK()
            
   switch (depth){
           case IPL_DEPTH_8U:  glType = GL_UNSIGNED_BYTE;  break; 
@@ -349,7 +349,7 @@ void vglUpload(VglImage* image, int swapRGB){
   }
 
   CHECK_FRAMEBUFFER_STATUS()
-  ERRCHECK()
+  //ERRCHECK()
 
   if (image->fbo == -1){
     glGenFramebuffersEXT(1, &image->fbo);
@@ -363,7 +363,7 @@ void vglUpload(VglImage* image, int swapRGB){
                               glTarget, image->tex, 0);
     }
     CHECK_FRAMEBUFFER_STATUS()
-    ERRCHECK()
+    //ERRCHECK()
   }
 
   if (vglIsInContext(image, VGL_RAM_CONTEXT)){
@@ -628,7 +628,7 @@ void vglDownload(VglImage* image){
 
   glBindTexture(GL_TEXTURE_2D, image->tex);
 
-  ERRCHECK()
+  //ERRCHECK()
 
   switch (depth){
           case IPL_DEPTH_8U:  glType = GL_UNSIGNED_BYTE;  break; 
@@ -644,7 +644,7 @@ void vglDownload(VglImage* image){
             exit(1);
   }
 
-  ERRCHECK()
+  //ERRCHECK()
 
   if (nChannels == 3){
     glFormat = GL_BGR;
@@ -656,7 +656,7 @@ void vglDownload(VglImage* image){
   glGetTexImage(GL_TEXTURE_2D, 0, glFormat, glType, ipl->imageData);
   //glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, ipl->imageData);
 
-  ERRCHECK()
+  //ERRCHECK()
 
   vglAddContext(image, VGL_RAM_CONTEXT);
 }
@@ -805,8 +805,14 @@ VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
     Print width, height, depth and number of channels
 
  */
-void iplPrintImageInfo(IplImage* ipl){
-        printf("====== iplPrintImageInfo:\n");
+void iplPrintImageInfo(IplImage* ipl, char* msg){
+        if (msg){
+            printf("====== %s:\n", msg);
+	}
+	else
+	{
+            printf("====== iplPrintImageInfo:\n");
+	}
         printf("Image @ %p: w x h = %d(%d) x %d\n", 
                 ipl, ipl->width, ipl->widthStep, ipl->height);
         printf("nChannels = %d\n", ipl->nChannels);
@@ -830,9 +836,15 @@ void iplPrintImageInfo(IplImage* ipl){
     OpenGL FBO handler, and current valid context (RAM, GPU or FBO).
 
  */
-void vglPrintImageInfo(VglImage* image){
+void vglPrintImageInfo(VglImage* image, char* msg){
         IplImage* ipl = image->ipl;
-        printf("====== vglPrintImageInfo:\n");
+        if (msg){
+            printf("====== %s:\n", msg);
+	}
+	else
+	{
+            printf("====== vglPrintImageInfo:\n");
+	}
         printf("Image @ %p: w x h = %d(%d) x %d\n", 
                 image, ipl->width, ipl->widthStep, ipl->height);
         printf("nChannels = %d\n", ipl->nChannels);

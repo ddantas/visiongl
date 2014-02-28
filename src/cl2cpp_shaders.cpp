@@ -22,7 +22,7 @@ extern VglClContext cl;
 void vglClBlurSq3(VglImage* img_input, VglImage* img_output){
 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
-  vglCheckContext(img_output, VGL_CL_CONTEXT);
+  vglGlToCl(img_output);
 
   cl_int err;
 
@@ -76,7 +76,7 @@ void vglClBlurSq3(VglImage* img_input, VglImage* img_output){
 void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y){
 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
-  vglCheckContext(img_output, VGL_CL_CONTEXT);
+  vglGlToCl(img_output);
 
   cl_int err;
 
@@ -166,7 +166,7 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
 void vglClCopy(VglImage* img_input, VglImage* img_output){
 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
-  vglCheckContext(img_output, VGL_CL_CONTEXT);
+  vglGlToCl(img_output);
 
   cl_int err;
 
@@ -220,7 +220,7 @@ void vglClCopy(VglImage* img_input, VglImage* img_output){
 void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y){
 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
-  vglCheckContext(img_output, VGL_CL_CONTEXT);
+  vglGlToCl(img_output);
 
   cl_int err;
 
@@ -310,7 +310,8 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
 void vglClInvert(VglImage* img_input, VglImage* img_output){
 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
-  vglCheckContext(img_output, VGL_CL_CONTEXT);
+  vglGlToCl(img_output);
+
 
   cl_int err;
 
@@ -364,7 +365,7 @@ void vglClInvert(VglImage* img_input, VglImage* img_output){
 void vglClThreshold(VglImage* src, VglImage* dst, float thresh){
 
   vglCheckContext(src, VGL_CL_CONTEXT);
-  vglCheckContext(dst, VGL_CL_CONTEXT);
+  vglGlToCl(dst);
 
   cl_int err;
 

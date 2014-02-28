@@ -33,6 +33,8 @@ void vglClBuildDebug(cl_int err, cl_program program);
 void vglClUpload(VglImage* src);
 void vglClUpload(VglImage* src, bool force_copy);
 void vglClDownload(VglImage* img);
+void vglClToGl(VglImage* img);
+void vglGlToCl(VglImage* img);
 
 #endif
 
