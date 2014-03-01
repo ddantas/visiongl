@@ -390,18 +390,18 @@ void vglBlurSq3(VglImage*  src, VglImage*  dst){
       exit(1);
    }
   }
-  //ERRCHECK()
+  ERRCHECK()
 
   glUseProgram(_f);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, src->tex);
   glUniform1i(glGetUniformLocation(_f, "sampler0"),  0);
-  //ERRCHECK()
+  ERRCHECK()
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
   CHECK_FRAMEBUFFER_STATUS()
-  //ERRCHECK()
+  ERRCHECK()
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
@@ -3107,18 +3107,18 @@ void vglNot(VglImage*  src, VglImage*  dst){
       exit(1);
    }
   }
-  //ERRCHECK()
+  ERRCHECK()
 
   glUseProgram(_f);
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, src->tex);
   glUniform1i(glGetUniformLocation(_f, "sampler0"),  0);
-  //ERRCHECK()
+  ERRCHECK()
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
   CHECK_FRAMEBUFFER_STATUS()
-  //ERRCHECK()
+  ERRCHECK()
 
 
   glViewport(0, 0, 2*dst->width, 2*dst->height);

@@ -35,8 +35,7 @@ void vglClCheckError(cl_int error, char* name)
     if (error != CL_SUCCESS)
     {
         printf("Erro %d while doing the following operation %s\n",error,name);
-        system("pause");
-	exit(1);
+		exit(1);
     }
 }
 
@@ -57,10 +56,19 @@ void vglClInit()
 	else
 		printf("found 1 platform for opencl\n\n");
 
-	err = clGetDeviceIDs(*cl.platformId,CL_DEVICE_TYPE_GPU,0,NULL,&num_devices);
+	err = clGetDeviceIDs(*cl.platformId,CL_DEVICE_TYPE_DEFAULT,0,NULL,&num_devices);
 	vglClCheckError(err, (char*) "clGetDeviceIDs get number of devices");
+
+	if (num_devices == 0)
+	{
+		printf("unable to find OpenCL devices, halting the program");
+		exit(1);
+	}
+	else
+		printf("found %d device(s)\n\n",num_devices);
+
 	cl.deviceId = (cl_device_id*)malloc(sizeof(cl_device_id)*num_devices);
-	err = clGetDeviceIDs(*cl.platformId,CL_DEVICE_TYPE_GPU,num_devices,cl.deviceId,NULL);
+	err = clGetDeviceIDs(*cl.platformId,CL_DEVICE_TYPE_DEFAULT,num_devices,cl.deviceId,NULL);
 	vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
 	//precisa adicionar a propriedade CL_KHR_gl_sharing no contexto e pra isso precisará do id do contexto do GL que deverá ser o parametro window
 	//cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
@@ -79,9 +87,9 @@ void vglClInit()
         CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0],
         0 };
 #endif
-        cl.context = clCreateContext(properties,1,cl.deviceId,NULL, NULL, &err );
+    cl.context = clCreateContext(properties,1,cl.deviceId,NULL, NULL, &err );
+		//cl.context = clCreateContextFromType(properties,CL_DEVICE_TYPE_ALL,NULL,NULL,&err);
 
-        //cl.context = clCreateContext(NULL,1,cl.deviceId,NULL, NULL, &err );
 	vglClCheckError(err, (char*) "clCreateContext GPU");
 
 	cl.commandQueue = clCreateCommandQueue( cl.context, *cl.deviceId, 0, &err );
@@ -120,7 +128,6 @@ void vglClBuildDebug(cl_int err, cl_program program)
 			&length // the actual size in bytes of data copied to buffer
 		);
 		printf("%s\n",buffer);
-		system("pause");
 		exit(1);
 	}
 }
@@ -204,24 +211,20 @@ void vglClDownload(VglImage* img)
 
 void vglClUpload(VglImage* img)
 {
-    glFlush();
-    glFinish();
-    printf("Entrou em %s\n", __FUNCTION__);
+    //printf("Entrou em %s\n", __FUNCTION__);
+	vglSetContext(img,VGL_RAM_CONTEXT);
     vglUpload(img);
     vglGlToCl(img);
-    printf("Vai sair de %s\n", __FUNCTION__);
-    ERRCHECK();
+    //printf("Vai sair de %s\n", __FUNCTION__);
 }
 
 void vglClDownload(VglImage* img)
 {
-    glFlush();
-    glFinish();
     //printf("Entrou em %s\n", __FUNCTION__);
+	vglSetContext(img,VGL_CL_CONTEXT);
     vglClToGl(img);
-    vglDownload(img);
-    printf("Vai sair de %s\n", __FUNCTION__);
-    ERRCHECK();
+    vglDownloadFaster(img);
+    //printf("Vai sair de %s\n", __FUNCTION__);
 }
 
 void vglClAlloc(VglImage* img)
@@ -235,20 +238,14 @@ void vglClAlloc(VglImage* img)
     //vglDownload(img);
     //SavePPM("/tmp/lenaout_teste.tif", img->width, img->height, img->ipl->imageData);
 
-    glFlush();
-    ERRCHECK();
-    //glFinish();
-
     cl_int err_cl;
     if (img->oclPtr == NULL)
     {
         img->oclPtr = clCreateFromGLTexture2D(cl.context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, img->tex, &err_cl);
         vglClCheckError(err_cl, (char*) "clCreateFromGLTexture");
-        ERRCHECK();
 
     }
-    printf("Vai sair de %s\n", __FUNCTION__);
-    ERRCHECK();
+    //printf("Vai sair de %s\n", __FUNCTION__);
 }
 
 
@@ -256,38 +253,39 @@ void vglGlToCl(VglImage* img)
 {
     glFlush();
     glFinish();
-    printf("Entrou %s\n", __FUNCTION__);
-    ERRCHECK();
+    //printf("Entrou %s\n", __FUNCTION__);
 
     if (img->oclPtr == NULL)
     {
         vglClAlloc(img);
-        ERRCHECK();
     }
 
     if (!vglIsInContext(img, VGL_CL_CONTEXT))
     {
-        printf("==========ACQUIRE: vgl = %p, ocl = %d\n", img, img->oclPtr);
-        ERRCHECK();
-        cl_int err_cl = clEnqueueAcquireGLObjects(cl.commandQueue, 1 , (cl_mem*) &img->oclPtr, 0 , NULL, NULL);
-        ERRCHECK()
-        vglClCheckError(err_cl, (char*) "clEnqueueAcquireGLObjects");
-        ERRCHECK()
+        //printf("==========ACQUIRE: vgl = %p, ocl = %d\n", img, img->oclPtr);
+		cl_int err_cl = clFlush(cl.commandQueue);
+		vglClCheckError(err_cl, (char*) "clFlush");
 
+		err_cl = clFinish(cl.commandQueue);
+		vglClCheckError(err_cl, (char*) "clFinish");
+
+        err_cl = clEnqueueAcquireGLObjects(cl.commandQueue, 1 , (cl_mem*) &img->oclPtr, 0 , NULL, NULL);
+		vglClCheckError(err_cl, (char*) "clEnqueueAcquireGLObjects");
+
+		err_cl = clFinish(cl.commandQueue);
+		vglClCheckError(err_cl, (char*) "clFinish");
+        
         vglSetContext(img, VGL_CL_CONTEXT);
     }
-    printf("Vai sair de %s\n", __FUNCTION__);
-    ERRCHECK();
+    //printf("Vai sair de %s\n", __FUNCTION__);
 }
 
 void vglClToGl(VglImage* img)
 {
-    glFlush();
-    glFinish();
     //vglDownload(img);
     //SavePPM("/tmp/lenaout_teste2.tif", img->width, img->height, img->ipl->imageData);
 
-    printf("Entrou em %s\n", __FUNCTION__);
+    //printf("Entrou em %s\n", __FUNCTION__);
     if (!vglIsInContext(img, VGL_CL_CONTEXT))
     {
         vglGlToCl(img);      
@@ -296,20 +294,20 @@ void vglClToGl(VglImage* img)
     }
 
     cl_int err_cl;
-    printf("==========RELEASE: vgl = %p, ocl = %d\n", img, img->oclPtr);
+    //printf("==========RELEASE: vgl = %p, ocl = %d\n", img, img->oclPtr);
     err_cl = clEnqueueReleaseGLObjects(cl.commandQueue, 1 , (cl_mem*) &img->oclPtr, 0 , NULL, NULL);
     vglClCheckError(err_cl, (char*) "clEnqueueReleaseGLObjects");
 
     err_cl = clFlush(cl.commandQueue);
     vglClCheckError(err_cl, (char*) "clFlush");
 
-    ///vglDownload(img);
-    //SavePPM("/tmp/lenaout_teste3.tif", img->width, img->height, img->ipl->imageData);
+	err_cl = clFinish(cl.commandQueue);
+	vglClCheckError(err_cl, (char*) "clFinish");
 
     vglSetContext(img, VGL_GL_CONTEXT);
 
-    printf("Vai sair de %s\n", __FUNCTION__);
-    ERRCHECK();
+    //printf("Vai sair de %s\n", __FUNCTION__);
+    
 
 }
 

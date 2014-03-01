@@ -31,37 +31,6 @@ int main(int argc, char* argv[])
 	printf("VisionCL on %s for %d operations\n\n",image_path,limite);
 	
 	VglImage* img = vglLoadImage(image_path,1,0);
-        vglPrintImageInfo(img, "Loaded image img");
-        vglUpload(img);
-        vglPrintImageInfo(img, "Loaded image img");
-        vglUpload(img);
-        vglPrintImageInfo(img, "Loaded image img");
-        vglGlToCl(img);
-        vglPrintImageInfo(img, "Loaded image img after gltocl");
-        vglClToGl(img);
-        vglPrintImageInfo(img, "Loaded image img after cltogl");
-        vglClToGl(img);
-        vglPrintImageInfo(img, "Loaded image img after cltogl");
-        vglGlToCl(img);
-        vglPrintImageInfo(img, "Loaded image img after gltocl");
-
-        vglUpload(img);
-        vglPrintImageInfo(img, "Loaded image img after vglupload");
-        vglDownload(img);
-        vglPrintImageInfo(img, "Loaded image img after vgldownload");
-
-        vglClUpload(img);
-        vglPrintImageInfo(img, "Loaded image img after vglClupload");
-        vglClUpload(img);
-        vglPrintImageInfo(img, "Loaded image img after vglClupload");
-
-        vglClDownload(img);
-        vglPrintImageInfo(img, "Loaded image img after vglCldownload");
-        vglClDownload(img);
-        vglPrintImageInfo(img, "Loaded image img after vglCldownload");
-
-
-        //exit(0);
 
 
 	if (img == NULL)
@@ -71,7 +40,6 @@ int main(int argc, char* argv[])
 		printf("%s",str.c_str());
 	}
 	VglImage* out = vglCreateImage(img);
-        vglPrintImageInfo(out, "Created image out");
 
 	//Primeira chamada a blurSq3
 	TimerStart();
@@ -89,18 +57,6 @@ int main(int argc, char* argv[])
 
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        printf("Checked context out RAM\n");
-        vglPrintImageInfo(img, "img");
-        vglPrintImageInfo(out, "out");
-
-        printf("CHECK 100 \n");
-        vglUpload(img);
-        printf("CHECK 200 \n");
-        vglUpload(out);
-        printf("CHECK 300 \n");
-
-
-
         cvSaveImage("../images/lenaout_blur33.tif", out->ipl);
 
     // Kernels para convolucao
@@ -225,10 +181,7 @@ int main(int argc, char* argv[])
         vglCheckContext(img, VGL_RAM_CONTEXT);
         //cvSaveImage("../images/lenaout_rgbtorgba.tif", out->iplRGBA);
 
-
-        printf("CHECK 1100 \n");
         vglUpload(out);
-        printf("CHECK 1200 \n");
 
 	//Mede o tempo para "limite" copia CPU->GPU
 	p = 0;
@@ -257,10 +210,10 @@ int main(int argc, char* argv[])
         cvSaveImage("../images/lenaout_download.tif", img->ipl);
 
 
-        vglBlurSq3(img, out);
-        vglNot(out, out);
-        vglDownload(out);
-        cvSaveImage("../images/lenaout_testgl.tif", out->ipl);
+        //vglBlurSq3(img, out);
+        //vglNot(out, out);
+        //vglDownload(out);
+        //cvSaveImage("../images/lenaout_testgl.tif", out->ipl);
 
 
 	//flush
