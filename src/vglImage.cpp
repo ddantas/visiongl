@@ -255,9 +255,11 @@ void vglUpload(VglImage* image, int swapRGB){
 
 
   //printf("vglUpload: image context = %d\n", image->inContext);
-  if (!vglIsInContext(image, VGL_RAM_CONTEXT)  && 
+  if (!vglIsInContext(image, VGL_RAM_CONTEXT)  &&
       !vglIsInContext(image, VGL_BLANK_CONTEXT)    ){
+#ifdef __DEBUG__
     fprintf(stderr, "vglUpload: Error: image context = %d not in VGL_RAM_CONTEXT or VGL_BLANK_CONTEXT\n", image->inContext);
+#endif
     return;
   }
 

@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
         vglCheckContext(out, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_clcopy.tif", out->ipl);
 
-	//Mede o tempo para "limite" conversão RGB->Grayscale na CPU
+/*	//Mede o tempo para "limite" conversão RGB->Grayscale na CPU
 	p = 0;
 	TimerStart();
 	while (p < limite)
@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
         vglCheckContext(img, VGL_RAM_CONTEXT);
         //cvSaveImage("../images/lenaout_rgbtorgba.tif", out->iplRGBA);
 
-        vglUpload(out);
+        vglUpload(out);*/
 
 	//Mede o tempo para "limite" copia CPU->GPU
 	p = 0;
@@ -189,9 +189,36 @@ int main(int argc, char* argv[])
 	while (p < limite)
 	{
 		p++;
+		vglClUploadForce(img);
+	}
+	printf("Time to do %d transfer CPU->GPU forcing full path: %s\n", limite, getTimeElapsedInSeconds());
+
+        vglCheckContext(img, VGL_RAM_CONTEXT);
+        cvSaveImage("../images/lenaout_uploadForce.tif", img->ipl);
+
+	//Mede o tempo para "limite" copia GPU->CPU
+	p = 0;
+	TimerStart();
+	while (p < limite)
+	{
+		p++;
+		vglCheckContext(img,VGL_CL_CONTEXT);
+		vglClDownloadForce(img);
+	}
+	printf("Time to do %d transfer GPU->CPU forcing full path: %s\n", limite, getTimeElapsedInSeconds());
+
+    vglCheckContext(img, VGL_RAM_CONTEXT);
+    cvSaveImage("../images/lenaout_downloadForce.tif", img->ipl);
+
+	//Mede o tempo para "limite" copia CPU->GPU curto
+	p = 0;
+	TimerStart();
+	while (p < limite)
+	{
+		p++;
 		vglClUpload(img);
 	}
-	printf("Tempo gasto para fazer %d copia CPU->GPU: %s\n", limite, getTimeElapsedInSeconds());
+	printf("Time to do %d transfer CPU->GPU: %s\n", limite, getTimeElapsedInSeconds());
 
         vglCheckContext(img, VGL_RAM_CONTEXT);
         cvSaveImage("../images/lenaout_upload.tif", img->ipl);
@@ -204,11 +231,10 @@ int main(int argc, char* argv[])
 		p++;
 		vglClDownload(img);
 	}
-	printf("Tempo gasto para fazer %d copia GPU->CPU: %s\n", limite, getTimeElapsedInSeconds());
+	printf("Time to do %d transfer GPU->CPU: %s\n", limite, getTimeElapsedInSeconds());
 
-        vglCheckContext(img, VGL_RAM_CONTEXT);
-        cvSaveImage("../images/lenaout_download.tif", img->ipl);
-
+    vglCheckContext(img, VGL_RAM_CONTEXT);
+    cvSaveImage("../images/lenaout_download.tif", img->ipl);
 
         //vglBlurSq3(img, out);
         //vglNot(out, out);
