@@ -49,15 +49,17 @@
 #define VGL_MAX_WINDOW_SPLIT 4
 #define VGL_MAX_WINDOWS      (VGL_MAX_WINDOW_SPLIT * VGL_MAX_WINDOW_SPLIT)
 
+#define VGL_MAX_DIM 10
+
 ////////// VglImage
 
 class VglImage{
  public:
   IplImage* ipl;
-  int       width;
-  int       height;
+  void*     ndarray;
+  int       ndim;                // 2 if conventional image, 3 if three-dimensional etc
+  int       shape[VGL_MAX_DIM];  // shape[0] = width, shape[1] = height, shape[2] = number of frames etc
   int       depth;
-  int       dim3;
   int       nChannels;
   int       has_mipmap;
   GLuint    fbo;
