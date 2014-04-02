@@ -50,6 +50,9 @@
 #define VGL_MAX_WINDOWS      (VGL_MAX_WINDOW_SPLIT * VGL_MAX_WINDOW_SPLIT)
 
 #define VGL_MAX_DIM 10
+#define VGL_WIDTH 0
+#define VGL_HEIGHT 1
+#define VGL_LENGTH 2
 
 ////////// VglImage
 
