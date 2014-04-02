@@ -250,7 +250,7 @@ void vglUpload(VglImage* image, int swapRGB){
   GLenum internalFormat;
   int depth      = image->depth;
   int nChannels  = image->nChannels;
-  int dim3       = image->dim3;
+  int dim3       = image->ndim;
   int has_mipmap = image->has_mipmap;
 
 
@@ -419,7 +419,7 @@ VglImage* vglCloneImage(IplImage* img_in, int dim3 /*=1* /, int has_mipmap /*=0*
  */
 VglImage* vglCopyCreateImage(VglImage* img_in)
 {
-  VglImage* retval = vglCreateImage(cvSize(img_in->width, img_in->height), img_in->depth, img_in->nChannels, img_in->dim3, img_in->has_mipmap);
+  VglImage* retval = vglCreateImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
   vglCopy(img_in, retval);
   return retval;
 }
@@ -439,7 +439,7 @@ VglImage* vglCopyCreateImage(IplImage* img_in, int dim3 /*=1*/, int has_mipmap /
  */
 VglImage* vglCreateImage(VglImage* img_in)
 {
-  return vglCreateImage(cvSize(img_in->width, img_in->height), img_in->depth, img_in->nChannels, img_in->dim3, img_in->has_mipmap);
+  return vglCreateImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
 }
 
 
@@ -462,10 +462,11 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int ha
     free(vglImage);
     return 0;
   }
+  
   vglImage->ipl = ipl;
-  vglImage->width     = ipl->width;
-  vglImage->height    = ipl->height;
-  vglImage->dim3      = dim3;
+  vglImage->shape[VGL_WIDTH] = ipl->width;
+  vglImage->shape[VGL_HEIGHT] = ipl->height;
+  vglImage->ndim      = dim3;
   vglImage->depth     = ipl->depth;
   vglImage->nChannels = ipl->nChannels;
   vglImage->has_mipmap = has_mipmap;
@@ -559,7 +560,7 @@ void vglDownloadFaster(VglImage* image/*, VglImage* aux*/){
 
   // New version ddantas 5/2/3009
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, image->fbo);
-  glViewport(0, 0, 2*image->width, 2*image->height);
+  glViewport(0, 0, 2*image->shape[VGL_WIDTH], 2*image->shape[VGL_HEIGHT]);
   // Old version needs aux image
   //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, aux->fbo);
   //glViewport(0, 0, 2*aux->width, 2*aux->height);
@@ -696,7 +697,7 @@ void vglDownloadFBO(VglImage* image){
     glFormat = GL_LUMINANCE;
   }
 
-  glReadPixels(0, 0, image->width, image->height, glFormat, glType, image->ipl->imageData);
+  glReadPixels(0, 0, image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], glFormat, glType, image->ipl->imageData);
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
@@ -773,9 +774,9 @@ VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
     return 0;
   }
   vglImage->ipl = ipl;
-  vglImage->width     = ipl->width;
-  vglImage->height    = ipl->height;
-  vglImage->dim3      = 1;
+  vglImage->shape[VGL_WIDTH]     = ipl->width;
+  vglImage->shape[VGL_HEIGHT]    = ipl->height;
+  vglImage->ndim      = 2;
   vglImage->depth     = ipl->depth;
   vglImage->nChannels = ipl->nChannels;
   vglImage->has_mipmap = has_mipmap;
@@ -858,34 +859,34 @@ void vglPrintImageInfo(VglImage* image){
  */
 void vglCopyImageTex(VglImage* src, VglImage* dst)
 {
-  GLint viewport[4];
-  glGetIntegerv(GL_VIEWPORT, viewport);
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
 
-  vglCheckContext(src, VGL_GL_CONTEXT);
+	vglCheckContext(src, VGL_GL_CONTEXT);
 
-      glBindTexture(GL_TEXTURE_2D, src->tex);
-      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
-      ERRCHECK()
+	glBindTexture(GL_TEXTURE_2D, src->tex);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
+	ERRCHECK()
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+	glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
-      glBegin(GL_QUADS);
-          glTexCoord2f( 0.0,  0.0);
-          glVertex3f ( -1.0, -1.0, 0.0); //Left  Up
+	glBegin(GL_QUADS);
+		glTexCoord2f( 0.0,  0.0);
+		glVertex3f ( -1.0, -1.0, 0.0); //Left  Up
 
-          glTexCoord2f( 1.0,  0.0);
-          glVertex3f (  0.0, -1.0, 0.0); //Right Up
+		glTexCoord2f( 1.0,  0.0);
+		glVertex3f (  0.0, -1.0, 0.0); //Right Up
 
-          glTexCoord2f( 1.0,  1.0);
-          glVertex3f (  0.0,  0.0, 0.0); //Right Bottom
+		glTexCoord2f( 1.0,  1.0);
+		glVertex3f (  0.0,  0.0, 0.0); //Right Bottom
 
-          glTexCoord2f( 0.0,  1.0);
-          glVertex3f ( -1.0,  0.0, 0.0); //Left  Bottom
-      glEnd();
+		glTexCoord2f( 0.0,  1.0);
+		glVertex3f ( -1.0,  0.0, 0.0); //Left  Bottom
+	glEnd();
 
-  glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 
-  vglSetContext(dst, VGL_GL_CONTEXT);
+	vglSetContext(dst, VGL_GL_CONTEXT);
 }
 
 
@@ -952,7 +953,7 @@ void vglCopyImageTexFS(VglImage* src, VglImage* dst)
 
     //printf("Using fragment shader = %d.\n", f);
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+	glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1030,7 +1031,7 @@ void vglCopyImageTexVFS(VglImage* src, VglImage* dst)
       glGetIntegerv(GL_CURRENT_PROGRAM, &retval);
       //printf("current program = %d\n", retval);
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1066,7 +1067,7 @@ void vglVerticalFlip2(VglImage* src, VglImage* dst){
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
       ERRCHECK()
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  1.0);
@@ -1128,7 +1129,7 @@ void vglHorizontalFlip2(VglImage* src, VglImage* dst){
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
       ERRCHECK()
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 1.0,  0.0);
@@ -1328,7 +1329,7 @@ int SavePPM(char* filename, int w, int h, void* savebuf){
 int vglSavePPM(VglImage* img, char* filename){
     vglCheckContext(img, VGL_GL_CONTEXT);
     vglDownloadPPM(img);
-    return SavePPM(filename, img->width, img->height, img->ipl->imageData);
+    return SavePPM(filename, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->ipl->imageData);
 }
 
 /** Save image data to PGM file, 1 channel, unsigned byte
@@ -1348,7 +1349,7 @@ int SavePGM(char* filename, int w, int h, void* savebuf){
 int vglSavePGM(VglImage* img, char* filename){
     vglCheckContext(img, VGL_GL_CONTEXT);
     vglDownloadPGM(img);
-    return SavePGM(filename, img->width, img->height, img->ipl->imageData);
+    return SavePGM(filename, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->ipl->imageData);
 }
 
 /** Load image data from PGM file, 1 channel, unsigned byte
@@ -1560,7 +1561,7 @@ void vglBaricenterVga(VglImage* src, double* x_avg /*= NULL*/, double* y_avg /*=
   int width  = 640;
   int height = 480;
 
-  if(src->width != 640 || src->height != 480){
+  if(src->shape[VGL_WIDTH] != 640 || src->shape[VGL_HEIGHT] != 480){
       fprintf(stderr, "%s: %s: Error: image must be 640x480.\n", __FILE__, __FUNCTION__);
   }
 
@@ -1652,7 +1653,7 @@ void vglMultiOutput_model(VglImage*  src, VglImage*  dst, VglImage*  dst1){
     //glDrawBuffer(GL_COLOR_ATTACHMENT1_EXT);
     //ERRCHECK()
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1729,7 +1730,7 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1){
     //glDrawBuffer(GL_COLOR_ATTACHMENT1_EXT);
     //ERRCHECK()
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1819,7 +1820,7 @@ void vglMultiInput_model(VglImage*  src0, VglImage*  src1, VglImage*  dst){
 
   ERRCHECK()
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.3,  0.3);
