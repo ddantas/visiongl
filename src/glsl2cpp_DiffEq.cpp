@@ -55,7 +55,7 @@ void vglForcesNewton(VglImage*  src, VglImage*  dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -126,7 +126,7 @@ void vglPosNewton(VglImage*  src, VglImage*  dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);

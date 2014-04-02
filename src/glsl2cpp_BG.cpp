@@ -61,7 +61,7 @@ void vglDetectFGSimpleBGModel(VglImage*  img_in, VglImage*  average, VglImage*  
 
   glUniform1f(glGetUniformLocation(_f, "std_thresh"), std_thresh);
 
-  glViewport(0, 0, 2*foreground->width, 2*foreground->height);
+  glViewport(0, 0, 2*foreground->shape[VGL_WIDTH], 2*foreground->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -159,7 +159,7 @@ void vglTrainSimpleBGModel(VglImage*  img_in, VglImage*  average, VglImage*  var
 
   glUniform1f(glGetUniformLocation(_f, "weight"), weight);
 
-  glViewport(0, 0, 2*average->width, 2*average->height);
+  glViewport(0, 0, 2*average->shape[VGL_WIDTH], 2*average->shape[VGL_WIDTH]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -273,7 +273,7 @@ void vglUpdatePartialSimpleBGModel(VglImage*  img_in, VglImage*  foregorundClose
 
   glUniform1f(glGetUniformLocation(_f, "weight"), weight);
 
-  glViewport(0, 0, 2*average->width, 2*average->height);
+  glViewport(0, 0, 2*average->shape[VGL_WIDTH], 2*average->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);

@@ -63,7 +63,7 @@ void vglClBlurSq3(VglImage* img_input, VglImage* img_output){
   err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
-  size_t worksize[] = { img_input->width, img_input->height, 1 };
+  size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 
@@ -144,7 +144,7 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
   err = clSetKernelArg( kernel, 4, sizeof( cl_mem ), (int*) &mobj_window_size_y );
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
-  size_t worksize[] = { img_input->width, img_input->height, 1 };
+  size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 
@@ -207,7 +207,7 @@ void vglClCopy(VglImage* img_input, VglImage* img_output){
   err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
-  size_t worksize[] = { img_input->width, img_input->height, 1 };
+  size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 
@@ -288,7 +288,7 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
   err = clSetKernelArg( kernel, 4, sizeof( cl_mem ), (int*) &mobj_window_size_y );
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
-  size_t worksize[] = { img_input->width, img_input->height, 1 };
+  size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 
@@ -351,7 +351,7 @@ void vglClInvert(VglImage* img_input, VglImage* img_output){
   err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
-  size_t worksize[] = { img_input->width, img_input->height, 1 };
+  size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 
@@ -414,7 +414,7 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh){
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_thresh );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { src->width, src->height, 1 };
+  size_t worksize[] = { src->shape[VGL_WIDTH], src->shape[VGL_HEIGHT], 1 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 

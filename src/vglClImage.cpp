@@ -163,7 +163,7 @@ void vglClUpload(VglImage* img)
             format.image_channel_order = CL_RGBA;
             format.image_channel_data_type = CL_UNORM_INT8;
         }
-        img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->width, img->height, 0, NULL, &err);
+        img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
         vglClCheckError( err, (char*) "clCreateImage2D" );
     }
  
@@ -172,7 +172,7 @@ void vglClUpload(VglImage* img)
         cvCvtColor(img->ipl, img->iplRGBA, CV_BGR2RGBA);
 
         size_t Origin[3] = { 0, 0, 0};
-        size_t Size3d[3] = { img->width, img->height, 1 };
+        size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
 
         err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, img->iplRGBA->imageData, 0, NULL, NULL );
         vglClCheckError( err, (char*) "clEnqueueWriteImage" );
@@ -190,7 +190,7 @@ void vglClDownload(VglImage* img)
     }
 
     size_t Origin[3] = { 0, 0, 0};
-    size_t Size3d[3] = { img->width, img->height, 1 };
+    size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
 
     cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->iplRGBA->imageData, 0, NULL, NULL );
     vglClCheckError( err_cl, (char*) "clEnqueueReadImage" );

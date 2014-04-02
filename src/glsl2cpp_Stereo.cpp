@@ -57,7 +57,7 @@ void vglAbsDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst, f
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_ref->ipl->width, img_ref->ipl->height);
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -138,7 +138,7 @@ void vglAbsDiffDisparityMipmap(VglImage*  img_ref, VglImage*  img_2, VglImage*  
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
   glUniform1f(glGetUniformLocation(_f, "max_lod"),  max_lod);
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -218,7 +218,7 @@ void vglFindDisparity(VglImage*  img_dif, VglImage*  img_disp, float  disparity)
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_dif->ipl->width, img_dif->ipl->height);
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
 
-  glViewport(0, 0, 2*img_disp->width, 2*img_disp->height);
+  glViewport(0, 0, 2*img_disp->shape[VGL_WIDTH], 2*img_disp->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -313,7 +313,7 @@ void vglFindDisparityDiff(VglImage*  img_sum, VglImage*  img_disp, VglImage*  im
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_sum->ipl->width, img_sum->ipl->height);
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
 
-  glViewport(0, 0, 2*img_disp->width, 2*img_disp->height);
+  glViewport(0, 0, 2*img_disp->shape[VGL_WIDTH], 2*img_disp->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -406,7 +406,7 @@ void vglGreenDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst,
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_ref->ipl->width, img_ref->ipl->height);
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
 
-  glViewport(0, 0, 2*dst->width, 2*dst->height);
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -496,10 +496,10 @@ void vglHomography(VglImage*  img_src, VglImage*  img_dst, float*  f_homo){
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
 
-  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->width, img_src->height);
+  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->shape[VGL_WIDTH], img_src->shape[VGL_HEIGHT]);
   glUniformMatrix3fv(glGetUniformLocation(_f, "homo"), 1, 0,  f_homo);
 
-  glViewport(0, 0, 2*img_dst->width, 2*img_dst->height);
+  glViewport(0, 0, 2*img_src->shape[VGL_WIDTH], 2*img_src->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -595,7 +595,7 @@ void vglMapTo3D(VglImage*  img_map, VglImage*  img_3d, float  f, float  b, float
   glUniform1f(glGetUniformLocation(_f, "s_x"),  0.5);
   glUniform1f(glGetUniformLocation(_f, "s_y"),   390.0 / 480.0  /* thiagopx0, 1, ddantas0, 1*/);
 
-  glViewport(0, 0, 2*img_3d->width, 2*img_3d->height);
+  glViewport(0, 0, 2*img_3d->shape[VGL_WIDTH], 2*img_3d->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -661,7 +661,7 @@ void vglMeanMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*img_out->width, 2*img_out->height);
+  glViewport(0, 0, 2*img_out->shape[VGL_WIDTH], 2*img_out->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -727,7 +727,7 @@ void vglMeanSq3(VglImage*  img_dif, VglImage*  img_out){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_dif->ipl->width, img_dif->ipl->height);
 
-  glViewport(0, 0, 2*img_out->width, 2*img_out->height);
+  glViewport(0, 0, 2*img_out->shape[VGL_WIDTH], 2*img_out->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -818,12 +818,12 @@ void vglRectify(VglImage*  img_src, VglImage*  img_dst, float*  f_dist, float*  
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
 
-  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->width, img_src->height);
+  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->shape[VGL_WIDTH], img_src->shape[VGL_HEIGHT]);
   glUniform4f(glGetUniformLocation(_f, "dist"),  f_dist[0], f_dist[1], f_dist[2], f_dist[3]);
   glUniform4f(glGetUniformLocation(_f, "proj"),  f_proj[2],  f_proj[5], f_proj[0], f_proj[4]);
   glUniformMatrix3fv(glGetUniformLocation(_f, "homo"), 1, 0,  f_homo);
 
-  glViewport(0, 0, 2*img_dst->width, 2*img_dst->height);
+  glViewport(0, 0, 2*img_dst->shape[VGL_WIDTH], 2*img_dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -891,7 +891,7 @@ void vglSumDiff(VglImage*  img_dif, VglImage*  img_out){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_dif->ipl->width, img_dif->ipl->height);
 
-  glViewport(0, 0, 2*img_out->width, 2*img_out->height);
+  glViewport(0, 0, 2*img_out->shape[VGL_WIDTH], 2*img_out->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -958,7 +958,7 @@ void vglSumDiffMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*img_out->width, 2*img_out->height);
+  glViewport(0, 0, 2*img_out->shape[VGL_WIDTH], 2*img_out->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1028,11 +1028,11 @@ void vglUndistort(VglImage*  img_src, VglImage*  img_dst, float*  f_dist, float*
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
 
-  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->width, img_src->height);
+  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->shape[VGL_WIDTH], img_src->shape[VGL_HEIGHT]);
   glUniform4f(glGetUniformLocation(_f, "dist"),  f_dist[0], f_dist[1], f_dist[2], f_dist[3]);
   glUniform4f(glGetUniformLocation(_f, "proj"),  f_proj[2],  f_proj[5], f_proj[0], f_proj[4]);
 
-  glViewport(0, 0, 2*img_dst->width, 2*img_dst->height);
+  glViewport(0, 0, 2*img_dst->shape[VGL_WIDTH], 2*img_dst->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
