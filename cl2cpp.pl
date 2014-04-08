@@ -898,7 +898,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   }
  
   print CPP "
-  size_t worksize[] = { $var_worksize->width, $var_worksize->height, 1 };
+  size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], 1 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) \"clEnqueueNDRangeKernel\" );
 ";

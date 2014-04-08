@@ -4,8 +4,8 @@
     Inverts image stored in cuda context.
 */
 
-// <<<input->height,384>>> (IN_PBO: VglImage* input, OUT_PBO: VglImage* output)
-// (input->cudaPtr, output->cudaPtr, input->width, input->height, input->nChannels)
+// <<<input->shape[VGL_HEIGHT],384>>> (IN_PBO: VglImage* input, OUT_PBO: VglImage* output)
+// (input->cudaPtr, output->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels)
 
 template<typename T> 
 __global__ void global_Invert(T* input, T* output, int w, int h, int nChannels){

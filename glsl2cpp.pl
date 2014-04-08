@@ -606,7 +606,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   }
 
   print CPP "
-  glViewport(0, 0, 2*$first_framebuffer->width, 2*$first_framebuffer->height);
+  glViewport(0, 0, 2*$first_framebuffer->shape[VGL_WIDTH], 2*$first_framebuffer->shape[VGL_HEIGHT]);
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
