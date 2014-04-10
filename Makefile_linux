@@ -34,7 +34,7 @@ OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_le
 
 
 WITH_CUDA = 0
-WITH_OPENCL = 0
+WITH_OPENCL = 1
 
 ifeq ($(WITH_OPENCL), 1)
 	OPENCL_DEF        = -D__OPENCL__
