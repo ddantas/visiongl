@@ -485,6 +485,63 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int ha
   return vglImage;
 }
 
+/** Create image from PGM as a 3d image
+    char* filename, pass filename without extension, will always read a PGM
+*/
+VglImage* vglCreateImage(char* filename, int lstart, int n, bool has_mipmap)
+{
+  VglImage* vglImage = new VglImage;
+  char* temp_filename = (char*)malloc(strlen(filename) + 256);
+  sprintf(temp_filename,"%s.%d.PGM",filename,lstart);
+  IplImage* ipl = cvLoadImage(temp_filename);
+  if (!ipl){
+    fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
+    free(vglImage);
+    return 0;
+  }
+
+  vglImage->ipl = ipl;
+  vglImage->shape[VGL_WIDTH] = ipl->width;
+  vglImage->shape[VGL_HEIGHT] = ipl->height;
+  vglImage->shape[VGL_LENGTH] = n;
+  vglImage->ndim      = 3;
+  vglImage->depth     = ipl->depth;
+  vglImage->nChannels = ipl->nChannels;
+  vglImage->has_mipmap = has_mipmap;
+  vglImage->fbo = -1;
+  vglImage->tex = -1;
+  vglImage->cudaPtr = NULL;
+  vglImage->cudaPbo = -1;
+#ifdef __OPENCL__
+  vglImage->iplRGBA = NULL;
+  vglImage->oclPtr = NULL;
+#endif
+  vglImage->ndarray = (char*)malloc(n*vglImage->nChannels*vglImage->depth*vglImage->shape[VGL_WIDTH]*vglImage->shape[VGL_HEIGHT]);
+  
+  for (int i = 0; i < strlen(ipl->imageData); i++)
+	((char*)vglImage->ndarray)[i] = ipl->imageData[i];
+
+  int c = 1;
+  for(int i = lstart+1; i < lstart+n; i++)
+  {
+	  sprintf(temp_filename,"%s.%d.PGM",filename,i);
+	  ipl = cvLoadImage(temp_filename);
+	  if (!ipl){
+		fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
+		free(vglImage);
+		return 0;
+	  }
+	  for (int j = 0; j < strlen(ipl->imageData); j++)
+		((char*)vglImage->ndarray)[(c*strlen(ipl->imageData))+j] = ipl->imageData[j];
+	  c++;
+  }
+
+  vglSetContext(vglImage, VGL_BLANK_CONTEXT);
+  //vglUpload(vglImage);
+
+  return vglImage;
+}
+
 /** Release memory occupied by image in RAM and GPU
  */
 void vglReleaseImage(VglImage** p_image)
