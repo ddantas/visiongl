@@ -125,6 +125,8 @@ VglImage* vglCreateImage(VglImage* img_in);
 VglImage* vglCopyCreateImage(IplImage* img_in, int dim3 = 1, int has_mipmap = 0);
 VglImage* vglCreateImage(IplImage* img_in, int dim3 = 1, int has_mipmap = 0);
 VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int dim3 = 1, int has_mipmap = 0);
+VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap);
+void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd);
 VglImage* vglCloneImage(IplImage* img_in, int dim3 = 1, int has_mipmap = 0);
 void vglReleaseImage(VglImage** p_image);
 void vglReplaceIpl(VglImage* image, IplImage* new_ipl);
@@ -164,6 +166,7 @@ void vglErodeSq3Sep(VglImage* src, VglImage* dst, VglImage* buf, int times = 1);
 void vglErodeSq5Sep(VglImage* src, VglImage* dst, VglImage* buf, int times = 1);
 void vglCErodeCross3(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buf, int times);
 void vglGray2(VglImage*  src, VglImage*  dst, VglImage*  dst1);
+
 
 void vglInOut_model(VglImage*  dst, VglImage*  dst1);
 

@@ -486,20 +486,20 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int ha
 }
 
 /** Create image from PGM as a 3d image
-    char* filename, pass filename without extension, will always read a PGM
+    char* filename, pass filename formated with C/printf supported format
 */
-VglImage* vglCreateImage(char* filename, int lstart, int n, bool has_mipmap)
+VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap)
 {
   VglImage* vglImage = new VglImage;
   char* temp_filename = (char*)malloc(strlen(filename) + 256);
-  sprintf(temp_filename,"%s.%d.PGM",filename,lstart);
+  sprintf(temp_filename,filename,lStart);
   IplImage* ipl = cvLoadImage(temp_filename);
   if (!ipl){
     fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
     free(vglImage);
     return 0;
   }
-
+  int n = lEnd-lStart+1;
   vglImage->ipl = ipl;
   vglImage->shape[VGL_WIDTH] = ipl->width;
   vglImage->shape[VGL_HEIGHT] = ipl->height;
@@ -516,31 +516,59 @@ VglImage* vglCreateImage(char* filename, int lstart, int n, bool has_mipmap)
   vglImage->iplRGBA = NULL;
   vglImage->oclPtr = NULL;
 #endif
-  vglImage->ndarray = (char*)malloc(n*vglImage->nChannels*vglImage->depth*vglImage->shape[VGL_WIDTH]*vglImage->shape[VGL_HEIGHT]);
-  
-  for (int i = 0; i < strlen(ipl->imageData); i++)
-	((char*)vglImage->ndarray)[i] = ipl->imageData[i];
 
-  int c = 1;
-  for(int i = lstart+1; i < lstart+n; i++)
+  int d = vglImage->depth / 8;
+  if (d < 1) d = 1;
+
+  vglImage->ndarray = (char*)malloc(ipl->height*ipl->width*ipl->nChannels*d*vglImage->shape[VGL_LENGTH]);
+  
+  memcpy(vglImage->ndarray,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);
+  ipl->imageData = (char*)vglImage->ndarray;
+  int c = ipl->height*ipl->width*d*ipl->nChannels;
+  for(int i = lStart+1; i <= lEnd; i++)
   {
-	  sprintf(temp_filename,"%s.%d.PGM",filename,i);
+	  sprintf(temp_filename,filename,i);
 	  ipl = cvLoadImage(temp_filename);
 	  if (!ipl){
 		fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
 		free(vglImage);
 		return 0;
 	  }
-	  for (int j = 0; j < strlen(ipl->imageData); j++)
-		((char*)vglImage->ndarray)[(c*strlen(ipl->imageData))+j] = ipl->imageData[j];
-	  c++;
+
+	  memcpy(((char*)vglImage->ndarray)+c,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);//needs tests
+	  c+=ipl->height*ipl->width*d*ipl->nChannels;
   }
 
   vglSetContext(vglImage, VGL_BLANK_CONTEXT);
-  //vglUpload(vglImage);
+  //vglUpload(vglImage); //must be fixed before enabling
 
   return vglImage;
 }
+
+/** Save PGM 3d images on the disk
+*/
+void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
+{
+	//vglDownload(image); //must be fixed before enabling
+	char* temp_filename = (char*)malloc(strlen(filename)+256);
+	sprintf(temp_filename,filename,lStart);
+	int d = image->depth / 8;
+	if (d < 1) d = 1;
+	char* temp_image = (char*)malloc(image->ipl->height*image->ipl->width*image->ipl->nChannels*d);
+	memcpy(temp_image,image->ndarray,image->ipl->height*image->ipl->width*image->ipl->nChannels*d);
+
+	image->ipl->imageData = temp_image;
+	cvSaveImage(strcat(temp_filename,".jpg"),image->ipl);
+	int c = image->ipl->height*image->ipl->width*d*image->ipl->nChannels;
+	for(int i = lStart+1; i <= lEnd; i++)
+	{
+		sprintf(temp_filename,filename,i);
+		memcpy(temp_image,((char*)image->ndarray)+c,image->ipl->height*image->ipl->width*image->ipl->nChannels*d);
+		image->ipl->imageData=temp_image;
+		cvSaveImage(temp_filename,image->ipl);
+		c += image->ipl->height*image->ipl->width*d*image->ipl->nChannels;
+	}
+}		
 
 /** Release memory occupied by image in RAM and GPU
  */
