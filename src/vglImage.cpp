@@ -250,7 +250,7 @@ void vglUpload(VglImage* image, int swapRGB){
   GLenum internalFormat;
   int depth      = image->depth;
   int nChannels  = image->nChannels;
-  int dim3       = image->ndim;
+  int ndim       = image->ndim;
   int has_mipmap = image->has_mipmap;
 
 
@@ -278,16 +278,19 @@ void vglUpload(VglImage* image, int swapRGB){
     glGenTextures(1, &image->tex);
   }
 
-  if (dim3 <= 0){
-    fprintf(stderr, "vglUpload: Image dim3 (depth) must be greater than zero. Assuming dim3 = 1\n");
-    dim3 = 1;
+  if (ndim <= 0){
+    fprintf(stderr, "vglUpload: Image ndim (depth) must be greater than zero. Assuming ndim = 2\n");
+    ndim =2;
   }
 
-  if (dim3 == 1){
+  if (ndim == 2){
     glTarget = GL_TEXTURE_2D;
   }
-  else{
+  else if (ndim == 3){
     glTarget = GL_TEXTURE_3D;
+  }
+  else {
+    fprintf(stderr, "%s: %s: Error: images with more than 3 dimensions not supported\n", __FILE__, __FUNCTION__);
   }
 
   //printf("w x h x d = %d x %d x %d\n", ipl->width, ipl->height, dim3);
@@ -338,8 +341,8 @@ void vglUpload(VglImage* image, int swapRGB){
 
   if (glTarget == GL_TEXTURE_3D){
     glTexImage3D(glTarget, LEVEL, internalFormat, 
-                 ipl->width, ipl->height, depth, 0,
-                 glFormat, glType, 0);
+                 image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH], 0,
+                 glFormat, glType, image->ndarray);
   }
   else{
     //printf("uploading with glTexImage2D (w, h) = (%d, %d)\n", ipl->width, ipl->height);
@@ -540,7 +543,7 @@ VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap)
   }
 
   vglSetContext(vglImage, VGL_BLANK_CONTEXT);
-  //vglUpload(vglImage); //must be fixed before enabling
+  vglUpload(vglImage); //must be fixed before enabling
 
   return vglImage;
 }
@@ -707,14 +710,12 @@ void vglDownload(VglImage* image){
   IplImage* ipl = image->ipl;	
   GLenum glFormat;
   GLenum glType;
-  int depth     = image->depth;
-  int nChannels = image->nChannels;
+  int ndim       = image->ndim;
+  int depth      = image->depth;
+  int nChannels  = image->nChannels;
 
   //glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
-  glBindTexture(GL_TEXTURE_2D, image->tex);
-
-  ERRCHECK()
 
   switch (depth){
           case IPL_DEPTH_8U:  glType = GL_UNSIGNED_BYTE;  break; 
@@ -739,7 +740,23 @@ void vglDownload(VglImage* image){
     glFormat = GL_LUMINANCE;
   }
 
-  glGetTexImage(GL_TEXTURE_2D, 0, glFormat, glType, ipl->imageData);
+  if (ndim == 2){
+    glBindTexture(GL_TEXTURE_2D, image->tex);
+    ERRCHECK()
+    glGetTexImage(GL_TEXTURE_2D, 0, glFormat, glType, ipl->imageData);
+    ERRCHECK()
+  }
+  else if (ndim == 3){
+    glBindTexture(GL_TEXTURE_3D, image->tex);
+    ERRCHECK()
+    glGetTexImage(GL_TEXTURE_3D, 0, glFormat, glType, image->ndarray);
+    ERRCHECK()
+  }
+  else {
+    fprintf(stderr, "%s: %s: Error: images with more than 3 dimensions not supported\n", __FILE__, __FUNCTION__);
+  }
+
+
   //glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, ipl->imageData);
 
   ERRCHECK()

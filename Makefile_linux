@@ -33,7 +33,7 @@ OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 0
+WITH_CUDA = 1
 WITH_OPENCL = 1
 
 ifeq ($(WITH_OPENCL), 1)
@@ -102,6 +102,12 @@ LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
                           $(CUDA_FILES) $(VGL_FILES) $(OPENCL_FILES) \
                          $(LINUXAMD64_DIRS_LIBS) $(CUDA_DIRS_LIBS) 
 
+LINUXAMD64_DEMO_3D = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_3d \
+                         src/demo/3dtex.cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS)
+
 LINUXAMD64_DEMO_FRACTAL = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINPATH)/demo_$(FRACTAL_NAME) \
                          src/demo/$(FRACTAL_NAME).cpp \
@@ -161,6 +167,9 @@ demofrac:
 democam:
 	$(LINUXAMD64_DEMO_CAM)
 
+demo3d:
+	$(LINUXAMD64_DEMO_3D)
+
 demobenchmark:
 	$(LINUXAMD64_DEMO_BENCHMARK_CL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CV)
@@ -168,6 +177,9 @@ demobenchmark:
 
 .PHONY: lib
 
+
+rundemo3d:
+	cd $(OUTPUT_BINPATH); ./demo_3d
 
 rundemofrac:
 	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)
