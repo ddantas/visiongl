@@ -9,6 +9,7 @@
 //IplImage, cvLoadImage
 //#include <opencv2/core/core_c.h>
 #include <opencv2/highgui/highgui_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
 //#include <cvaux.h>
 
 #include "vglContext.h"
@@ -269,6 +270,10 @@ void vglUpload(VglImage* image, int swapRGB){
       glFormat = GL_BGR;
     }
   }
+  else if (nChannels == 4)
+  {
+	  glFormat = GL_RGBA;
+  }
   else{
     glFormat = GL_LUMINANCE;
   }
@@ -448,7 +453,7 @@ VglImage* vglCreateImage(VglImage* img_in)
 
 /** Create image with same format as img_in
  */
-VglImage* vglCreateImage(IplImage* img_in, int dim3 /*=1*/, int has_mipmap /*=0*/)
+VglImage* vglCreateImage(IplImage* img_in, int dim3 /*=2*/, int has_mipmap /*=0*/)
 {
   return vglCreateImage(cvGetSize(img_in), img_in->depth, img_in->nChannels, dim3, has_mipmap);
 
@@ -497,52 +502,56 @@ VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap)
   char* temp_filename = (char*)malloc(strlen(filename) + 256);
   sprintf(temp_filename,filename,lStart);
   IplImage* ipl = cvLoadImage(temp_filename);
+  IplImage* iplRGBA = cvCreateImage(cvSize(ipl->width,ipl->height),ipl->depth,4);
+  cvCvtColor(ipl, iplRGBA, CV_BGR2RGBA);
   if (!ipl){
     fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
     free(vglImage);
     return 0;
   }
+  
   int n = lEnd-lStart+1;
   vglImage->ipl = ipl;
   vglImage->shape[VGL_WIDTH] = ipl->width;
   vglImage->shape[VGL_HEIGHT] = ipl->height;
   vglImage->shape[VGL_LENGTH] = n;
   vglImage->ndim      = 3;
-  vglImage->depth     = ipl->depth;
-  vglImage->nChannels = ipl->nChannels;
+  vglImage->depth     = iplRGBA->depth;
+  vglImage->nChannels = iplRGBA->nChannels;
   vglImage->has_mipmap = has_mipmap;
   vglImage->fbo = -1;
   vglImage->tex = -1;
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
 #ifdef __OPENCL__
-  vglImage->iplRGBA = NULL;
+  vglImage->iplRGBA = iplRGBA;
   vglImage->oclPtr = NULL;
 #endif
 
   int d = vglImage->depth / 8;
   if (d < 1) d = 1;
 
-  vglImage->ndarray = (char*)malloc(ipl->height*ipl->width*ipl->nChannels*d*vglImage->shape[VGL_LENGTH]);
+  vglImage->ndarray = (char*)malloc(iplRGBA->height*iplRGBA->width*iplRGBA->nChannels*d*vglImage->shape[VGL_LENGTH]);
   
-  memcpy(vglImage->ndarray,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);
-  ipl->imageData = (char*)vglImage->ndarray;
-  int c = ipl->height*ipl->width*d*ipl->nChannels;
+  memcpy(vglImage->ndarray,(void*) iplRGBA->imageData,iplRGBA->height*iplRGBA->width*iplRGBA->nChannels*d);
+  iplRGBA->imageData = (char*)vglImage->ndarray;
+  int c = iplRGBA->height*iplRGBA->width*d*iplRGBA->nChannels;
   for(int i = lStart+1; i <= lEnd; i++)
   {
 	  sprintf(temp_filename,filename,i);
 	  ipl = cvLoadImage(temp_filename);
+	  cvCvtColor(ipl, iplRGBA, CV_BGR2RGBA);
 	  if (!ipl){
 		fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
 		free(vglImage);
 		return 0;
 	  }
 
-	  memcpy(((char*)vglImage->ndarray)+c,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);//needs tests
-	  c+=ipl->height*ipl->width*d*ipl->nChannels;
+	  memcpy(((char*)vglImage->ndarray)+c,(void*) iplRGBA->imageData,iplRGBA->height*iplRGBA->width*iplRGBA->nChannels*d);//needs tests
+	  c+=iplRGBA->height*iplRGBA->width*d*iplRGBA->nChannels;
   }
 
-  vglSetContext(vglImage, VGL_BLANK_CONTEXT);
+  vglSetContext(vglImage, VGL_RAM_CONTEXT);
   vglUpload(vglImage); //must be fixed before enabling
 
   return vglImage;
@@ -557,19 +566,22 @@ void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
 	sprintf(temp_filename,filename,lStart);
 	int d = image->depth / 8;
 	if (d < 1) d = 1;
-	char* temp_image = (char*)malloc(image->ipl->height*image->ipl->width*image->ipl->nChannels*d);
-	memcpy(temp_image,image->ndarray,image->ipl->height*image->ipl->width*image->ipl->nChannels*d);
 
-	image->ipl->imageData = temp_image;
-	cvSaveImage(strcat(temp_filename,".jpg"),image->ipl);
-	int c = image->ipl->height*image->ipl->width*d*image->ipl->nChannels;
+
+	char* temp_image = (char*)malloc(image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->iplRGBA->nChannels*d);
+	memcpy(temp_image,image->ndarray,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->iplRGBA->nChannels*d);
+
+	image->iplRGBA->imageData = temp_image;
+	cvSaveImage(temp_filename,image->iplRGBA);
+	int c = image->iplRGBA->height*image->iplRGBA->width*d*image->iplRGBA->nChannels;
 	for(int i = lStart+1; i <= lEnd; i++)
 	{
 		sprintf(temp_filename,filename,i);
-		memcpy(temp_image,((char*)image->ndarray)+c,image->ipl->height*image->ipl->width*image->ipl->nChannels*d);
-		image->ipl->imageData=temp_image;
-		cvSaveImage(temp_filename,image->ipl);
-		c += image->ipl->height*image->ipl->width*d*image->ipl->nChannels;
+		memcpy(temp_image,((char*)image->ndarray)+c,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->iplRGBA->nChannels*d);
+		image->iplRGBA->imageData = temp_image;
+		//cvCvtColor(image->iplRGBA,image->ipl,CV_RGBA2BGR);
+		cvSaveImage(temp_filename,image->iplRGBA);
+		c += image->iplRGBA->height*image->iplRGBA->width*d*image->iplRGBA->nChannels;
 	}
 }		
 

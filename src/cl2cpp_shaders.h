@@ -37,3 +37,4 @@ void vglClInvert(VglImage* img_input, VglImage* img_output);
   */
 void vglClThreshold(VglImage* src, VglImage* dst, float thresh);
 
+void vglCl3dNot(VglImage* src, VglImage* dst);

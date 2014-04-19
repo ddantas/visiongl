@@ -424,3 +424,67 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh){
   vglSetContext(dst, VGL_CL_CONTEXT);
 }
 
+void vglCl3dNot(VglImage* src, VglImage* dst){
+
+  vglCheckContext(src, VGL_CL_CONTEXT);
+  vglCheckContext(dst, VGL_CL_CONTEXT);
+
+  cl_int err;
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL/vglCl3dNot.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      std::string str("File not found: ");
+      str.append(file_path);
+      vglClCheckError(-1, (char*)str.c_str());
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglCl3dNot", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &src->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &dst->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  size_t worksize[] = {0,0,0};
+  if (src->ndim == 2)
+  {
+	  worksize[0] = src->shape[VGL_WIDTH];
+	  worksize[1] = src->shape[VGL_HEIGHT];
+	  worksize[2] = 0;
+	  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+	  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  }
+  else
+  {
+	  worksize[0] = src->shape[VGL_WIDTH];
+	  worksize[1] = src->shape[VGL_HEIGHT];
+	  worksize[2] = src->shape[VGL_LENGTH];
+	  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
+	  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  }
+
+  vglSetContext(dst, VGL_CL_CONTEXT);
+}

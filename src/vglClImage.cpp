@@ -163,8 +163,17 @@ void vglClUpload(VglImage* img)
             format.image_channel_order = CL_RGBA;
             format.image_channel_data_type = CL_UNORM_INT8;
         }
-        img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
-        vglClCheckError( err, (char*) "clCreateImage2D" );
+		
+		if (img->ndim == 2)
+		{
+			img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
+			vglClCheckError( err, (char*) "clCreateImage2D" );
+		}
+		else
+		{
+			img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT],img->shape[VGL_LENGTH],0, 0, NULL, &err);
+			vglClCheckError( err, (char*) "clCreateImage3D" );
+		}
     }
  
     if (vglIsInContext(img, VGL_RAM_CONTEXT))
@@ -172,10 +181,19 @@ void vglClUpload(VglImage* img)
         cvCvtColor(img->ipl, img->iplRGBA, CV_BGR2RGBA);
 
         size_t Origin[3] = { 0, 0, 0};
-        size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
 
-        err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, img->iplRGBA->imageData, 0, NULL, NULL );
-        vglClCheckError( err, (char*) "clEnqueueWriteImage" );
+		if(img->ndim == 2)
+		{
+			size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
+			err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, img->iplRGBA->imageData, 0, NULL, NULL );
+			vglClCheckError( err, (char*) "clEnqueueWriteImage" );
+		}
+		else
+		{
+			size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
+			err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, img->ndarray, 0, NULL, NULL );
+			vglClCheckError( err, (char*) "clEnqueueWriteImage" );
+		}
     }
 
     vglAddContext(img, VGL_CL_CONTEXT);
@@ -190,11 +208,21 @@ void vglClDownload(VglImage* img)
     }
 
     size_t Origin[3] = { 0, 0, 0};
-    size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
 
-    cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->iplRGBA->imageData, 0, NULL, NULL );
-    vglClCheckError( err_cl, (char*) "clEnqueueReadImage" );
-    cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
+	if(img->ndim == 2)
+	{
+		size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
+		cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->iplRGBA->imageData, 0, NULL, NULL );
+		vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
+
+		cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
+	}
+	else
+	{
+		size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
+		cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ndarray, 0, NULL, NULL );
+		vglClCheckError( err_cl, (char*) "clEnqueueWriteImage3D" );
+	}
 
     vglAddContext(img, VGL_RAM_CONTEXT);
 }
