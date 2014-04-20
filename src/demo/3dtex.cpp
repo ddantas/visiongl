@@ -29,9 +29,12 @@ int main()
 						1.0f/64.0f, 1.0f/32.0f, 1.0f/64.0f};
 		
         //vglCl3dNot(img,img);
-		//vglCl3dConvolution(img,img,mask555,5,5,5);
+		//vglCl3dConvolution(img,img,blur333,3,3,3);
+		//vglCl3dBlurSq3(img,img);
+		//vglCl3dThreshold(img,img,0.5);
+
         vglClDownload(img);
-	vglSaveImage(img,"../images/3dtex_demo.%d.jpg",0,16);
+	vglSaveImage(img,"../images/output/3dtex_demo.%d.jpg",0,16);
 	clReleaseMemObject(img->oclPtr);
 	vglClFlush();
 	return 0;

@@ -18,7 +18,7 @@ __kernel void vglCl3dBlurSq3(__read_only image3d_t img_input,__write_only image3
 									1.0f/32.0f, 1.0f/16.0f, 1.0f/32.0f, 
 									1.0f/64.0f, 1.0f/32.0f, 1.0f/64.0f, 
 									1.0f/32.0f, 1.0f/16.0f, 1.0f/32.0f, 
-									1.0f/64.0f, 1.0f/32.0f, 1.0f/64.0f}
+									1.0f/64.0f, 1.0f/32.0f, 1.0f/64.0f};
 
     int xi = 0;
     int yi = 0;
@@ -29,8 +29,8 @@ __kernel void vglCl3dBlurSq3(__read_only image3d_t img_input,__write_only image3
         {
 			for(zi = 0; zi < 3; zi++)
 			{
-				float4 p = read_imagef(img_input, smp, (int2)(coords.x + (xi-1),coords.y + (yi-1), coords.z + (zi-1), 0));
-				p.xyz *= convolution_window[zi*3*3 + (xi*3) + yi];
+				float4 p = read_imagef(img_input, smp, (int4)(coords.x + (xi-1),coords.y + (yi-1), coords.z + (zi-1), 0));
+				p.xyz *= convolution_window[(zi*9) + (xi*3) + yi];
 				result += p;
 			}
 		}

@@ -1,8 +1,8 @@
 /** Threshold of src image by float parameter. Result is stored in dst image.
 
   */
-__kernel void vglCl3dThreshold(__read_only image2d_t src,
-                        __write_only image2d_t dst,
+__kernel void vglCl3dThreshold(__read_only image3d_t src,
+                        __write_only image3d_t dst,
                         float thresh)
 {
 	int4 coords = (int4)(get_global_id(0), get_global_id(1), get_global_id(2), 0);

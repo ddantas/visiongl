@@ -11,6 +11,7 @@
 
   */
 void vglClBlurSq3(VglImage* img_input, VglImage* img_output);
+void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output);
 
 /** Convolution of src image by mask. Result is stored in dst image.
 
@@ -34,10 +35,10 @@ void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolutio
 
   */
 void vglClInvert(VglImage* img_input, VglImage* img_output);
+void vglCl3dNot(VglImage* src, VglImage* dst);
 
 /** Threshold of src image by float parameter. Result is stored in dst image.
 
   */
 void vglClThreshold(VglImage* src, VglImage* dst, float thresh);
-
-void vglCl3dNot(VglImage* src, VglImage* dst);
+void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh);
