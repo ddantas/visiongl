@@ -16,16 +16,19 @@ void vglClBlurSq3(VglImage* img_input, VglImage* img_output);
 
   */
 void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
 
 /** Direct copy from src to dst.
 
   */
 void vglClCopy(VglImage* img_input, VglImage* img_output);
+void vglCl3dCopy(VglImage* img_input, VglImage* img_output);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
 void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
 
 /** Negative of src image. Result is stored in dst image.
 

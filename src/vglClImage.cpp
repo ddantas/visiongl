@@ -36,7 +36,7 @@ void vglClCheckError(cl_int error, char* name)
     {
         printf("Erro %d while doing the following operation %s\n",error,name);
         system("pause");
-	exit(1);
+		exit(1);
     }
 }
 
@@ -163,19 +163,43 @@ void vglClUpload(VglImage* img)
             format.image_channel_order = CL_RGBA;
             format.image_channel_data_type = CL_UNORM_INT8;
         }
-		
+
+		cl_image_desc desc;
+
 		if (img->ndim == 2)
 		{
-			img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
-			vglClCheckError( err, (char*) "clCreateImage2D" );
+			
+			desc.image_type = CL_MEM_OBJECT_IMAGE2D;
+			desc.image_width = img->shape[VGL_WIDTH];
+			desc.image_height = img->shape[VGL_HEIGHT];
+			desc.image_depth = 0;
+			desc.image_array_size = 1;
+			desc.image_row_pitch = 0;
+			desc.image_slice_pitch = 0;
+			desc.num_mip_levels = 0;
+			desc.num_samples = 0;
+			desc.buffer = NULL;
+
 		}
 		else
 		{
-			img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT],img->shape[VGL_LENGTH],0, 0, NULL, &err);
-			vglClCheckError( err, (char*) "clCreateImage3D" );
+			
+			desc.image_type = CL_MEM_OBJECT_IMAGE3D;
+			desc.image_width = img->shape[VGL_WIDTH];
+			desc.image_height = img->shape[VGL_HEIGHT];
+			desc.image_depth = img->shape[VGL_LENGTH];
+			desc.image_array_size = 0;
+			desc.image_row_pitch = 0;
+			desc.image_slice_pitch = 0;
+			desc.num_mip_levels = 0;
+			desc.num_samples = 0;
+			desc.buffer = NULL;
+
 		}
-    }
- 
+		img->oclPtr = clCreateImage(cl.context,CL_MEM_READ_WRITE, &format, &desc,NULL,&err);
+		vglClCheckError(err, (char*) "clCreateImage");
+	}
+
     if (vglIsInContext(img, VGL_RAM_CONTEXT))
     {
         cvCvtColor(img->ipl, img->iplRGBA, CV_BGR2RGBA);
@@ -193,6 +217,7 @@ void vglClUpload(VglImage* img)
 			size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
 			err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, img->ndarray, 0, NULL, NULL );
 			vglClCheckError( err, (char*) "clEnqueueWriteImage" );
+			clFinish(cl.commandQueue);
 		}
     }
 

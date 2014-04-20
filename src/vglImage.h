@@ -31,6 +31,7 @@
 //CL
 #ifdef __OPENCL__
 #include <CL/cl.h>
+#pragma OPENCL EXTENSION cl_khr_3d_image_writes : enable
 #endif
 
 #define VGL_WIN_X0   -1.0

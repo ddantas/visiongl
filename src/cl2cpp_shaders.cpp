@@ -160,6 +160,84 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
 
+void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z){
+
+  if (img_input->ndim != 3 || img_output->ndim != 3)
+  {
+	  printf("input or output image is not 3D\n");
+	  return;
+  }
+
+  vglCheckContext(img_input, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int err;
+
+  cl_mem mobj_convolution_window = NULL;
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
+  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
+  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL/vglCl3dConvolution.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      std::string str("File not found: ");
+      str.append(file_path);
+      vglClCheckError(-1, (char*)str.c_str());
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglCl3dConvolution", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
+  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+
+  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+
+  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+
+  size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+
+  err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
 /** Direct copy from src to dst.
 
   */
@@ -200,7 +278,6 @@ void vglClCopy(VglImage* img_input, VglImage* img_output){
     vglClCheckError(err, (char*) "clCreateKernel" );
   }
 
-
   err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
   vglClCheckError( err, (char*) "clSetKernelArg 0" );
 
@@ -209,6 +286,63 @@ void vglClCopy(VglImage* img_input, VglImage* img_output){
 
   size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+void vgl3dClCopy(VglImage* img_input, VglImage* img_output){
+
+
+  if (img_input->ndim != 3 || img_output->ndim != 3)
+  {
+	  printf("input or output image is not 3D\n");
+	  return;
+  }
+
+  vglCheckContext(img_input, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int err;
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL/vglCl3dCopy.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      std::string str("File not found: ");
+      str.append(file_path);
+      vglClCheckError(-1, (char*)str.c_str());
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglCl3dCopy", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
@@ -300,6 +434,84 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
 
   err = clReleaseMemObject( mobj_window_size_y );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_y");
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z){
+
+  if (img_input->ndim != 3 || img_output->ndim != 3)
+  {
+	  printf("input or output image is not 3D\n");
+	  return;
+  }
+
+  vglCheckContext(img_input, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int err;
+
+  cl_mem mobj_convolution_window = NULL;
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
+  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
+  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL/vglCl3dErosion.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      std::string str("File not found: ");
+      str.append(file_path);
+      vglClCheckError(-1, (char*)str.c_str());
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglCl3dErosion", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
+  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+
+  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+
+  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+
+  size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+
+  err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
