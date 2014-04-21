@@ -28,11 +28,14 @@ int main()
 						1.0f/32.0f, 1.0f/16.0f, 1.0f/32.0f, 
 						1.0f/64.0f, 1.0f/32.0f, 1.0f/64.0f};
 		
+	float erosion[] = { 1, 1, 1, 1, 1, 1, 1, 1 , 1,
+					  1, 1, 1, 1, 1, 1, 1, 1 , 1,
+					  1, 1, 1, 1, 1, 1, 1, 1 , 1};
         //vglCl3dNot(img,img);
 		//vglCl3dConvolution(img,img,blur333,3,3,3);
 		//vglCl3dBlurSq3(img,img);
 		//vglCl3dThreshold(img,img,0.5);
-
+		vglCl3dErosion(img,img,erosion,3,3,3);
         vglClDownload(img);
 	vglSaveImage(img,"../images/output/3dtex_demo.%d.jpg",0,16);
 	clReleaseMemObject(img->oclPtr);

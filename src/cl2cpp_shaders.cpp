@@ -348,7 +348,7 @@ void vglClCopy(VglImage* img_input, VglImage* img_output){
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
 
-void vgl3dClCopy(VglImage* img_input, VglImage* img_output){
+void vglCl3dCopy(VglImage* img_input, VglImage* img_output){
 
 
   if (img_input->ndim != 3 || img_output->ndim != 3)

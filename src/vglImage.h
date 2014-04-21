@@ -31,7 +31,6 @@
 //CL
 #ifdef __OPENCL__
 #include <CL/cl.h>
-#pragma OPENCL EXTENSION cl_khr_3d_image_writes : enable
 #endif
 
 #define VGL_WIN_X0   -1.0
@@ -127,6 +126,7 @@ VglImage* vglCopyCreateImage(IplImage* img_in, int dim3 = 1, int has_mipmap = 0)
 VglImage* vglCreateImage(IplImage* img_in, int dim3 = 1, int has_mipmap = 0);
 VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int dim3 = 1, int has_mipmap = 0);
 VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap);
+VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap);
 void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd);
 VglImage* vglCloneImage(IplImage* img_in, int dim3 = 1, int has_mipmap = 0);
 void vglReleaseImage(VglImage** p_image);
