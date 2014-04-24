@@ -164,16 +164,12 @@ void vglClUpload(VglImage* img)
             format.image_channel_data_type = CL_UNORM_INT8;
         }
 
-        img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
-        vglClCheckError( err, (char*) "clCreateImage2D" );
-
-
 	if (img->ndim == 2)
 	{
             img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
             vglClCheckError( err, (char*) "clCreateImage2D" );
 	}
-        else if(img->ndim == 2)
+        else if(img->ndim == 3)
 	{
 	  img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH], 0, 0, NULL, &err);
             vglClCheckError( err, (char*) "clCreateImage2D" );
