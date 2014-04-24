@@ -199,8 +199,8 @@ int main(int argc, char** argv)
 
   for (int i = 0; i < num_cam; i++){
     const int HAS_MIPMAP = 0;
-    img[i]      = vglCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 3, 1, HAS_MIPMAP);
-    img_gray[i] = vglCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 1, 1, HAS_MIPMAP);
+    img[i]      = vglCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 3, 2, HAS_MIPMAP);
+    img_gray[i] = vglCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 1, 2, HAS_MIPMAP);
 
     if (!img[i]){
       fprintf(stderr, "Error loading img[%d] from file\n", i);

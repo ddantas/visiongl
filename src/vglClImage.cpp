@@ -164,6 +164,25 @@ void vglClUpload(VglImage* img)
             format.image_channel_data_type = CL_UNORM_INT8;
         }
 
+        img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
+        vglClCheckError( err, (char*) "clCreateImage2D" );
+
+
+	if (img->ndim == 2)
+	{
+            img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
+            vglClCheckError( err, (char*) "clCreateImage2D" );
+	}
+        else if(img->ndim == 2)
+	{
+	  img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH], 0, 0, NULL, &err);
+            vglClCheckError( err, (char*) "clCreateImage2D" );
+	}
+        else{
+            fprintf(stderr, "%s: %s: Unsupported number of dimensions = %d\n", __FILE__, __FUNCTION__, img->ndim);
+	}
+
+	/*
 		cl_image_desc desc;
 
 		if (img->ndim == 2)
@@ -198,6 +217,7 @@ void vglClUpload(VglImage* img)
 		}
 		img->oclPtr = clCreateImage(cl.context,CL_MEM_READ_WRITE, &format, &desc,NULL,&err);
 		vglClCheckError(err, (char*) "clCreateImage");
+	*/
 	}
 
     if (vglIsInContext(img, VGL_RAM_CONTEXT))

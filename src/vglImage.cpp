@@ -385,7 +385,7 @@ void vglUpload(VglImage* image, int swapRGB){
     Same as vglCopyCreateImage
  */
 /*
-VglImage* vglCloneImage(IplImage* img_in, int dim3 /*=1* /, int has_mipmap /*=0* /)
+VglImage* vglCloneImage(IplImage* img_in, int ndim /*=2* /, int has_mipmap /*=0* /)
 {
   VglImage* vglImage = new VglImage;
   if (!img_in){
@@ -399,7 +399,7 @@ VglImage* vglCloneImage(IplImage* img_in, int dim3 /*=1* /, int has_mipmap /*=0*
   }
   vglImage->width     = img_in->width;
   vglImage->height    = img_in->height;
-  vglImage->dim3      = dim3;
+  vglImage->ndim      = ndim;
   vglImage->depth     = img_in->depth;
   vglImage->nChannels = img_in->nChannels;
   vglImage->has_mipmap = has_mipmap;
@@ -407,7 +407,7 @@ VglImage* vglCloneImage(IplImage* img_in, int dim3 /*=1* /, int has_mipmap /*=0*
   vglImage->tex = -1;
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
-  fprintf(stderr, "vglCloneImage: dim3 = %d\n", vglImage->dim3);
+  fprintf(stderr, "vglCloneImage: ndim = %d\n", vglImage->ndim);
 
   vglSetContext(vglImage, VGL_RAM_CONTEXT);
   vglUpload(vglImage);
@@ -434,9 +434,9 @@ VglImage* vglCopyCreateImage(VglImage* img_in)
 
 /** Create image with same format and data as img_in
  */
-VglImage* vglCopyCreateImage(IplImage* img_in, int dim3 /*=1*/, int has_mipmap /*=0*/)
+VglImage* vglCopyCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /*=0*/)
 {
-  VglImage* retval = vglCreateImage(cvSize(img_in->width, img_in->height), img_in->depth, img_in->nChannels, dim3, has_mipmap);
+  VglImage* retval = vglCreateImage(cvSize(img_in->width, img_in->height), img_in->depth, img_in->nChannels, ndim, has_mipmap);
   cvCopy(img_in, retval->ipl);
   vglSetContext(retval, VGL_RAM_CONTEXT);
   vglUpload(retval);
@@ -453,15 +453,15 @@ VglImage* vglCreateImage(VglImage* img_in)
 
 /** Create image with same format as img_in
  */
-VglImage* vglCreateImage(IplImage* img_in, int dim3 /*=2*/, int has_mipmap /*=0*/)
+VglImage* vglCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /*=0*/)
 {
-  return vglCreateImage(cvGetSize(img_in), img_in->depth, img_in->nChannels, dim3, has_mipmap);
+  return vglCreateImage(cvGetSize(img_in), img_in->depth, img_in->nChannels, ndim, has_mipmap);
 
 }
 
 /** Create image as described by the parameters
  */
-VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int has_mipmap)
+VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int has_mipmap)
 {
   VglImage* vglImage = new VglImage;
   IplImage* ipl = cvCreateImage(size, depth, nChannels);
@@ -474,7 +474,7 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int ha
   vglImage->ipl = ipl;
   vglImage->shape[VGL_WIDTH] = ipl->width;
   vglImage->shape[VGL_HEIGHT] = ipl->height;
-  vglImage->ndim      = dim3;
+  vglImage->ndim      = ndim;
   vglImage->depth     = ipl->depth;
   vglImage->nChannels = ipl->nChannels;
   vglImage->has_mipmap = has_mipmap;
