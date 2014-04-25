@@ -134,6 +134,23 @@ int main(int argc, char* argv[])
         vglCheckContext(out, VGL_RAM_CONTEXT);
         vglSaveImage(out,"../images/output/lenaout_invert.%d.jpg", 0,16);
 
+	//Primeira chamada a vglCl3dThreshold
+	TimerStart();
+	vglCl3dThreshold(img, out);
+	printf("Primeira chamada da vglCl3dThreshold: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" invert sem a criação da operação
+	p = 0;
+	TimerStart();
+	while (p < limite)
+	{
+		p++;
+		vglCl3dThreshold(img, out, 127.0);
+	}
+	printf("Tempo gasto para fazer %d threshold: %s\n",limite, getTimeElapsedInSeconds());
+	
+        vglCheckContext(out, VGL_RAM_CONTEXT);
+        vglSaveImage(out,"../images/output/lenaout_threshold.%d.jpg", 0,16);
+
 	//Primeira chamada a vglClCopy
 	TimerStart();
 	vglCl3dCopy(img,out);
