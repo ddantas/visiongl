@@ -27,8 +27,10 @@ void vglCl3dCopy(VglImage* img_input, VglImage* img_output);
   */
 void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
 
+/** Direct copy from src to dst.
 
-void vglCl3dNot();
+  */
+void vglCl3dNot(VglImage* img_input, VglImage* img_output);
 
 /** Threshold of src image by float parameter. Result is stored in dst image.
 

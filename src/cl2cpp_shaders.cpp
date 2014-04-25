@@ -96,24 +96,6 @@ void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convol
   err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
   vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  cl_mem mobj_window_size_x = NULL;
-  mobj_window_size_x = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_x" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_x, CL_TRUE, 0, (1)*sizeof(int), &window_size_x, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_x" );
-
-  cl_mem mobj_window_size_y = NULL;
-  mobj_window_size_y = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_y" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_y, CL_TRUE, 0, (1)*sizeof(int), &window_size_y, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_y" );
-
-  cl_mem mobj_window_size_z = NULL;
-  mobj_window_size_z = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_z" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_z, CL_TRUE, 0, (1)*sizeof(int), &window_size_z, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_z" );
-
   static cl_program program = NULL;
   if (program == NULL)
   {
@@ -154,13 +136,13 @@ void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convol
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( cl_mem ), (int*) &mobj_window_size_x );
+  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
   vglClCheckError( err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( cl_mem ), (int*) &mobj_window_size_y );
+  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( cl_mem ), (int*) &mobj_window_size_z );
+  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
@@ -179,15 +161,6 @@ void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convol
 
   err = clReleaseMemObject( mobj_convolution_window );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
-
-  err = clReleaseMemObject( mobj_window_size_x );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_x");
-
-  err = clReleaseMemObject( mobj_window_size_y );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_y");
-
-  err = clReleaseMemObject( mobj_window_size_z );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_z");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -272,24 +245,6 @@ void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolutio
   err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
   vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  cl_mem mobj_window_size_x = NULL;
-  mobj_window_size_x = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_x" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_x, CL_TRUE, 0, (1)*sizeof(int), &window_size_x, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_x" );
-
-  cl_mem mobj_window_size_y = NULL;
-  mobj_window_size_y = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_y" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_y, CL_TRUE, 0, (1)*sizeof(int), &window_size_y, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_y" );
-
-  cl_mem mobj_window_size_z = NULL;
-  mobj_window_size_z = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_z" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_z, CL_TRUE, 0, (1)*sizeof(int), &window_size_z, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_z" );
-
   static cl_program program = NULL;
   if (program == NULL)
   {
@@ -330,13 +285,13 @@ void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolutio
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( cl_mem ), (int*) &mobj_window_size_x );
+  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
   vglClCheckError( err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( cl_mem ), (int*) &mobj_window_size_y );
+  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( cl_mem ), (int*) &mobj_window_size_z );
+  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
@@ -356,21 +311,16 @@ void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolutio
   err = clReleaseMemObject( mobj_convolution_window );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
 
-  err = clReleaseMemObject( mobj_window_size_x );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_x");
-
-  err = clReleaseMemObject( mobj_window_size_y );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_y");
-
-  err = clReleaseMemObject( mobj_window_size_z );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_z");
-
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
 
+/** Direct copy from src to dst.
 
-void vglCl3dNot(){
+  */
+void vglCl3dNot(VglImage* img_input, VglImage* img_output){
 
+  vglCheckContext(img_input, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
 
   cl_int err;
 
@@ -405,6 +355,12 @@ void vglCl3dNot(){
   }
 
 
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
   if (img_input->ndim <= 2){
     size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
@@ -418,6 +374,8 @@ void vglCl3dNot(){
   }
 
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
 }
 
 /** Threshold of src image by float parameter. Result is stored in dst image.
@@ -429,12 +387,6 @@ void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh){
   vglCheckContext(dst, VGL_CL_CONTEXT);
 
   cl_int err;
-
-  cl_mem mobj_thresh = NULL;
-  mobj_thresh = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer thresh" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_thresh, CL_TRUE, 0, (1)*sizeof(float), &thresh, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer thresh" );
 
   static cl_program program = NULL;
   if (program == NULL)
@@ -473,7 +425,7 @@ void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh){
   err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &dst->oclPtr );
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_thresh );
+  err = clSetKernelArg( kernel, 2, sizeof( float ), &thresh );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (src->ndim <= 2){
@@ -489,9 +441,6 @@ void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh){
   }
 
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
-
-  err = clReleaseMemObject( mobj_thresh );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_thresh");
 
   vglSetContext(dst, VGL_CL_CONTEXT);
 }
@@ -576,18 +525,6 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
   err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
   vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  cl_mem mobj_window_size_x = NULL;
-  mobj_window_size_x = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_x" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_x, CL_TRUE, 0, (1)*sizeof(int), &window_size_x, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_x" );
-
-  cl_mem mobj_window_size_y = NULL;
-  mobj_window_size_y = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_y" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_y, CL_TRUE, 0, (1)*sizeof(int), &window_size_y, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_y" );
-
   static cl_program program = NULL;
   if (program == NULL)
   {
@@ -628,10 +565,10 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( cl_mem ), (int*) &mobj_window_size_x );
+  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
   vglClCheckError( err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( cl_mem ), (int*) &mobj_window_size_y );
+  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
@@ -650,12 +587,6 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
 
   err = clReleaseMemObject( mobj_convolution_window );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
-
-  err = clReleaseMemObject( mobj_window_size_x );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_x");
-
-  err = clReleaseMemObject( mobj_window_size_y );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_y");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -740,18 +671,6 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
   err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
   vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  cl_mem mobj_window_size_x = NULL;
-  mobj_window_size_x = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_x" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_x, CL_TRUE, 0, (1)*sizeof(int), &window_size_x, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_x" );
-
-  cl_mem mobj_window_size_y = NULL;
-  mobj_window_size_y = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(int), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer window_size_y" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_window_size_y, CL_TRUE, 0, (1)*sizeof(int), &window_size_y, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer window_size_y" );
-
   static cl_program program = NULL;
   if (program == NULL)
   {
@@ -792,10 +711,10 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( cl_mem ), (int*) &mobj_window_size_x );
+  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
   vglClCheckError( err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( cl_mem ), (int*) &mobj_window_size_y );
+  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
@@ -814,12 +733,6 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
 
   err = clReleaseMemObject( mobj_convolution_window );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
-
-  err = clReleaseMemObject( mobj_window_size_x );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_x");
-
-  err = clReleaseMemObject( mobj_window_size_y );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_window_size_y");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -898,12 +811,6 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh){
 
   cl_int err;
 
-  cl_mem mobj_thresh = NULL;
-  mobj_thresh = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (1)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer thresh" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_thresh, CL_TRUE, 0, (1)*sizeof(float), &thresh, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer thresh" );
-
   static cl_program program = NULL;
   if (program == NULL)
   {
@@ -941,7 +848,7 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh){
   err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &dst->oclPtr );
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_thresh );
+  err = clSetKernelArg( kernel, 2, sizeof( float ), &thresh );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (src->ndim <= 2){
@@ -957,9 +864,6 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh){
   }
 
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
-
-  err = clReleaseMemObject( mobj_thresh );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_thresh");
 
   vglSetContext(dst, VGL_CL_CONTEXT);
 }

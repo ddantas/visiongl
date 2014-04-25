@@ -829,7 +829,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
 ";
 
   for ($i = 0; $i <= $#type; $i++){
-    if ($type[$i] ne "VglImage*"){
+    if ( ($type[$i] ne "VglImage*") and ($is_array[$i]) ){
         $var = $variable[$i];
         my $e = "&";
         if ($is_array[$i]){
@@ -882,11 +882,22 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
     if ($type[$i] eq "VglImage*"){
       $addr = "(void*) &$variable[$i]->oclPtr";
     }
-    else{
+    elsif ($is_array[$i]){
       $addr = "($type[$i]*) &mobj_$variable[$i]";
     }
+    else{
+      $addr = "&$variable[$i]";
+    }
+    if ( ($type[$i] eq "VglImage*") or ($is_array[$i]) ){
+      $sizeof = "cl_mem";
+    }
+    else{
+      $sizeof = "$type[$i]";
+    }
+
+
     print CPP "
-  err = clSetKernelArg( kernel, $i, sizeof( cl_mem ), $addr );
+  err = clSetKernelArg( kernel, $i, sizeof( $sizeof ), $addr );
   vglClCheckError( err, (char*) \"clSetKernelArg $i\" );
 ";
   }
@@ -914,7 +925,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
 ";
 
   for ($i = 0; $i <= $#type; $i++){
-    if (($type[$i] ne "VglImage*") && ($semantics[$i] ne "__write_only")){
+    if (($type[$i] ne "VglImage*") && ($semantics[$i] ne "__write_only") && ($is_array[$i] != 0)){
       print CPP "
   err = clReleaseMemObject( mobj_$variable[$i] );
   vglClCheckError(err, (char*) \"clReleaseMemObject mobj_$variable[$i]\");
