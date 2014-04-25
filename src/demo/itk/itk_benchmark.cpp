@@ -2,7 +2,9 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 
-//#define GPU
+#include <string>
+
+#define GPU
 
 // Visualize
 //#include "QuickView.h"
@@ -33,6 +35,9 @@
 
 #ifdef GPU
 
+// GPU image
+#include "itkGPUImage.h"
+
 // GPU Threshold
 #include "itkGPUBinaryThresholdImageFilter.h"
 
@@ -44,12 +49,20 @@
 
 #endif
 
+#include "../timer.h"
+
 
 
 
 const unsigned int Dimension = 3;
 typedef unsigned char PixelType;
 typedef itk::Image< PixelType, Dimension > ImageType;
+typedef itk::ImageFileReader< ImageType > ReaderType;
+#ifdef GPU
+    typedef itk::GPUImage< PixelType, Dimension > GPUImageType;
+    typedef itk::ImageFileReader< GPUImageType > GPUReaderType;
+    typedef itk::ImageFileWriter< GPUImageType > GPUWriterType;
+#endif
 typedef itk::ImageFileWriter< ImageType > WriterType;
 
 
@@ -61,6 +74,14 @@ void saveFile(char* filename, ImageType* image)
     writer->Update();
 }
 
+void saveFile(char* filename, GPUImageType* image)
+{
+    GPUWriterType::Pointer writer = GPUWriterType::New();
+    image->UpdateBuffers();
+    writer->SetFileName(filename);
+    writer->SetInput(image);
+    writer->Update();
+}
 
 template< class TInput, class TOutput>
 class Negate
@@ -113,23 +134,38 @@ void CreateKernel(ImageType::Pointer kernel, unsigned int width)
 
 int main( int argc, char* argv[] )
 {
-    if( argc != 2 )
+    if( argc != 3 )
     {
         std::cerr << "Usage: "<< std::endl;
         std::cerr << argv[0];
-        std::cerr << " <InputFileName>";
+        std::cerr << " <InputFileName> n";
         std::cerr << std::endl;
         return EXIT_FAILURE;
     }
 
+
+
+    int operations = atoi(argv[2]);
+    //sscanf(&operations,"%d",argv[2]);
+    //printf("%d\n", operations);
+
     // Loading file
-    typedef itk::ImageFileReader< ImageType > ReaderType;
+
 
     ReaderType::Pointer reader = ReaderType::New();
     reader->SetFileName( argv[1] );
     reader->Update();
     ImageType::Pointer image = reader->GetOutput();
 
+#ifdef GPU
+    GPUReaderType::Pointer gpureader = GPUReaderType::New();
+    gpureader->SetFileName( argv[1] );
+    gpureader->Update();
+    GPUImageType::Pointer gpuImage = gpureader->GetOutput();
+#endif
+
+
+    saveFile((char*) "/tmp/itk_input.dcm", image);
 
     // Allocate output image
     ImageType::Pointer output = ImageType::New();
@@ -150,40 +186,63 @@ int main( int argc, char* argv[] )
     
     BinaryThresholdImageFilterType::Pointer thresholdFilter
       = BinaryThresholdImageFilterType::New();
-    thresholdFilter->SetInput(reader->GetOutput());
-    thresholdFilter->SetLowerThreshold(lowerThreshold);
-    thresholdFilter->SetUpperThreshold(upperThreshold);
-    thresholdFilter->SetInsideValue(255);
-    thresholdFilter->SetOutsideValue(0);
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {
+ 	thresholdFilter = BinaryThresholdImageFilterType::New();
+	thresholdFilter->SetInput(reader->GetOutput());
+	thresholdFilter->SetLowerThreshold(lowerThreshold);
+	thresholdFilter->SetUpperThreshold(upperThreshold);
+	thresholdFilter->SetInsideValue(255);
+	thresholdFilter->SetOutsideValue(0);
+	thresholdFilter->GetOutput();
+    }
+    printf("Tempo gasto para fazer %d threshold: %s\n",operations, getTimeElapsedInSeconds());
+
     // Saving Threshold result
     saveFile((char*) "/tmp/itk_thresh.dcm", thresholdFilter->GetOutput());
 
 
 #ifdef GPU
     // GPU Threshold
+
     typedef itk::GPUBinaryThresholdImageFilter <ImageType, ImageType>
        GPUBinaryThresholdImageFilterType;
     
     GPUBinaryThresholdImageFilterType::Pointer gpuThresholdFilter
       = GPUBinaryThresholdImageFilterType::New();
-    gpuThresholdFilter->SetInput(reader->GetOutput());
-    gpuThresholdFilter->SetLowerThreshold(lowerThreshold);
-    gpuThresholdFilter->SetUpperThreshold(upperThreshold);
-    gpuThresholdFilter->SetInsideValue(255);
-    gpuThresholdFilter->SetOutsideValue(0);
+
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {
+      gpuThresholdFilter->SetInput(gpureader->GetOutput());
+      gpuThresholdFilter->SetLowerThreshold(lowerThreshold);
+      gpuThresholdFilter->SetUpperThreshold(upperThreshold);
+      gpuThresholdFilter->SetInsideValue(255);
+      gpuThresholdFilter->SetOutsideValue(0);
+      gpuThresholdFilter->GetOutput();
+    }
+    printf("Tempo gasto para fazer %d GPU threshold: %s\n",operations, getTimeElapsedInSeconds());
     // Saving GPU Threshold result
-    saveFile((char*) "/tmp/itk_gpu_thresh.dcm", gpuThresholdFilter->GetOutput());
+//    gpuThresholdFilter->GetOutput();
+    saveFile((char*) "/tmp/itk_gpu_thresh.dcm", gpuImage);
 #endif
 
 
 
     // Negative
-    typedef itk::UnaryFunctorImageFilter<ImageType,ImageType,
+/*    typedef itk::UnaryFunctorImageFilter<ImageType,ImageType,
                   Negate<ImageType::PixelType,ImageType::PixelType> > NegateImageFilterType;
  
     NegateImageFilterType::Pointer negateFilter = NegateImageFilterType::New();
-    negateFilter->SetInput(image);
-    negateFilter->Update();    
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {
+      negateFilter = NegateImageFilterType::New();
+      negateFilter->SetInput(image);
+      negateFilter->Update();    
+    }
+    printf("Tempo gasto para fazer %d negative: %s\n",operations, getTimeElapsedInSeconds());
     // Saving Not result
     saveFile((char*) "/tmp/itk_not.dcm", negateFilter->GetOutput());
 
@@ -193,21 +252,28 @@ int main( int argc, char* argv[] )
     typedef itk::GPUUnaryFunctorImageFilter<ImageType,ImageType,
                   Negate<ImageType::PixelType,ImageType::PixelType> > GPUNegateImageFilterType;
  
-    //GPUNegateImageFilterType::Pointer gpuNegateFilter = GPUNegateImageFilterType::New();
-    //gpuNegateFilter->SetInput(image);
-    //gpuNegateFilter->Update();    
+    GPUNegateImageFilterType::Pointer gpuNegateFilter = GPUNegateImageFilterType::New();
+    gpuNegateFilter->SetInput(image);
+    gpuNegateFilter->Update();    
     // Saving Not result
     //saveFile("/tmp/itk_gpu_not.dcm", gpuNegateFilter->GetOutput());
 #endif
 
-
+*/
     // Binomial Blur (aproximation of gaussian blur)
     typedef itk::BinomialBlurImageFilter<ImageType, ImageType> BinomialBlurImageFilterType;
  
     int repetitions = 1;
     BinomialBlurImageFilterType::Pointer blurFilter = BinomialBlurImageFilterType::New();
-    blurFilter->SetInput( reader->GetOutput() );
-    blurFilter->SetRepetitions( repetitions );
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {
+      blurFilter = BinomialBlurImageFilterType::New();
+      blurFilter->SetInput( reader->GetOutput() );
+      blurFilter->SetRepetitions( repetitions );
+      blurFilter->GetOutput();
+    }
+    printf("Tempo gasto para fazer %d blur: %s\n",operations, getTimeElapsedInSeconds());
     // Saving Blur result
     saveFile((char*) "/tmp/itk_blur.dcm", blurFilter->GetOutput());
 
@@ -217,11 +283,15 @@ int main( int argc, char* argv[] )
     typedef itk::GPUBoxImageFilter< ImageType, ImageType, BoxImageFilterType > GPUBoxImageFilterType;
 
     GPUBoxImageFilterType::Pointer GPUBlurFilter = GPUBoxImageFilterType::New();
-
-    GPUBlurFilter->SetInput(reader->GetOutput());
-    //GPUBlurFilter->SetRepetitions( repetitions );
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {
+      GPUBlurFilter->SetInput(gpureader->GetOutput());
+      GPUBlurFilter->GetOutput();
+    }
+    printf("Tempo gasto para fazer %d gpu blur: %s\n",operations, getTimeElapsedInSeconds());
     // Saving GPU Blur result
-    saveFile((char*) "/tmp/itk_gpu_blur.dcm", GPUBlurFilter->GetOutput());
+//    saveFile((char*) "/tmp/itk_gpu_blur.dcm", GPUBlurFilter->GetOutput());
 
 #endif
 
