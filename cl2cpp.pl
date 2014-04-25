@@ -145,7 +145,7 @@ sub LineStartSemantics { # ($line) {
   if ($semantics){
     if (!($semantics =~ m#^(__read_only|__write_only|__constant)$#))
     {
-      die "Semantic $semantics invalid. Valid semantics are (__read_only|__write_only|__constant)\n";
+      print "Semantic $semantics invalid. Valid semantics are (__read_only|__write_only|__constant)\n";
     }
   }
   else{
@@ -577,10 +577,10 @@ sub ProcessClHeader { # ($line) {
 
     ($semantics[$i], $line) = LineStartSemantics($line);
     if (!$semantics[$i]){
-      #print "Start-of-line semantics not found\n";
+      print "Start-of-line semantics not found\n";
     }
     else{
-      #print "After eliminating semantics:\n$line\n";
+      print "After eliminating semantics:\n$line\n";
     }
 
     ($type[$i], $line) = LineStartType($line);
@@ -791,7 +791,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   print HEAD "void $basename(";
   for ($i = 0; $i <= $#type; $i++){
     print ">>>$type[$i]<<< becomes ";
-    if ($type[$i] eq "image2d_t"){
+    if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") ){
       $type[$i] = "VglImage*";
     }
     else{
@@ -898,8 +898,18 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   }
  
   print CPP "
-  size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], 1 };
-  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  if ($var_worksize->ndim <= 2){
+    size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], 1 };
+    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  }
+  else if ($var_worksize->ndim == 3){
+    size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], $var_worksize->shape[VGL_LENGTH] };
+    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
+  }
+  else{
+    printf(\"More than 3 dimensions not yet supported\\n\");
+  }
+
   vglClCheckError( err, (char*) \"clEnqueueNDRangeKernel\" );
 ";
 
