@@ -24,7 +24,6 @@ int main(int argc, char* argv[])
 	printf("VisionCL on %s for %d operations\n\n",image_path,limite);
 	
 	CImg<> img(image_path);
-
 	/*if (img == NULL)
 	{
         std::string str("cvLoadImage/File not found: ");
@@ -33,9 +32,8 @@ int main(int argc, char* argv[])
 	}*/
 	
 	CImg<> out(img);
-
 	TimerStart();
-	img.blur_median(3);
+	img.blur_median(2);
 	printf("Primeira chamada da vglClBlurSq3: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para "limite" blur 3x3 sem a criação da operação
 	int p = 0;
@@ -43,7 +41,7 @@ int main(int argc, char* argv[])
 	while (p < limite)
 	{
 		p++;
-		img.blur_median(3);
+		img.blur_median(2);
 	}
 	printf("Tempo gasto para fazer %d blur 3x3: %s\n",limite, getTimeElapsedInSeconds());
 
@@ -96,7 +94,7 @@ int main(int argc, char* argv[])
 
 	//Primeira chamada a vglClInvert
 	TimerStart();
-	img.invert();
+	img.normalize(img.max(),img.min());
 	printf("Primeira chamada da vglClInvert: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para "limite" invert sem a criação da operação
 	p = 0;
@@ -104,8 +102,34 @@ int main(int argc, char* argv[])
 	while (p < limite)
 	{
 		p++;
-		img.invert();
+		img.normalize(img.max(),img.min());
 	}
 	printf("Tempo gasto para fazer %d invert: %s\n",limite, getTimeElapsedInSeconds());
+
+	TimerStart();
+	img.threshold(127);
+	printf("Primeira chamada da threshold: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" invert sem a criação da operação
+	p = 0;
+	TimerStart();
+	while (p < limite)
+	{
+		p++;
+		img.threshold(127);
+	}
+	printf("Tempo gasto para fazer %d threshold: %s\n",limite, getTimeElapsedInSeconds());
+
+	TimerStart();
+	out = CImg<>(img);
+	printf("Primeira chamada da copia: %s \n", getTimeElapsedInSeconds());
+	//Mede o tempo para "limite" invert sem a criação da operação
+	p = 0;
+	TimerStart();
+	while (p < limite)
+	{
+		p++;
+		out = CImg<>(img);
+	}
+	printf("Tempo gasto para fazer %d copia: %s\n",limite, getTimeElapsedInSeconds());
 
 }

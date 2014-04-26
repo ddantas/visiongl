@@ -10,9 +10,9 @@
 __kernel void vglCl3dErosion(__read_only image3d_t img_input,
                           __write_only image3d_t img_output,
                           __constant float* convolution_window, 
-                          __constant int window_size_x, 
-                          __constant int window_size_y,
-			  __constant int window_size_z)
+                          int window_size_x, 
+                          int window_size_y,
+			              int window_size_z)
 {
 	int4 coords = (int4)(get_global_id(0), get_global_id(1), get_global_id(2), 0);
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates

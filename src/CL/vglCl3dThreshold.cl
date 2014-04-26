@@ -3,7 +3,7 @@
   */
 __kernel void vglCl3dThreshold(__read_only image3d_t src,
                         __write_only image3d_t dst,
-                        __constant float thresh)
+                        float thresh)
 {
 	int4 coords = (int4)(get_global_id(0), get_global_id(1), get_global_id(2), 0);
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates

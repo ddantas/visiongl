@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
 
 	//Primeira chamada a vglCl3dThreshold
 	TimerStart();
-	vglCl3dThreshold(img, out);
+	vglCl3dThreshold(img, out, 127.0);
 	printf("Primeira chamada da vglCl3dThreshold: %s \n", getTimeElapsedInSeconds());
 	//Mede o tempo para "limite" invert sem a criação da operação
 	p = 0;
