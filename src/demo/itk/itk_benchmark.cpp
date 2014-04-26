@@ -196,17 +196,20 @@ int main( int argc, char* argv[] )
     
     BinaryThresholdImageFilterType::Pointer thresholdFilter
       = BinaryThresholdImageFilterType::New();
+
+    thresholdFilter = BinaryThresholdImageFilterType::New();
+    thresholdFilter->SetInput(reader->GetOutput());
+    thresholdFilter->SetLowerThreshold(lowerThreshold);
+    thresholdFilter->SetUpperThreshold(upperThreshold);
+    thresholdFilter->SetInsideValue(255);
+    thresholdFilter->SetOutsideValue(0);
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
- 	thresholdFilter = BinaryThresholdImageFilterType::New();
-	thresholdFilter->SetInput(reader->GetOutput());
-	thresholdFilter->SetLowerThreshold(lowerThreshold);
-	thresholdFilter->SetUpperThreshold(upperThreshold);
-	thresholdFilter->SetInsideValue(255);
-	thresholdFilter->SetOutsideValue(0);
-	thresholdFilter->GetOutput();
+	thresholdFilter->Modified();
+	thresholdFilter->Update();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d threshold: %s\n",operations, getTimeElapsedInSeconds());
@@ -227,16 +230,18 @@ int main( int argc, char* argv[] )
     GPUBinaryThresholdImageFilterType::Pointer gpuThresholdFilter
       = GPUBinaryThresholdImageFilterType::New();
 
+    gpuThresholdFilter->SetInput(gpureader->GetOutput());
+    gpuThresholdFilter->SetLowerThreshold(lowerThreshold);
+    gpuThresholdFilter->SetUpperThreshold(upperThreshold);
+    gpuThresholdFilter->SetInsideValue(255);
+    gpuThresholdFilter->SetOutsideValue(0);
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
-      gpuThresholdFilter->SetInput(gpureader->GetOutput());
-      gpuThresholdFilter->SetLowerThreshold(lowerThreshold);
-      gpuThresholdFilter->SetUpperThreshold(upperThreshold);
-      gpuThresholdFilter->SetInsideValue(255);
-      gpuThresholdFilter->SetOutsideValue(0);
-      gpuThresholdFilter->GetOutput();
+      gpuThresholdFilter->Modified();
+      gpuThresholdFilter->Update();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d GPU threshold: %s\n",operations, getTimeElapsedInSeconds());
@@ -249,19 +254,19 @@ int main( int argc, char* argv[] )
 #endif
 
     // Mean
-    /*
     typedef itk::MeanImageFilter< ImageType, ImageType > MeanFilterType;
     MeanFilterType::Pointer meanFilter = MeanFilterType::New();
+
+    meanFilter = MeanFilterType::New();
+    meanFilter->SetInput( image );
+    meanFilter->SetRadius( 1 );
 
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
-       meanFilter = MeanFilterType::New();
-       meanFilter->SetInput( image );
-       meanFilter->SetRadius( 1 );
+       meanFilter->Modified();
        meanFilter->Update();
-       meanFilter->GetOutput();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d mean blur: %s\n",operations, getTimeElapsedInSeconds());
@@ -270,7 +275,6 @@ int main( int argc, char* argv[] )
     t0 = tf;
     // Saving Convolution result
     saveFile((char*) "/tmp/itk_mean3x3.dcm", meanFilter->GetOutput());
-    */
 
     // Negative
 /*    typedef itk::UnaryFunctorImageFilter<ImageType,ImageType,
@@ -278,12 +282,14 @@ int main( int argc, char* argv[] )
  
     NegateImageFilterType::Pointer negateFilter = NegateImageFilterType::New();
 
+    negateFilter = NegateImageFilterType::New();
+    negateFilter->SetInput(image);
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
-      negateFilter = NegateImageFilterType::New();
-      negateFilter->SetInput(image);
+      negateFilter->Modified();
       negateFilter->Update();    
     }
     itkClock.Stop();
@@ -314,14 +320,16 @@ int main( int argc, char* argv[] )
     int repetitions = 1;
     BinomialBlurImageFilterType::Pointer blurFilter = BinomialBlurImageFilterType::New();
 
+    blurFilter = BinomialBlurImageFilterType::New();
+    blurFilter->SetInput( reader->GetOutput() );
+    blurFilter->SetRepetitions( repetitions );
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
-      blurFilter = BinomialBlurImageFilterType::New();
-      blurFilter->SetInput( reader->GetOutput() );
-      blurFilter->SetRepetitions( repetitions );
-      blurFilter->GetOutput();
+      blurFilter->Modified();
+      blurFilter->Update();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d blur: %s\n",operations, getTimeElapsedInSeconds());
@@ -338,12 +346,14 @@ int main( int argc, char* argv[] )
 
     GPUBoxImageFilterType::Pointer GPUBlurFilter = GPUBoxImageFilterType::New();
 
+    GPUBlurFilter->SetInput(gpureader->GetOutput());
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
-      GPUBlurFilter->SetInput(gpureader->GetOutput());
-      GPUBlurFilter->GetOutput();
+      GPUBlurFilter->Modified();
+      GPUBlurFilter->Update();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d gpu blur: %s\n",operations, getTimeElapsedInSeconds());
@@ -371,14 +381,16 @@ int main( int argc, char* argv[] )
 
     GrayscaleErodeImageFilterType::Pointer erodeFilter3x3;
 
+    erodeFilter3x3= GrayscaleErodeImageFilterType::New();
+    erodeFilter3x3->SetInput(reader->GetOutput());
+    erodeFilter3x3->SetKernel(structuringElement3x3);
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
- 	erodeFilter3x3= GrayscaleErodeImageFilterType::New();
-        erodeFilter3x3->SetInput(reader->GetOutput());
-        erodeFilter3x3->SetKernel(structuringElement3x3);
-        erodeFilter3x3->GetOutput();
+        erodeFilter3x3->Modified();
+        erodeFilter3x3->Update();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d erosion 3x3: %s\n",operations, getTimeElapsedInSeconds());
@@ -397,14 +409,16 @@ int main( int argc, char* argv[] )
 
     GrayscaleErodeImageFilterType::Pointer erodeFilter5x5;
 
+    erodeFilter5x5 = GrayscaleErodeImageFilterType::New();
+    erodeFilter5x5->SetInput(reader->GetOutput());
+    erodeFilter5x5->SetKernel(structuringElement5x5);
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
-      erodeFilter5x5 = GrayscaleErodeImageFilterType::New();
-      erodeFilter5x5->SetInput(reader->GetOutput());
-      erodeFilter5x5->SetKernel(structuringElement5x5);
-      erodeFilter5x5->GetOutput();
+      erodeFilter5x5->Modified();
+      erodeFilter5x5->Update();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d erosion 5x5: %s\n",operations, getTimeElapsedInSeconds());
@@ -419,14 +433,15 @@ int main( int argc, char* argv[] )
     typedef itk::ImageDuplicator< ImageType > DuplicatorType;
     DuplicatorType::Pointer duplicator;
 
+    duplicator = DuplicatorType::New();
+    duplicator->SetInputImage(image);
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     { 
-       duplicator = DuplicatorType::New();
-       duplicator->SetInputImage(image);
+       duplicator->Modified();
        duplicator->Update();
-       duplicator->GetOutput();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d copias cpu: %s\n",operations, getTimeElapsedInSeconds());
@@ -444,14 +459,16 @@ int main( int argc, char* argv[] )
 
     ConvolutionImageFilterType::Pointer convolutionFilter;
 
+    convolutionFilter = ConvolutionImageFilterType::New();
+    convolutionFilter->SetInput(reader->GetOutput());
+    convolutionFilter->SetKernelImage(kernel);
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {  
-       convolutionFilter = ConvolutionImageFilterType::New();
-       convolutionFilter->SetInput(reader->GetOutput());
-       convolutionFilter->SetKernelImage(kernel);
-       convolutionFilter->GetOutput();
+       convolutionFilter->Modified();
+       convolutionFilter->Update();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d convolucoes 3x3 cpu: %s\n",operations, getTimeElapsedInSeconds());
@@ -468,12 +485,14 @@ int main( int argc, char* argv[] )
   /*typedef itk::GPUMeanImageFilter<ImageType, ImageType> GPUMeanFilterType;
     GPUMeanFilterType::Pointer GPUMean = GPUMeanFilterType::New();
 
+    GPUMean->SetInput(gpureader->GetOutput());
+    GPUMean->SetRadius( 1 );
+
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
-       GPUMean->SetInput(gpureader->GetOutput());
-       GPUMean->SetRadius( 1 );
+       GPUMean->Modified();
        GPUMean->Update();
     }
     itkClock.Stop();
