@@ -32,7 +32,6 @@
 // Mean
 #include "itkMeanImageFilter.h"
 
-
 #ifdef GPU
 
 // GPU image
@@ -46,6 +45,9 @@
 
 // GPU Blur
 #include "itkGPUBoxImageFilter.h"
+
+// GPU Mean
+#include "itkGPUMeanImageFilter.h"
 
 #endif
 
@@ -309,10 +311,18 @@ int main( int argc, char* argv[] )
     structuringElement3x3.SetRadius(radius);
     structuringElement3x3.CreateStructuringElement();
 
-    GrayscaleErodeImageFilterType::Pointer erodeFilter3x3
-      = GrayscaleErodeImageFilterType::New();
-    erodeFilter3x3->SetInput(reader->GetOutput());
-    erodeFilter3x3->SetKernel(structuringElement3x3);
+    GrayscaleErodeImageFilterType::Pointer erodeFilter3x3;
+
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {
+ 	erodeFilter3x3= GrayscaleErodeImageFilterType::New();
+        erodeFilter3x3->SetInput(reader->GetOutput());
+        erodeFilter3x3->SetKernel(structuringElement3x3);
+        erodeFilter3x3->GetOutput();
+    }
+    printf("Tempo gasto para fazer %d erosion 3x3: %s\n",operations, getTimeElapsedInSeconds());
+
     // Saving Erosion result
     saveFile((char*) "/tmp/itk_erode3x3.dcm", erodeFilter3x3->GetOutput());
 
@@ -322,18 +332,32 @@ int main( int argc, char* argv[] )
     structuringElement5x5.SetRadius(radius);
     structuringElement5x5.CreateStructuringElement();
 
-    GrayscaleErodeImageFilterType::Pointer erodeFilter5x5
-      = GrayscaleErodeImageFilterType::New();
-    erodeFilter5x5->SetInput(reader->GetOutput());
-    erodeFilter5x5->SetKernel(structuringElement5x5);
+    GrayscaleErodeImageFilterType::Pointer erodeFilter5x5;
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {
+      erodeFilter5x5 = GrayscaleErodeImageFilterType::New();
+      erodeFilter5x5->SetInput(reader->GetOutput());
+      erodeFilter5x5->SetKernel(structuringElement5x5);
+      erodeFilter5x5->GetOutput();
+    }
+    printf("Tempo gasto para fazer %d erosion 5x5: %s\n",operations, getTimeElapsedInSeconds());
+
     // Saving Erosion result
     saveFile((char*) "/tmp/itk_erode5x5.dcm", erodeFilter5x5->GetOutput());
 
     // Copy
     typedef itk::ImageDuplicator< ImageType > DuplicatorType;
-    DuplicatorType::Pointer duplicator = DuplicatorType::New();
-    duplicator->SetInputImage(image);
-    duplicator->Update();
+    DuplicatorType::Pointer duplicator;
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    { 
+       duplicator = DuplicatorType::New();
+       duplicator->SetInputImage(image);
+       duplicator->Update();
+       duplicator->GetOutput();
+    }
+    printf("Tempo gasto para fazer %d copias cpu: %s\n",operations, getTimeElapsedInSeconds());
     // Saving Copy result
     saveFile((char*) "/tmp/itk_copy.dcm", duplicator->GetOutput());
 
@@ -343,9 +367,16 @@ int main( int argc, char* argv[] )
 
     typedef itk::ConvolutionImageFilter<ImageType> ConvolutionImageFilterType;
 
-    ConvolutionImageFilterType::Pointer convolutionFilter = ConvolutionImageFilterType::New();
-    convolutionFilter->SetInput(reader->GetOutput());
-    convolutionFilter->SetKernelImage(kernel);
+    ConvolutionImageFilterType::Pointer convolutionFilter;
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {  
+       convolutionFilter = ConvolutionImageFilterType::New();
+       convolutionFilter->SetInput(reader->GetOutput());
+       convolutionFilter->SetKernelImage(kernel);
+       convolutionFilter->GetOutput();
+    }
+    printf("Tempo gasto para fazer %d convolucoes 3x3 cpu: %s\n",operations, getTimeElapsedInSeconds());
     // Saving Convolution result
     saveFile((char*) "/tmp/itk_convolution3x3.dcm", convolutionFilter->GetOutput());
 
@@ -353,13 +384,36 @@ int main( int argc, char* argv[] )
     // Mean
     typedef itk::MeanImageFilter< ImageType, ImageType > MeanFilterType;
     MeanFilterType::Pointer meanFilter = MeanFilterType::New();
-
-    meanFilter->SetInput( image );
-    meanFilter->SetRadius( 1 );
-    meanFilter->Update();
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {
+       meanFilter = MeanFilterType::New();
+       meanFilter->SetInput( image );
+       meanFilter->SetRadius( 1 );
+       meanFilter->Update();
+       meanFilter->GetOutput();
+    }
+    printf("Tempo gasto para fazer %d mean blur: %s\n",operations, getTimeElapsedInSeconds());
     // Saving Convolution result
     saveFile((char*) "/tmp/itk_mean3x3.dcm", meanFilter->GetOutput());
 
+#ifdef GPU
+
+	// GPU Mean
+	/*typedef itk::GPUMeanImageFilter<ImageType, ImageType> GPUMeanFilterType;
+	GPUMeanFilterType::Pointer GPUMean = GPUMeanFilterType::New();
+	TimerStart();
+	for(int n = 0; n < operations; n++)
+	{
+	   GPUMean->SetInput(gpureader->GetOutput());
+	   GPUMean->SetRadius( 1 );
+	   GPUMean->Update();
+	}
+	printf("Tempo gasto para fazer %d GPU mean blur: %s\n",operations, getTimeElapsedInSeconds());*/
+
+
+
+#endif
 
     // Visualize
     /*
