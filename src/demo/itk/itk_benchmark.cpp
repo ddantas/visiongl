@@ -185,6 +185,43 @@ int main( int argc, char* argv[] )
     output->Allocate();
 
 
+    // Negative
+    typedef itk::UnaryFunctorImageFilter<ImageType,ImageType,
+                  Negate<ImageType::PixelType,ImageType::PixelType> > NegateImageFilterType;
+ 
+    NegateImageFilterType::Pointer negateFilter = NegateImageFilterType::New();
+
+    negateFilter = NegateImageFilterType::New();
+    negateFilter->SetInput(image);
+
+    itkClock.Start();
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {
+      negateFilter->Modified();
+      negateFilter->Update();    
+    }
+    itkClock.Stop();
+    printf("Tempo gasto para fazer %d negative: %s\n",operations, getTimeElapsedInSeconds());
+    tf = itkClock.GetTotal();
+    std::cout << "My: "    << (tf - t0) << std::endl;
+    t0 = tf;
+    // Saving Not result
+    saveFile((char*) "/tmp/itk_not.dcm", negateFilter->GetOutput());
+
+
+#ifdef GPU
+    // GPU Negative
+    typedef itk::GPUUnaryFunctorImageFilter<ImageType,ImageType,
+                  Negate<ImageType::PixelType,ImageType::PixelType> > GPUNegateImageFilterType;
+ 
+    GPUNegateImageFilterType::Pointer gpuNegateFilter = GPUNegateImageFilterType::New();
+    gpuNegateFilter->SetInput(image);
+    gpuNegateFilter->Update();    
+    // Saving Not result
+    //saveFile("/tmp/itk_gpu_not.dcm", gpuNegateFilter->GetOutput());
+#endif
+
     // Common Threshold
     int lowerThreshold = 100;
     int upperThreshold = 200;
@@ -276,44 +313,6 @@ int main( int argc, char* argv[] )
     // Saving Convolution result
     saveFile((char*) "/tmp/itk_mean3x3.dcm", meanFilter->GetOutput());
 
-    // Negative
-/*    typedef itk::UnaryFunctorImageFilter<ImageType,ImageType,
-                  Negate<ImageType::PixelType,ImageType::PixelType> > NegateImageFilterType;
- 
-    NegateImageFilterType::Pointer negateFilter = NegateImageFilterType::New();
-
-    negateFilter = NegateImageFilterType::New();
-    negateFilter->SetInput(image);
-
-    itkClock.Start();
-    TimerStart();
-    for(int n = 0; n < operations; n++)
-    {
-      negateFilter->Modified();
-      negateFilter->Update();    
-    }
-    itkClock.Stop();
-    printf("Tempo gasto para fazer %d negative: %s\n",operations, getTimeElapsedInSeconds());
-    tf = itkClock.GetTotal();
-    std::cout << "My: "    << (tf - t0) << std::endl;
-    t0 = tf;
-    // Saving Not result
-    saveFile((char*) "/tmp/itk_not.dcm", negateFilter->GetOutput());
-
-
-#ifdef GPU
-    // GPU Negative
-    typedef itk::GPUUnaryFunctorImageFilter<ImageType,ImageType,
-                  Negate<ImageType::PixelType,ImageType::PixelType> > GPUNegateImageFilterType;
- 
-    GPUNegateImageFilterType::Pointer gpuNegateFilter = GPUNegateImageFilterType::New();
-    gpuNegateFilter->SetInput(image);
-    gpuNegateFilter->Update();    
-    // Saving Not result
-    //saveFile("/tmp/itk_gpu_not.dcm", gpuNegateFilter->GetOutput());
-#endif
-
-*/
     // Binomial Blur (aproximation of gaussian blur)
     typedef itk::BinomialBlurImageFilter<ImageType, ImageType> BinomialBlurImageFilterType;
  
