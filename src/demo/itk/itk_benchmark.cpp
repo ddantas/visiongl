@@ -451,17 +451,21 @@ int main( int argc, char* argv[] )
     // Saving Copy result
     saveFile((char*) "/tmp/itk_copy.dcm", duplicator->GetOutput());
 
-    // Convolution
-    ImageType::Pointer kernel = ImageType::New();
-    CreateKernel(kernel, 3);
-
+    // Convolution common
     typedef itk::ConvolutionImageFilter<ImageType> ConvolutionImageFilterType;
 
     ConvolutionImageFilterType::Pointer convolutionFilter;
 
     convolutionFilter = ConvolutionImageFilterType::New();
     convolutionFilter->SetInput(reader->GetOutput());
-    convolutionFilter->SetKernelImage(kernel);
+    int convWidth;
+
+    // Convolution 3x3
+    ImageType::Pointer kernel3x3 = ImageType::New();
+    convWidth = 3;
+    CreateKernel(kernel3x3, convWidth);
+
+    convolutionFilter->SetKernelImage(kernel3x3);
 
     itkClock.Start();
     TimerStart();
@@ -477,6 +481,28 @@ int main( int argc, char* argv[] )
     t0 = tf;
     // Saving Convolution result
     saveFile((char*) "/tmp/itk_convolution3x3.dcm", convolutionFilter->GetOutput());
+
+    // Convolution 5x5
+    ImageType::Pointer kernel5x5 = ImageType::New();
+    convWidth = 5;
+    CreateKernel(kernel5x5, convWidth);
+
+    convolutionFilter->SetKernelImage(kernel5x5);
+
+    itkClock.Start();
+    TimerStart();
+    for(int n = 0; n < operations; n++)
+    {  
+       convolutionFilter->Modified();
+       convolutionFilter->Update();
+    }
+    itkClock.Stop();
+    printf("Tempo gasto para fazer %d convolucoes 5x5 cpu: %s\n",operations, getTimeElapsedInSeconds());
+    tf = itkClock.GetTotal();
+    std::cout << "My: "    << (tf - t0) << std::endl;
+    t0 = tf;
+    // Saving Convolution result
+    saveFile((char*) "/tmp/itk_convolution5x5.dcm", convolutionFilter->GetOutput());
 
 
 #ifdef GPU
