@@ -7,7 +7,7 @@
 
 #include <string>
 
-//#define GPU
+#define GPU
 
 // Visualize
 //#include "QuickView.h"
@@ -155,8 +155,8 @@ int main( int argc, char* argv[] )
     //printf("%d\n", operations);
 
     itk::TimeProbe itkClock;
-    double t0 = 0.0d;
-    double tf = 0.0d;
+    double t0 = 0.0;
+    double tf = 0.0;
 
     itk::MultiThreader::SetGlobalDefaultNumberOfThreads(1);
 
@@ -210,7 +210,7 @@ int main( int argc, char* argv[] )
     saveFile((char*) "/tmp/itk_not.dcm", negateFilter->GetOutput());
 
 
-#ifdef GPU
+/*#ifdef GPU
     // GPU Negative
     typedef itk::GPUUnaryFunctorImageFilter<ImageType,ImageType,
                   Negate<ImageType::PixelType,ImageType::PixelType> > GPUNegateImageFilterType;
@@ -220,7 +220,7 @@ int main( int argc, char* argv[] )
     gpuNegateFilter->Update();    
     // Saving Not result
     //saveFile("/tmp/itk_gpu_not.dcm", gpuNegateFilter->GetOutput());
-#endif
+#endif*/
 
     // Common Threshold
     int lowerThreshold = 100;
@@ -261,8 +261,8 @@ int main( int argc, char* argv[] )
 #ifdef GPU
     // GPU Threshold
 
-    typedef itk::GPUBinaryThresholdImageFilter <ImageType, ImageType>
-       GPUBinaryThresholdImageFilterType;
+    typedef itk::GPUBinaryThresholdImageFilter <GPUImageType, GPUImageType> 
+			GPUBinaryThresholdImageFilterType;
     
     GPUBinaryThresholdImageFilterType::Pointer gpuThresholdFilter
       = GPUBinaryThresholdImageFilterType::New();
@@ -287,7 +287,7 @@ int main( int argc, char* argv[] )
     t0 = tf;
     // Saving GPU Threshold result
 //    gpuThresholdFilter->GetOutput();
-    saveFile((char*) "/tmp/itk_gpu_thresh.dcm", gpuImage);
+    //saveFile((char*) "/tmp/itk_gpu_thresh.dcm", gpuImage);
 #endif
 
     // Mean
@@ -340,12 +340,18 @@ int main( int argc, char* argv[] )
 
 #ifdef GPU
     // GPU Blur
-    typedef itk::BoxImageFilter< ImageType, ImageType > BoxImageFilterType;
-    typedef itk::GPUBoxImageFilter< ImageType, ImageType, BoxImageFilterType > GPUBoxImageFilterType;
+    typedef itk::BoxImageFilter< GPUImageType, GPUImageType > BoxImageFilterType;
+    typedef itk::GPUBoxImageFilter< GPUImageType, GPUImageType, BoxImageFilterType > GPUBoxImageFilterType;
 
     GPUBoxImageFilterType::Pointer GPUBlurFilter = GPUBoxImageFilterType::New();
 
+	ImageType::SizeType indexRadius;
+	indexRadius[0] = 2;
+	indexRadius[1] = 2;
+	indexRadius[2] = 2;
+
     GPUBlurFilter->SetInput(gpureader->GetOutput());
+	GPUBlurFilter->SetRadius(indexRadius);
 
     itkClock.Start();
     TimerStart();
@@ -507,25 +513,22 @@ int main( int argc, char* argv[] )
 #ifdef GPU
 
     // GPU Mean
-  /*typedef itk::GPUMeanImageFilter<ImageType, ImageType> GPUMeanFilterType;
-    GPUMeanFilterType::Pointer GPUMean = GPUMeanFilterType::New();
-
-    GPUMean->SetInput(gpureader->GetOutput());
-    GPUMean->SetRadius( 1 );
-
-    itkClock.Start();
-    TimerStart();
-    for(int n = 0; n < operations; n++)
-    {
-       GPUMean->Modified();
-       GPUMean->Update();
-    }
+    typedef itk::GPUMeanImageFilter<GPUImageType, GPUImageType> GPUMeanFilterType;
+	GPUMeanFilterType::Pointer GPUMean = GPUMeanFilterType::New();
+	GPUMean->SetInput(gpureader->GetOutput());
+	GPUMean->SetRadius( 1 );
+	TimerStart();
+	for(int n = 0; n < operations; n++)
+	{
+	   GPUMean->Update();
+	   GPUMean->Modified();
+	}
     itkClock.Stop();
     printf("Tempo gasto para fazer %d GPU mean blur: %s\n",operations, getTimeElapsedInSeconds());
     tf = itkClock.GetTotal();
     std::cout << "My: "    << (tf - t0) << std::endl;
     t0 = tf;
-	*/
+	
 #endif
 
     // Visualize
