@@ -8,6 +8,7 @@
 #include <string>
 
 #define GPU
+#define GPU_only
 
 // Visualize
 //#include "QuickView.h"
@@ -53,8 +54,6 @@
 #include "itkGPUMeanImageFilter.h"
 
 #endif
-
-
 
 
 const unsigned int Dimension = 3;
@@ -193,7 +192,7 @@ int main( int argc, char* argv[] )
 
     negateFilter = NegateImageFilterType::New();
     negateFilter->SetInput(image);
-
+#ifndef GPU_only
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
@@ -206,21 +205,22 @@ int main( int argc, char* argv[] )
     tf = itkClock.GetTotal();
     std::cout << "My: "    << (tf - t0) << std::endl;
     t0 = tf;
+#endif
     // Saving Not result
     saveFile((char*) "/tmp/itk_not.dcm", negateFilter->GetOutput());
 
 
-/*#ifdef GPU
+#ifdef GPU
     // GPU Negative
     typedef itk::GPUUnaryFunctorImageFilter<ImageType,ImageType,
                   Negate<ImageType::PixelType,ImageType::PixelType> > GPUNegateImageFilterType;
  
     GPUNegateImageFilterType::Pointer gpuNegateFilter = GPUNegateImageFilterType::New();
-    gpuNegateFilter->SetInput(image);
+    gpuNegateFilter->SetInput(gpureader->GetOutput());
     gpuNegateFilter->Update();    
     // Saving Not result
     //saveFile("/tmp/itk_gpu_not.dcm", gpuNegateFilter->GetOutput());
-#endif*/
+#endif
 
     // Common Threshold
     int lowerThreshold = 100;
@@ -240,7 +240,7 @@ int main( int argc, char* argv[] )
     thresholdFilter->SetUpperThreshold(upperThreshold);
     thresholdFilter->SetInsideValue(255);
     thresholdFilter->SetOutsideValue(0);
-
+#ifndef GPU_only
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
@@ -253,9 +253,9 @@ int main( int argc, char* argv[] )
     tf = itkClock.GetTotal();
     std::cout << "My: "    << (tf - t0) << std::endl;
     t0 = tf;
-
     // Saving Threshold result
     saveFile((char*) "/tmp/itk_thresh.dcm", thresholdFilter->GetOutput());
+#endif
 
 
 #ifdef GPU
@@ -286,8 +286,8 @@ int main( int argc, char* argv[] )
     std::cout << "My: "    << (tf - t0) << std::endl;
     t0 = tf;
     // Saving GPU Threshold result
-//    gpuThresholdFilter->GetOutput();
-    //saveFile((char*) "/tmp/itk_gpu_thresh.dcm", gpuImage);
+    gpuThresholdFilter->GetOutput()->UpdateBuffers();
+    saveFile((char*) "/tmp/itk_gpu_thresh.dcm", gpuThresholdFilter->GetOutput());
 #endif
 
     // Mean
@@ -297,7 +297,7 @@ int main( int argc, char* argv[] )
     meanFilter = MeanFilterType::New();
     meanFilter->SetInput( image );
     meanFilter->SetRadius( 1 );
-
+#ifndef GPU_only
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
@@ -312,6 +312,7 @@ int main( int argc, char* argv[] )
     t0 = tf;
     // Saving Convolution result
     saveFile((char*) "/tmp/itk_mean3x3.dcm", meanFilter->GetOutput());
+#endif
 
     // Binomial Blur (aproximation of gaussian blur)
     typedef itk::BinomialBlurImageFilter<ImageType, ImageType> BinomialBlurImageFilterType;
@@ -322,7 +323,7 @@ int main( int argc, char* argv[] )
     blurFilter = BinomialBlurImageFilterType::New();
     blurFilter->SetInput( reader->GetOutput() );
     blurFilter->SetRepetitions( repetitions );
-
+#ifndef GPU_only
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
@@ -337,6 +338,8 @@ int main( int argc, char* argv[] )
     t0 = tf;
     // Saving Blur result
     saveFile((char*) "/tmp/itk_blur.dcm", blurFilter->GetOutput());
+#endif
+
 
 #ifdef GPU
     // GPU Blur
@@ -345,28 +348,28 @@ int main( int argc, char* argv[] )
 
     GPUBoxImageFilterType::Pointer GPUBlurFilter = GPUBoxImageFilterType::New();
 
-	ImageType::SizeType indexRadius;
-	indexRadius[0] = 2;
-	indexRadius[1] = 2;
-	indexRadius[2] = 2;
+	//ImageType::SizeType indexRadius;
+	//indexRadius[0] = 2;
+	//indexRadius[1] = 2;
+	//indexRadius[2] = 2;
 
     GPUBlurFilter->SetInput(gpureader->GetOutput());
-	GPUBlurFilter->SetRadius(indexRadius);
-
+	//GPUBlurFilter->SetRadius(indexRadius);
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
     {
-      GPUBlurFilter->Modified();
-      GPUBlurFilter->Update();
+        GPUBlurFilter->Update();
+        GPUBlurFilter->Modified();
     }
     itkClock.Stop();
     printf("Tempo gasto para fazer %d gpu blur: %s\n",operations, getTimeElapsedInSeconds());
     tf = itkClock.GetTotal();
     std::cout << "My: "    << (tf - t0) << std::endl;
     t0 = tf;
+    GPUBlurFilter->GetOutput()->UpdateBuffers();
     // Saving GPU Blur result
-//    saveFile((char*) "/tmp/itk_gpu_blur.dcm", GPUBlurFilter->GetOutput());
+    saveFile((char*) "/tmp/itk_gpu_blur.dcm", GPUBlurFilter->GetOutput());
 
 #endif
 
@@ -389,7 +392,7 @@ int main( int argc, char* argv[] )
     erodeFilter3x3= GrayscaleErodeImageFilterType::New();
     erodeFilter3x3->SetInput(reader->GetOutput());
     erodeFilter3x3->SetKernel(structuringElement3x3);
-
+#ifndef GPU_only
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
@@ -405,6 +408,7 @@ int main( int argc, char* argv[] )
 
     // Saving Erosion result
     saveFile((char*) "/tmp/itk_erode3x3.dcm", erodeFilter3x3->GetOutput());
+#endif
 
     // Erosion 5x5
     StructuringElementType structuringElement5x5;
@@ -417,7 +421,7 @@ int main( int argc, char* argv[] )
     erodeFilter5x5 = GrayscaleErodeImageFilterType::New();
     erodeFilter5x5->SetInput(reader->GetOutput());
     erodeFilter5x5->SetKernel(structuringElement5x5);
-
+#ifndef GPU_only
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
@@ -433,6 +437,7 @@ int main( int argc, char* argv[] )
 
     // Saving Erosion result
     saveFile((char*) "/tmp/itk_erode5x5.dcm", erodeFilter5x5->GetOutput());
+#endif
 
     // Copy
     typedef itk::ImageDuplicator< ImageType > DuplicatorType;
@@ -440,7 +445,7 @@ int main( int argc, char* argv[] )
 
     duplicator = DuplicatorType::New();
     duplicator->SetInputImage(image);
-
+#ifndef GPU_only
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
@@ -455,6 +460,7 @@ int main( int argc, char* argv[] )
     t0 = tf;
     // Saving Copy result
     saveFile((char*) "/tmp/itk_copy.dcm", duplicator->GetOutput());
+#endif
 
     // Convolution common
     typedef itk::ConvolutionImageFilter<ImageType> ConvolutionImageFilterType;
@@ -471,7 +477,7 @@ int main( int argc, char* argv[] )
     CreateKernel(kernel3x3, convWidth);
 
     convolutionFilter->SetKernelImage(kernel3x3);
-
+#ifndef GPU_only
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
@@ -486,6 +492,7 @@ int main( int argc, char* argv[] )
     t0 = tf;
     // Saving Convolution result
     saveFile((char*) "/tmp/itk_convolution3x3.dcm", convolutionFilter->GetOutput());
+#endif
 
     // Convolution 5x5
     ImageType::Pointer kernel5x5 = ImageType::New();
@@ -493,7 +500,7 @@ int main( int argc, char* argv[] )
     CreateKernel(kernel5x5, convWidth);
 
     convolutionFilter->SetKernelImage(kernel5x5);
-
+#ifndef GPU_only
     itkClock.Start();
     TimerStart();
     for(int n = 0; n < operations; n++)
@@ -508,7 +515,7 @@ int main( int argc, char* argv[] )
     t0 = tf;
     // Saving Convolution result
     saveFile((char*) "/tmp/itk_convolution5x5.dcm", convolutionFilter->GetOutput());
-
+#endif
 
 #ifdef GPU
 
@@ -528,7 +535,8 @@ int main( int argc, char* argv[] )
     tf = itkClock.GetTotal();
     std::cout << "My: "    << (tf - t0) << std::endl;
     t0 = tf;
-	
+	GPUMean->GetOutput()->UpdateBuffers();
+    saveFile((char*) "/tmp/itk_gpu_blurmean.dcm", GPUMean->GetOutput());
 #endif
 
     // Visualize
