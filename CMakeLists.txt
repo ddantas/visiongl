@@ -160,6 +160,9 @@ else()
 	libopencv_features2d.so
 	libopencv_calib3d.so)
 
+	list(APPEND all_libs ${visiongl_OpenCV_libs})
+	list(APPEND all_libs ${OPENCV_LIBRARIES} ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
+	
 	# Adding folders containing libs
 	link_directories(${OPENCV_LIBRARY})
 
@@ -183,7 +186,7 @@ else()
 
 		cuda_add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers} ${visiongl_src_cl} ${visiongl_headers_cl} ${visiongl_src_cuda} )
 
-		target_link_libraries(visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${visiongl_OpenCV_libs} ${OPENCL_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${X11_X11_LIB})	
+		target_link_libraries(visiongl ${all_libs} ${X11_X11_LIB})	
 	elseif (${WITH_CUDA}) #Add only CUDA support if required by User
 		find_package(CUDA REQUIRED)
 		add_definitions(-D__CUDA__)
@@ -192,7 +195,7 @@ else()
 		list(APPEND CUDA_NVCC_FLAGS -Xcompiler)
 
 		cuda_add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers} ${visiongl_src_cuda})
-		elseif (${WITH_OPENCL}) #Add only OpenCL support if required by User
+	elseif (${WITH_OPENCL}) #Add only OpenCL support if required by User
 		find_package (MyOpenCL REQUIRED)
 		add_definitions(-D__OPENCL__)
 		list(APPEND all_libs ${OPENCL_LIBRARY})
@@ -201,7 +204,7 @@ else()
 		INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR} ${OPENCL_INCLUDE_DIR})
 
 		add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers} ${visiongl_src_cl} ${visiongl_headers_cl} )
-		target_link_libraries(visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${visiongl_OpenCV_libs} ${OPENCL_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${X11_X11_LIB})
+		target_link_libraries(visiongl ${all_libs} ${OPENCL_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${X11_X11_LIB})
 
 		# Creating demobenchmarkcl object files then linking it.
 		add_executable(demobenchmarkcl src/demo/benchmark_cl.cpp src/demo/timer.h src/demo/timer.cpp)
@@ -209,7 +212,7 @@ else()
 		target_link_libraries(demobenchmarkcl visiongl ${all_libs})
 	else() # Creating object file of the library without CUDA or OpenCL
 		add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers})
-		target_link_libraries(visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${visiongl_OpenCV_libs} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
+		target_link_libraries(visiongl ${all_libs})
 	endif()
 	
 	SET_TARGET_PROPERTIES(visiongl PROPERTIES PREFIX "lib/lib")
@@ -223,7 +226,7 @@ else()
 			SET_TARGET_PROPERTIES(demo_cam PROPERTIES PREFIX "bin/")
 
 	# Linking executables
-	target_link_libraries(demo_fractal visiongl ${OPENCV_LIBRARIES} ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
-	target_link_libraries(demo_cam visiongl ${OPENCV_LIBRARIES} ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
+	target_link_libraries(demo_fractal visiongl ${all_libs})
+	target_link_libraries(demo_cam visiongl ${all_libs})
 
 endif()
