@@ -56,6 +56,7 @@ if(WITH_GDCM)
 	list(APPEND all_libs ${GDCM_LIBRARIES})
 	list(APPEND visiongl_src ${visiongl_src_GDCM})
 	add_definitions(-D__GDCM__)
+	add_definitions(-fPIC)
 	message(${GDCM_USE_FILE})
 endif()
 
@@ -77,13 +78,14 @@ if(WIN32)
 	# Adding folders containing libs
 	link_directories(${OPENCV_LIBRARY})
 
+
 	# Adding folders containing header files
 	INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR})
 	list(APPEND all_libs ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${visiongl_OpenCV_libs})
 	# Add CUDA support if required by user
 	if (${WITH_CUDA} AND ${WITH_OPENCL})
 		find_package(CUDA REQUIRED)
-		find_package (MyOpenCL REQUIRED)
+		find_package(MyOpenCL REQUIRED)
 
 		add_definitions(-D__OPENCL__)
 		add_definitions(-D__CUDA__)
@@ -151,7 +153,10 @@ else()
 	find_package (MyFREEGLUT REQUIRED)
 	find_package (MyOpenCV REQUIRED)
 	find_package (OpenGL REQUIRED)
-	find_package (OpenCL)
+
+	if(${WITH_GDCM})
+		set(CMAKE_CXX_FLAGS ${CMAKE_CSS_FLAGS} -fPIC)
+	endif()
 
 	set(visiongl_OpenCV_libs libopencv_core.so
 	libopencv_highgui.so
