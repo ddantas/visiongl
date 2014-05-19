@@ -4,10 +4,13 @@ cmake_minimum_required(VERSION 2.8)
 
 # Defining project name
 project(visiongl)
+
+
+
 if(NOT DEFINED OpenCV_VERSION)
-message("No OpenCV_VERSION was given, if you want to set your own OpenCV Version in order to work, please type: cmake . -DOpenCV_VERSION=xxx")
-message("default OpenCV_VERSION: 246")
-set(OpenCV_VERSION 246 CACHE FILEPATH "Version of OpenCV without dots")
+	message("No OpenCV_VERSION was given, if you want to set your own OpenCV Version in order to work, please type: cmake . -DOpenCV_VERSION=xxx")
+	message("default OpenCV_VERSION: 246")
+	set(OpenCV_VERSION 246 CACHE FILEPATH "Version of OpenCV without dots")
 endif()
 
 #creating target subdirectories
@@ -67,21 +70,20 @@ if(WIN32)
 	find_package (MyGLEW REQUIRED)
 	find_package (MyFREEGLUT REQUIRED)
 	find_package (MyOpenCV REQUIRED)
-
-	set(visiongl_OpenCV_libs opencv_core248d.lib
-	opencv_highgui248d.lib
-	opencv_imgproc248d.lib
-	opencv_legacy248d.lib
-	opencv_features2d248d.lib
-	opencv_calib3d248d.lib)
+	#set(visiongl_OpenCV_libs opencv_core248d.lib
+	#opencv_highgui248d.lib
+	#opencv_imgproc248d.lib
+	#opencv_legacy248d.lib
+	#opencv_features2d248d.lib
+	#opencv_calib3d248d.lib)
 
 	# Adding folders containing libs
 	link_directories(${OPENCV_LIBRARY})
-
+	
 
 	# Adding folders containing header files
 	INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR})
-	list(APPEND all_libs ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${visiongl_OpenCV_libs})
+	list(APPEND all_libs ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENCV_LIBRARIES})
 	# Add CUDA support if required by user
 	if (${WITH_CUDA} AND ${WITH_OPENCL})
 		find_package(CUDA REQUIRED)
@@ -94,13 +96,13 @@ if(WIN32)
 		list(APPEND CUDA_NVCC_FLAGS -Xcompiler)
 		list(APPEND all_libs ${OPENCL_LIBRARY})
 
-		link_directories(${OPENCV_LIBRARY} ${OPENCL_LIBRARY})
+		#link_directories(${OPENCL_LIBRARY})
 		INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR} ${OPENCL_INCLUDE_DIR})
 
 		#_add_library(visiongl ${visiongl_src_cuda})
 		cuda_add_library(visiongl ${visiongl_src} ${visiongl_headers} ${visiongl_src_cl} ${visiongl_headers_cl} ${visiongl_src_cuda})
 
-		target_link_libraries(visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${visiongl_OpenCV_libs} ${OPENCL_LIBRARY} )	
+		target_link_libraries(visiongl ${all_libs} )	
 
 	elseif (${WITH_CUDA})
 		find_package(CUDA REQUIRED)
@@ -116,17 +118,17 @@ if(WIN32)
 		add_definitions(-D__OPENCL__)
 		list(APPEND all_libs ${OPENCL_LIBRARY})
 
-		link_directories(${OPENCV_LIBRARY} ${OPENCL_LIBRARY})
+		#link_directories(${OPENCL_LIBRARY})
 		INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR} ${OPENCL_INCLUDE_DIR})
 
 		add_library(visiongl ${visiongl_src} ${visiongl_headers} ${visiongl_src_cl} ${visiongl_headers_cl})
-		target_link_libraries(visiongl ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${visiongl_OpenCV_libs} ${OPENCL_LIBRARY})
+		target_link_libraries(visiongl ${all_libs})
 
 		# Creating demobenchmarkcl object files then linking it.
 		add_executable(demobenchmarkcl src/demo/benchmark_cl.cpp src/demo/timer.h src/demo/timer.cpp)
 		SET_TARGET_PROPERTIES(demobenchmarkcl PROPERTIES PREFIX "bin/")
 		target_link_libraries(demobenchmarkcl visiongl ${all_libs})
-		else() # Creating object file without CUDA and OpenCL
+	else() # Creating object file without CUDA and OpenCL
 		add_library(visiongl ${visiongl_src} ${visiongl_headers})
 	endif()
 	# Creating demo_fractal object files
@@ -186,7 +188,7 @@ else()
 		list(APPEND CUDA_NVCC_FLAGS -Xcompiler)
 		list(APPEND all_libs ${OPENCL_LIBRARY})
 
-		link_directories(${OPENCL_LIBRARY})
+		#link_directories(${OPENCL_LIBRARY})
 		INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR} ${OPENCL_INCLUDE_DIR} ${X11_X11_INCLUDE_PATH})
 
 		cuda_add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers} ${visiongl_src_cl} ${visiongl_headers_cl} ${visiongl_src_cuda} )
@@ -205,11 +207,11 @@ else()
 		add_definitions(-D__OPENCL__)
 		list(APPEND all_libs ${OPENCL_LIBRARY})
 
-		link_directories(${OPENCV_LIBRARY} ${OPENCL_LIBRARY})
+		#link_directories(${OPENCL_LIBRARY})
 		INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR} ${OPENCL_INCLUDE_DIR})
 
 		add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers} ${visiongl_src_cl} ${visiongl_headers_cl} )
-		target_link_libraries(visiongl ${all_libs} ${OPENCL_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${X11_X11_LIB})
+		target_link_libraries(visiongl ${all_libs} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${X11_X11_LIB})
 
 		# Creating demobenchmarkcl object files then linking it.
 		add_executable(demobenchmarkcl src/demo/benchmark_cl.cpp src/demo/timer.h src/demo/timer.cpp)

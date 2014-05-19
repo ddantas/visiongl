@@ -534,6 +534,7 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, i
   return vglImage;
 }
 
+
 /** Create image from PGM as a 3d image
     char* filename, pass filename formated with C/printf supported format
 */
@@ -601,6 +602,7 @@ VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap)
   return vglImage;
 }
 
+
 /** Save PGM 3d images on the disk
 */
 void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
@@ -612,22 +614,25 @@ void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
 	if (d < 1) d = 1;
 
 
-	char* temp_image = (char*)malloc(image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->iplRGBA->nChannels*d);
-	memcpy(temp_image,image->ndarray,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->iplRGBA->nChannels*d);
+	char* temp_image = (char*)malloc(image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
+	memcpy(temp_image,image->ndarray,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
 
-	image->iplRGBA->imageData = temp_image;
-	cvSaveImage(temp_filename,image->iplRGBA);
-	int c = image->iplRGBA->height*image->iplRGBA->width*d*image->iplRGBA->nChannels;
+	IplImage* iplRGBA = cvCreateImage(cvSize(image->ipl->width,image->ipl->height),image->ipl->depth,4);
+	iplRGBA->imageData = temp_image;
+
+	cvSaveImage(temp_filename,iplRGBA);
+	int c = image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*d*image->nChannels;
 	for(int i = lStart+1; i <= lEnd; i++)
 	{
 		sprintf(temp_filename,filename,i);
-		memcpy(temp_image,((char*)image->ndarray)+c,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->iplRGBA->nChannels*d);
-		image->iplRGBA->imageData = temp_image;
+		memcpy(temp_image,((char*)image->ndarray)+c,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
+		iplRGBA->imageData = temp_image;
 		//cvCvtColor(image->iplRGBA,image->ipl,CV_RGBA2BGR);
-		cvSaveImage(temp_filename,image->iplRGBA);
-		c += image->iplRGBA->height*image->iplRGBA->width*d*image->iplRGBA->nChannels;
+		cvSaveImage(temp_filename,iplRGBA);
+		c += image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d;
 	}
 }		
+
 
 /** Release memory occupied by image in RAM and GPU
  */
