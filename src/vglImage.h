@@ -74,6 +74,7 @@ class VglImage{
   cl_mem    oclPtr;
 #endif
   int       inContext;
+  char*     filename;
 };
 
 ////////// VglNamedWindow

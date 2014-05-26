@@ -10,6 +10,7 @@ CUDA_NAME            = vglcuda
 FRACTAL_NAME         = fractal
 CAM_NAME             = cam
 GDCM_NAME	     = gdcm
+DCMTK_NAME	     = dcmtk
 BENCHMARK_CL_NAME    = benchmark_cl
 BENCHMARK_CV_NAME    = benchmark_cv
 BENCHMARK_CVOCL_NAME = benchmark_cvocl
@@ -34,9 +35,10 @@ OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 1
-WITH_OPENCL = 1
-WITH_GDCM = 0
+WITH_CUDA = 0
+WITH_OPENCL = 0
+WITH_GDCM = 1
+WITH_DCMTK = 1
 
 ifeq ($(WITH_OPENCL), 1)
 	OPENCL_DEF        = -D__OPENCL__
@@ -69,7 +71,7 @@ endif
 
 ifeq ($(WITH_GDCM), 1)
 	GDCM_DEF         = -D__GDCM__
-	GDCM_PATH        = /usr/local/gdcm
+	GDCM_PATH        = /home/davy/install/gdcm
 	GDCM_INCLUDEPATH = $(GDCM_PATH)/include/gdcm-2.4
 	GDCM_LIBPATH     = $(GDCM_PATH)/lib
 	GDCM_INCLUDEDIR  = -I $(GDCM_INCLUDEPATH)
@@ -77,8 +79,20 @@ ifeq ($(WITH_GDCM), 1)
 	GDCM_LIBRARIES   = -lgdcmcharls -lgdcmCommon -lgdcmDICT -lgdcmDSED -lgdcmexpat -lgdcmIOD -lgdcmjpeg8 -lgdcmjpeg12 -lgdcmjpeg16 -lgdcmMEXD -lgdcmMSFF -lgdcmopenjpeg -lgdcmuuid -lgdcmzlib -lsocketxx
 endif
 
+ifeq ($(WITH_DCMTK), 1)
+	DCMTK_DEF         = -D__DCMTK__
+	DCMTK_PATH        = /home/davy/install/dcmtk-shared
+	DCMTK_INCLUDEPATH = $(DCMTK_PATH)/include
+	DCMTK_LIBPATH     = $(DCMTK_PATH)/lib
+	DCMTK_INCLUDEDIR  = -I $(DCMTK_INCLUDEPATH)
+	DCMTK_LIBDIR      = -L $(DCMTK_LIBPATH)
+	DCMTK_LIBRARIES   = -ldcmjpeg -lijg8 -lijg12  -lijg16 -ldcmimage -ldcmpstat -ldcmimgle -ldcmqrdb -ldcmnet -ldcmdata -loflog -lofstd -lz -lpthread -ltiff -lpng
+	DCMTK_FILES       = src/vglDcmtkFile.cpp     
+	CC                = c++ 
+endif
 
-VGL_FILES = src/glsl2cpp_shaders.cpp src/vglContext.cpp src/vglSimpleBGModel.cpp src/glsl2cpp_BG.cpp src/glsl2cpp_Stereo.cpp src/vglImage.cpp src/vglLoadShader.cpp src/vglGdcmIo.cpp
+
+VGL_FILES = src/glsl2cpp_shaders.cpp src/vglContext.cpp src/vglSimpleBGModel.cpp src/glsl2cpp_BG.cpp src/glsl2cpp_Stereo.cpp src/vglImage.cpp src/vglLoadShader.cpp src/vglGdcmIo.cpp src/vglDcmtkFile.cpp
 
 
 INSTALL_PATH        = $(HOME)/script
@@ -87,7 +101,8 @@ INSTALL_LIBPATH     = $(INSTALL_PATH)/lib
 
 OPENGL_LIBDIR = -L /usr/X11R6/lib
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(CUDA_LIBPATH):$(OPENCV_LIBPATH):$(INSTALL_LIBPATH):$(GDCM_LIBPATH)
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(CUDA_LIBPATH):$(OPENCV_LIBPATH):$(INSTALL_LIBPATH):$(GDCM_LIBPATH):$(DCMTK_LIBPATH)
+
 
 COMPILER_FLAGS   = -g -pg -DGL_GLEXT_PROTOTYPES -DGLX_GLXEXT_PROTOTYPES 
 OPENGL_LIBRARIES    = -lGLEW -lGLU -lGL -lglut 
@@ -111,6 +126,10 @@ LINUXAMD64_DIRS_LIBS =  $(INCLUDE_DIR) \
                         $(GDCM_INCLUDEDIR) \
                         $(GDCM_LIBDIR) \
                         $(GDCM_LIBRARIES) \
+			$(DCMTK_DEF) \
+                        $(DCMTK_INCLUDEDIR) \
+			$(DCMTK_LIBDIR) \
+                        $(DCMTK_LIBRARIES) \
 
 
 LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
@@ -143,6 +162,12 @@ LINUXAMD64_DEMO_GDCM = $(CC) $(COMPILER_FLAGS) -D__GDCM__ \
                          -lvisiongl \
                           $(LINUXAMD64_DIRS_LIBS) \
 
+LINUXAMD64_DEMO_DCMTK = $(CC) $(COMPILER_FLAGS) -D__DCMTK__ \
+                         -o $(OUTPUT_BINPATH)/demo_$(DCMTK_NAME) \
+                          src/demo/$(DCMTK_NAME).cpp \
+                         -lvisiongl \
+                          $(LINUXAMD64_DIRS_LIBS) \
+
 ifeq ($(WITH_OPENCL), 1)
         LINUXAMD64_DEMO_BENCHMARK_CL = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_CL_NAME) \
@@ -166,10 +191,11 @@ LINUXAMD64_DEMO_BENCHMARK_CVOCL = $(CC) $(COMPILER_FLAGS) \
 
 
 
-GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
+GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkFile.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
 
 
 all:
+	echo $(LD_LIBRARY_PATH)
 	$(GENERATE_HEADER)
 	$(LINUXAMD64_LIB)
 
@@ -193,6 +219,9 @@ democam:
 demogdcm:
 	$(LINUXAMD64_DEMO_GDCM)
 
+demodcmtk:
+	$(LINUXAMD64_DEMO_DCMTK)
+
 demo3d:
 	$(LINUXAMD64_DEMO_3D)
 
@@ -214,8 +243,10 @@ rundemocam:
 	cd $(OUTPUT_BINPATH); ./demo_$(CAM_NAME)
 
 rundemogdcm:
-	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/output.dcm
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm
 
+rundemodcmtk:
+	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm /tmp/outputdcmtk.dcm
 
 rundemobenchmark:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 1000

@@ -3,12 +3,15 @@
 
 int main(int argc, char *argv[])
 {
-  char *filename = argv[1];
-  char *outfilename = argv[2];
+  char *filename = argv[argc-2];
+  char *outfilename = argv[argc-1];
 
   VglImage imagevgl;
   imagevgl = vglGdcmLoadDicom(filename, outfilename);
-  int i = vglGdcmSaveDicom(imagevgl, filename, outfilename);
+  if(argc == 3)
+     int i = vglGdcmSaveDicom(imagevgl, outfilename);
+  else
+     int i = vglGdcmSaveDicomCompressed(imagevgl, outfilename);
 
   return 0;
 }
