@@ -1,11 +1,11 @@
 #include "vglImage.h"
-#include "vglDcmtkFile.h"
+#include "vglDcmtkIo.h"
 
 
 int main(int argc, char *argv[])
 {
-    char * opt_ifname = argv[argc-2];//(char *) malloc(strlen(argv[argc-2]+1)); // nome de entrada do arquivo
-    char * opt_ofname = argv[argc-1];//(char *) malloc(strlen(argv[argc-1]+1)); // nome de saída do arquivo
+    char * opt_ifname = argv[argc-2]; // name of the input file
+    char * opt_ofname = argv[argc-1]; // name of the output file
 
     //strcpy(opt_ifname, argv[argc-2]);
     //strcpy(opt_ofname, argv[argc-1]);

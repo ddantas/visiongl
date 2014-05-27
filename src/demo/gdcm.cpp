@@ -3,8 +3,8 @@
 
 int main(int argc, char *argv[])
 {
-  char *filename = argv[argc-2];
-  char *outfilename = argv[argc-1];
+  char *filename = argv[argc-2]; // name of the input file
+  char *outfilename = argv[argc-1]; // name of the output file
 
   VglImage imagevgl;
   imagevgl = vglGdcmLoadDicom(filename, outfilename);

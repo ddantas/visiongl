@@ -1,6 +1,6 @@
 #ifdef __DCMTK__
 
-#include <vglDcmtkFile.h>
+#include <vglDcmtkIo.h>
 #include "dcmtk/config/osconfig.h"    /* make sure OS specific configuration is included first */
 
 #define INCLUDE_CSTDLIB
@@ -23,7 +23,8 @@
 #include "dcmtk/dcmjpeg/dipijpeg.h"      /* for dcmimage JPEG plugin */
 
 
-//========= Métodos para converter depth =============//
+/** \brief Convert depth from dcm's format to vgl's format.
+  */
 
 int convertDepthDcmToVgl(int dcmDepth)
 {
@@ -37,6 +38,9 @@ int convertDepthDcmToVgl(int dcmDepth)
 	 return CV_32S;
 }
 
+/** \brief Convert depth from vlg's format to dcm's format.
+  */
+
 int convertDepthVglToDcm(int vglDepth)
 {
   if(vglDepth == CV_8U)
@@ -49,28 +53,29 @@ int convertDepthVglToDcm(int vglDepth)
 	 return 32;
 }
 
-//========= Método para carregar a imagem ============//
+/** Function for loading DICOM images with DCMTK library
+  */
 
 VglImage vglLoadDicom(char* opt_ifname)
 {
     E_FileReadMode      opt_readMode = ERM_autoDetect;    /* default: fileformat or dataset */
-     /* Outros valores para opt_readMode:
-      - para file opt_readMode = ERM_fileOnly;
-      - para dataset opt_readMode = ERM_dataset;
+     /* Other values to opt_readMode:
+      - to file, opt_readMode = ERM_fileOnly;
+      - to dataset, opt_readMode = ERM_dataset;
      */
     E_TransferSyntax    opt_transferSyntax = EXS_Unknown; /* default: xfer syntax recognition */
-    /* Valores possiveis para opt_transferSyntax:
+    /* Others possible values to opt_transferSyntax:
        opt_transferSyntax = EXS_Unknown;
        opt_transferSyntax = EXS_LittleEndianExplicit;
        opt_transferSyntax = EXS_BigEndianExplicit;
        opt_transferSyntax = EXS_LittleEndianImplicit
     */
     unsigned long       opt_compatibilityMode = CIF_MayDetachPixelData | CIF_TakeOverExternalDataset;
-    /* Outros tipos de valores que podem ser adicionados à opt_compatibilityMode:
-       - para aceitar acr-nema opt_compatibilityMode |= CIF_AcrNemaCompatibility;
-       - para aceitar palettes opt_compatibilityMode |= CIF_WrongPaletteAttributeTags;
-       - para checar lut-depth opt_compatibilityMode |= CIF_CheckLutBitDepth;
-       - para ignorar mlut-depth opt_compatibilityMode |= CIF_IgnoreModalityLutBitDepth;
+    /* Others types of values what can be added to opt_compatibilityMode:
+       - to accept acr-nema opt_compatibilityMode |= CIF_AcrNemaCompatibility;
+       - to accept palettes opt_compatibilityMode |= CIF_WrongPaletteAttributeTags;
+       - to check lut-depth opt_compatibilityMode |= CIF_CheckLutBitDepth;
+       - to ignore ignorar mlut-depth opt_compatibilityMode |= CIF_IgnoreModalityLutBitDepth;
     */
     OFCmdUnsignedInt    opt_frame = 1;                    /* default: first frame */
     OFCmdUnsignedInt    opt_frameCount = 0;               /* default: all frames */
@@ -79,12 +84,12 @@ VglImage vglLoadDicom(char* opt_ifname)
 
     // JPEG parameters
     E_DecompressionColorSpaceConversion opt_decompCSconversion = EDC_photometricInterpretation; // conv photometric
-    /* Outros valores para opt_decompCSconversion:
-       - para conv lossy opt_decompCSconversion = EDC_lossyOnly;
-       - para conv guess opt_decompCSconversion = EDC_guess;
-       - para conv guess lossy opt_decompCSconversion = EDC_guessLossyOnly;
-       - para conv always opt_decompCSconversion = EDC_always;
-       - para conv never opt_decompCSconversion = EDC_never;
+    /* Other values to opt_decompCSconversion:
+       - to conv lossy, opt_decompCSconversion = EDC_lossyOnly;
+       - to conv guess, opt_decompCSconversion = EDC_guess;
+       - to conv guess lossy, opt_decompCSconversion = EDC_guessLossyOnly;
+       - to conv always, opt_decompCSconversion = EDC_always;
+       - to conv never, opt_decompCSconversion = EDC_never;
     */
     OFCmdUnsignedInt    opt_fileBits = 0;
 
@@ -120,7 +125,7 @@ VglImage vglLoadDicom(char* opt_ifname)
     imagevgl.shape[0] = di->getWidth();           // width
     imagevgl.shape[1] = di->getHeight();          // height
     imagevgl.shape[2] = di->getFrameCount();      // number of Frames
-    int depth = (di->getDepth()/8)*8;             // bits of bits of image
+    int depth = (di->getDepth()/8)*8;             // bits of image
     imagevgl.depth = convertDepthDcmToVgl(depth); // depth of image
         
     if(di->isMonochrome())
@@ -151,18 +156,18 @@ VglImage vglLoadDicom(char* opt_ifname)
 }
 
 
-//=========== Método para salvar imagem sem compressão ============//
-
+/** Function for saving uncompressed DICOM images with DCMTK library
+  */
 
 int vglSaveDicom(VglImage imagevgl, char* opt_ofname)
 { 
     E_FileReadMode      opt_readMode = ERM_autoDetect;    /* default: fileformat or dataset */
-    /* Outros valores para opt_readMode:
-      - para file opt_readMode = ERM_fileOnly;
-      - para dataset opt_readMode = ERM_dataset;
+    /* Other values to opt_readMode:
+      - to file, opt_readMode = ERM_fileOnly;
+      - to dataset, opt_readMode = ERM_dataset;
     */
     E_TransferSyntax    opt_transferSyntax = EXS_Unknown; /* default: xfer syntax recognition */
-    /* Valores possiveis para opt_transferSyntax:
+    /* Other possible values to opt_transferSyntax:
        opt_transferSyntax = EXS_Unknown;
        opt_transferSyntax = EXS_LittleEndianExplicit;
        opt_transferSyntax = EXS_BigEndianExplicit;
@@ -192,8 +197,8 @@ int vglSaveDicom(VglImage imagevgl, char* opt_ofname)
 }
 
 
-//========= Método para salvar imagem com compressão ==========//
-
+/** Function for saving compressed DICOM images with DCMTK library
+  */
 
 int vglSaveDicomCompressed(VglImage imagevgl, char* opt_ofname)
 {
@@ -207,28 +212,28 @@ int vglSaveDicomCompressed(VglImage imagevgl, char* opt_ofname)
 #endif
 
     E_FileReadMode opt_readMode = ERM_autoDetect; // default: fileformat or dataset
-    /* Outros valores para opt_readMode:
-      - para file opt_readMode = ERM_fileOnly;
-      - para dataset opt_readMode = ERM_dataset;
+    /* Other values to opt_readMode:
+      - to file, opt_readMode = ERM_fileOnly;
+      - to dataset, opt_readMode = ERM_dataset;
     */
     E_TransferSyntax opt_ixfer = EXS_Unknown;
-    /* Outros valores para opt_ixfer:
+    /* Other values to opt_ixfer:
          opt_ixfer = EXS_Unknown;
          opt_ixfer = EXS_LittleEndianExplicit;
          opt_ixfer = EXS_BigEndianExplicit;
          opt_ixfer = EXS_LittleEndianImplicit;	 
     */
     E_GrpLenEncoding opt_oglenc = EGL_recalcGL; // group length recalc
-    /* Outros valores para opt_oglenc:
-       - para group length create opt_oglenc = EGL_withGL;
-       - para group length remove opt_oglenc = EGL_withoutGL;
+    /* Other values to opt_oglenc:
+       - to group length create, opt_oglenc = EGL_withGL;
+       - to group length remove, opt_oglenc = EGL_withoutGL;
     */
     E_EncodingType opt_oenctype = EET_ExplicitLength; // length explicit
-    /* Outro valor, para length undefined opt_oenctype = EET_UndefinedLength; */
+    /* Other value, to length undefined, opt_oenctype = EET_UndefinedLength; */
     E_PaddingEncoding opt_opadenc = EPD_noChange; // padding retain
-    /* Outros valores para opt_opadenc:
-       - para padding off opt_opadenc = EPD_withoutPadding;
-       - para padding create opt_opadenc = EPD_withPadding;
+    /* Other values to opt_opadenc:
+       - to padding off, opt_opadenc = EPD_withoutPadding;
+       - to padding create, opt_opadenc = EPD_withPadding;
     */
     OFCmdUnsignedInt opt_filepad = 0;
     OFCmdUnsignedInt opt_itempad = 0;
@@ -236,13 +241,14 @@ int vglSaveDicomCompressed(VglImage imagevgl, char* opt_ofname)
     OFBool opt_acrNemaCompatibility = OFFalse;
 
     // JPEG options
-    E_TransferSyntax opt_oxfer =  EXS_JPEGProcess1; // valor para  modo baseline
-    /* Outros valores para opt_oxfer:
-      - para lossless-sv1 opt_oxfer = EXS_JPEGProcess14SV1TransferSyntax;
-      - para lossless opt_oxfer = EXS_JPEGProcess14TransferSyntax;
-      - para extended opt_oxfer = EXS_JPEGProcess2_4TransferSyntax;
-      - para spectral opt_oxfer = EXS_JPEGProcess6_8TransferSyntax;
-      - para progressive opt_oxfer = EXS_JPEGProcess10_12TransferSyntax;
+    E_TransferSyntax opt_oxfer =  EXS_JPEGProcess1; // value to baseline (lossy) mode
+    /* Other values to opt_oxfer:
+      - to lossless, selection value 1, opt_oxfer = EXS_JPEGProcess14SV1;
+      - to lossless with any selection value lossless, opt_oxfer = EXS_JPEGProcess14;
+      - to extended sequential (lossy, 8/12 bit), opt_oxfer = EXS_JPEGProcess2_4;
+      - to spectral selection, non-hierarchical (lossy, 8/12 bit), opt_oxfer = EXS_JPEGProcess6_8;
+      - to full progression, non-hierarchical (lossy, 8/12 bit), opt_oxfer = EXS_JPEGProcess10_12;
+      - for more values access the file: dcxfer.h
     */ 
     OFCmdUnsignedInt opt_selection_value = 6;
     OFCmdUnsignedInt opt_point_transform = 0;
@@ -251,20 +257,20 @@ int vglSaveDicomCompressed(VglImage imagevgl, char* opt_ofname)
     OFCmdUnsignedInt opt_smoothing = 0;
     int              opt_compressedBits = 0; // 0=auto, 8/12/16=force
     E_CompressionColorSpaceConversion opt_compCSconversion = ECC_lossyRGB; // cor rgb
-    /* Outros valores para opt_compCSconversion:
-       - para cor ybr opt_compCSconversion = ECC_lossyYCbCr;
-       - para cor monochrome opt_compCSconversion = ECC_monochrome;
+    /* Other values to opt_compCSconversion:
+       - for color ybr, opt_compCSconversion = ECC_lossyYCbCr;
+       - for color monochrome, opt_compCSconversion = ECC_monochrome;
     */
     E_DecompressionColorSpaceConversion opt_decompCSconversion = EDC_photometricInterpretation; // conv photometric
-    /* Outros valores para opt_decompCSconversion:
-       - para conv lossy opt_decompCSconversion = EDC_lossyOnly;
-       - para conv guess opt_decompCSconversion = EDC_guess;
-       - para conv guess lossy opt_decompCSconversion = EDC_guessLossyOnly;
-       - para conv always opt_decompCSconversion = EDC_always;
-       - para conv never opt_decompCSconversion = EDC_never;   
+    /* Other values to opt_decompCSconversion:
+       - to conv lossy, opt_decompCSconversion = EDC_lossyOnly;
+       - to conv guess, opt_decompCSconversion = EDC_guess;
+       - to conv guess lossy, opt_decompCSconversion = EDC_guessLossyOnly;
+       - to conv always, opt_decompCSconversion = EDC_always;
+       - to conv never, opt_decompCSconversion = EDC_never;   
     */
     E_SubSampling    opt_sampleFactors = ESS_444; 
-    /* Outros valores para opt_sampleFactors: ESS_422; ESS_411*/
+    /* Other values to opt_sampleFactors: ESS_422; ESS_411*/
     OFBool           opt_useYBR422 = OFFalse;
     OFCmdUnsignedInt opt_fragmentSize = 0; // 0=unlimited
     OFBool           opt_createOffsetTable = OFTrue;
@@ -272,9 +278,9 @@ int vglSaveDicomCompressed(VglImage imagevgl, char* opt_ofname)
     OFCmdUnsignedInt opt_windowParameter = 0;
     OFCmdFloat       opt_windowCenter=0.0, opt_windowWidth=0.0;
     E_UIDCreation    opt_uidcreation = EUC_default; // uid default
-    /* Outros valores para opt_uidcreation:
-       - para uid always opt_uidcreation = EUC_always;
-       - para uid never opt_uidcreation = EUC_never;
+    /* Other values to opt_uidcreation:
+       - to uid always, opt_uidcreation = EUC_always;
+       - to uid never, opt_uidcreation = EUC_never;
     */
     OFBool           opt_secondarycapture = OFFalse;
     OFCmdUnsignedInt opt_roiLeft = 0, opt_roiTop = 0, opt_roiWidth = 0, opt_roiHeight = 0;

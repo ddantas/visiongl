@@ -14,7 +14,10 @@
 #include <iostream>
 #include <fstream>
 
-void YBR2RGB(unsigned char rgb[3], unsigned char ybr[3])
+/** \brief Convert ybr array with 3 bytes to rgb array with 3 bytes.
+  */
+
+inline void YBR2RGB(unsigned char rgb[3], unsigned char ybr[3])
 {
    const double Y  = ybr[0];
    const double Cb = ybr[1] - 128.0;

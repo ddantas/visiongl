@@ -71,7 +71,7 @@ endif
 
 ifeq ($(WITH_GDCM), 1)
 	GDCM_DEF         = -D__GDCM__
-	GDCM_PATH        = /home/davy/install/gdcm
+	GDCM_PATH        = /home/davy/install/gdcm-test
 	GDCM_INCLUDEPATH = $(GDCM_PATH)/include/gdcm-2.4
 	GDCM_LIBPATH     = $(GDCM_PATH)/lib
 	GDCM_INCLUDEDIR  = -I $(GDCM_INCLUDEPATH)
@@ -81,18 +81,17 @@ endif
 
 ifeq ($(WITH_DCMTK), 1)
 	DCMTK_DEF         = -D__DCMTK__
-	DCMTK_PATH        = /home/davy/install/dcmtk-shared
+	DCMTK_PATH        = /home/davy/install/dcmtk-test
 	DCMTK_INCLUDEPATH = $(DCMTK_PATH)/include
 	DCMTK_LIBPATH     = $(DCMTK_PATH)/lib
 	DCMTK_INCLUDEDIR  = -I $(DCMTK_INCLUDEPATH)
 	DCMTK_LIBDIR      = -L $(DCMTK_LIBPATH)
 	DCMTK_LIBRARIES   = -ldcmjpeg -lijg8 -lijg12  -lijg16 -ldcmimage -ldcmpstat -ldcmimgle -ldcmqrdb -ldcmnet -ldcmdata -loflog -lofstd -lz -lpthread -ltiff -lpng
-	DCMTK_FILES       = src/vglDcmtkFile.cpp     
 	CC                = c++ 
 endif
 
 
-VGL_FILES = src/glsl2cpp_shaders.cpp src/vglContext.cpp src/vglSimpleBGModel.cpp src/glsl2cpp_BG.cpp src/glsl2cpp_Stereo.cpp src/vglImage.cpp src/vglLoadShader.cpp src/vglGdcmIo.cpp src/vglDcmtkFile.cpp
+VGL_FILES = src/glsl2cpp_shaders.cpp src/vglContext.cpp src/vglSimpleBGModel.cpp src/glsl2cpp_BG.cpp src/glsl2cpp_Stereo.cpp src/vglImage.cpp src/vglLoadShader.cpp src/vglGdcmIo.cpp src/vglDcmtkIo.cpp
 
 
 INSTALL_PATH        = $(HOME)/script
@@ -191,7 +190,7 @@ LINUXAMD64_DEMO_BENCHMARK_CVOCL = $(CC) $(COMPILER_FLAGS) \
 
 
 
-GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkFile.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
+GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkIo.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
 
 
 all:
