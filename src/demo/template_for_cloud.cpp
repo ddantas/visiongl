@@ -146,9 +146,33 @@ void process_args(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
 	process_args(argc,argv);
-    for(int i = 0; i < window_size_x*window_size_y; i++)
+    
+	if (input_path.empty())
 	{
-		printf("value number %d: %f\n",i,convolution_window[i]);
+		printf("Missing input image path, try using --input path/image.ext \n");
+		exit(1);
 	}
+	if (output_path.empty())
+	{
+		printf("Missing output image path, try using --output path/image.ext \n");
+		exit(1);
+	}
+
+	if (convolution_window == NULL)
+	{
+		printf("You forgot to set convolution_window structuring element, try using --window_convolution [1,2,3,...,n] and remember to set --window_size_x and --window_size_y before using --window_convolution");
+		exit(1);
+	}
+
+	vglInit(30,30);
+	vglClInit();
+	VglImage* input = vglLoadImage((char*) input_path.c_str(),1);
+	VglImage* output = vglCreateImage(input);
+	
+	vglClConvolution(input,output,convolution_window,window_size_x,window_size_y);
+
+	vglCheckContext(output, VGL_RAM_CONTEXT);
+	cvSaveImage(output_path.c_str(), output->ipl);
+
 	return 0;
 }
