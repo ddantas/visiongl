@@ -138,6 +138,7 @@ void vglDownloadFBO(VglImage* image);
 void vglDownloadFaster(VglImage* image/*, VglImage* buf*/);
 VglImage* vglLoadImage(char* filename, int iscolor = 1, int has_mipmap = 0);
 void vglPrintImageInfo(VglImage* image);
+void vglPrintImageData(VglImage* image);
 void iplPrintImageInfo(IplImage* ipl);
 void vglCopyImageTex(VglImage* src, VglImage* dst);
 void vglAxis(void);
@@ -178,6 +179,7 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1);
 { \
  GLenum status; \
  status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); \
+ printf("status = %d\n", status); \
  switch(status) { \
  case GL_FRAMEBUFFER_COMPLETE_EXT: \
    break; \

@@ -144,6 +144,73 @@ void vgl1to3Channels(VglImage*  src, VglImage*  dst){
   vglSetContext(dst, VGL_GL_CONTEXT);
 }
 
+/** Inverts 3d image.
+
+    As the wrappers are implemented currently, the shader will invert only the first layer of the 3d image.
+
+  */
+void vgl3dNot(VglImage*  src, VglImage*  dst){
+
+  vglCheckContext(src, VGL_GL_CONTEXT);
+
+  GLint _viewport[4];
+  glGetIntegerv(GL_VIEWPORT, _viewport);
+
+
+  static GLuint _f = 0;
+  if (_f == 0){
+    printf("FRAGMENT SHADER\n====================\n");
+    _f = vglShaderLoad(GL_FRAGMENT_SHADER, (char*) "FS/vgl3dNot.frag");
+    if (!_f){
+      printf("%s: %s: Error loading fragment shader.\n", __FILE__, __FUNCTION__);
+      exit(1);
+   }
+  }
+  ERRCHECK()
+
+  glUseProgram(_f);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_3D, src->tex);
+  glUniform1i(glGetUniformLocation(_f, "sampler0"),  0);
+  ERRCHECK()
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
+  CHECK_FRAMEBUFFER_STATUS()
+  ERRCHECK()
+
+
+  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+
+      glBegin(GL_QUADS);
+          glTexCoord2f( 0.0,  0.0);
+          glVertex3f ( -1.0, -1.0, 0.0); //Left  Up
+
+          glTexCoord2f( 1.0,  0.0);
+          glVertex3f (  0.0, -1.0, 0.0); //Right Up
+
+          glTexCoord2f( 1.0,  1.0);
+          glVertex3f (  0.0,  0.0, 0.0); //Right Bottom
+
+          glTexCoord2f( 0.0,  1.0);
+          glVertex3f ( -1.0,  0.0, 0.0); //Left  Bottom
+      glEnd();
+
+  glUseProgram(0);
+
+  glViewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
+
+
+
+  if (dst->has_mipmap){
+    glBindTexture(GL_TEXTURE_2D, dst->tex);
+    glGenerateMipmapEXT(GL_TEXTURE_2D);
+  }
+  glActiveTexture(GL_TEXTURE0);
+
+  vglSetContext(dst, VGL_GL_CONTEXT);
+}
+
 /** Absolute difference between two images.
 
   */

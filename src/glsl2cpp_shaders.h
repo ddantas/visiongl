@@ -15,6 +15,13 @@ void shader_15_1(VglImage*  src, VglImage*  dst);
   */
 void vgl1to3Channels(VglImage*  src, VglImage*  dst);
 
+/** Inverts 3d image.
+
+    As the wrappers are implemented currently, the shader will invert only the first layer of the 3d image.
+
+  */
+void vgl3dNot(VglImage*  src, VglImage*  dst);
+
 /** Absolute difference between two images.
 
   */

@@ -37,8 +37,8 @@ OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_le
 
 WITH_CUDA = 0
 WITH_OPENCL = 0
-WITH_GDCM = 1
-WITH_DCMTK = 1
+WITH_GDCM = 0
+WITH_DCMTK = 0
 
 ifeq ($(WITH_OPENCL), 1)
 	OPENCL_DEF        = -D__OPENCL__
@@ -71,7 +71,7 @@ endif
 
 ifeq ($(WITH_GDCM), 1)
 	GDCM_DEF         = -D__GDCM__
-	GDCM_PATH        = /home/davy/install/gdcm-test
+	GDCM_PATH        = /usr/local/gdcm
 	GDCM_INCLUDEPATH = $(GDCM_PATH)/include/gdcm-2.4
 	GDCM_LIBPATH     = $(GDCM_PATH)/lib
 	GDCM_INCLUDEDIR  = -I $(GDCM_INCLUDEPATH)
@@ -81,7 +81,7 @@ endif
 
 ifeq ($(WITH_DCMTK), 1)
 	DCMTK_DEF         = -D__DCMTK__
-	DCMTK_PATH        = /home/davy/install/dcmtk-test
+	DCMTK_PATH        = /usr/local/dcmtk
 	DCMTK_INCLUDEPATH = $(DCMTK_PATH)/include
 	DCMTK_LIBPATH     = $(DCMTK_PATH)/lib
 	DCMTK_INCLUDEDIR  = -I $(DCMTK_INCLUDEPATH)
@@ -202,6 +202,8 @@ lib:
 	$(LINUXAMD64_LIB)
 
 install: all
+	mkdir -p $(OUTPUT_INCLUDEPATH)
+	mkdir -p $(OUTPUT_LIBPATH)
 	cp $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h $(INSTALL_INCLUDEPATH)
 	cp $(OUTPUT_LIBPATH)/lib$(BINARY_NAME).so $(INSTALL_LIBPATH)
 
@@ -242,7 +244,7 @@ rundemocam:
 	cd $(OUTPUT_BINPATH); ./demo_$(CAM_NAME)
 
 rundemogdcm:
-	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm2.dcm
 
 rundemodcmtk:
 	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm /tmp/outputdcmtk.dcm

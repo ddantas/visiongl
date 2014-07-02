@@ -535,9 +535,10 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
           ($type, $unif_type, $unif_variable, $cpp_value) = ProcessGlslUniform($uniform[$i]);
           print "type = $type\n";
           print "unif_variable = $unif_variable\n";
-          if ($type =~ m#(sampler2D)#){
+          if ($type =~ m#sampler(2|3)D#){
+	    $ndim = $1;
             print CPP "  glActiveTexture(GL_TEXTURE$i_tex);\n";
-            print CPP "  glBindTexture(GL_TEXTURE_2D, $variable[$i]"."->tex);\n";
+            print CPP "  glBindTexture(GL_TEXTURE_$ndim"."D, $variable[$i]"."->tex);\n";
             print CPP "  glUniform1i(glGetUniformLocation(_f, \"$unif_variable\"),  $i_tex);\n";
             print CPP "  ERRCHECK()\n";
             print CPP "\n";

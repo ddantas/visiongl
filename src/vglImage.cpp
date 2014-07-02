@@ -298,7 +298,7 @@ void vglUpload(VglImage* image, int swapRGB){
     fprintf(stderr, "%s: %s: Error: images with more than 3 dimensions not supported\n", __FILE__, __FUNCTION__);
   }
 
-  //printf("w x h x d = %d x %d x %d\n", ipl->width, ipl->height, dim3);
+  printf("%s:%s: w x h x d = %d x %d x %d\n", __FILE__, __FUNCTION__, image->shape[0], image->shape[1], image->shape[2]);
 
 
   glBindTexture(glTarget, image->tex);
@@ -317,7 +317,7 @@ void vglUpload(VglImage* image, int swapRGB){
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
   }
   ERRCHECK()
-           
+
   switch (depth){
           case IPL_DEPTH_8U:  glType = GL_UNSIGNED_BYTE;  break; 
           case IPL_DEPTH_16U: glType = GL_UNSIGNED_SHORT; exit(1); break; 
@@ -344,13 +344,12 @@ void vglUpload(VglImage* image, int swapRGB){
     internalFormat = GL_LUMINANCE;
   }
 
-  if (glTarget == GL_TEXTURE_3D){
+  if (ndim == 3){
     glTexImage3D(glTarget, LEVEL, internalFormat, 
                  image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH], 0,
                  glFormat, glType, image->ndarray);
   }
   else{
-    //printf("uploading with glTexImage2D (w, h) = (%d, %d)\n", ipl->width, ipl->height);
     glTexImage2D(glTarget, LEVEL, internalFormat, 
                  ipl->width, ipl->height, 0,
                  glFormat, glType, ipl->imageData);
@@ -363,8 +362,9 @@ void vglUpload(VglImage* image, int swapRGB){
     glGenFramebuffersEXT(1, &image->fbo);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, image->fbo);
     if (glTarget == GL_TEXTURE_3D){
+      int layer = 0; // will render only to layer 0 
       glFramebufferTexture3DEXT(GL_FRAMEBUFFER_EXT,GL_COLOR_ATTACHMENT0_EXT, 
-				glTarget, image->tex, 0, 0);
+				glTarget, image->tex, 0, layer);
     }
     else{
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,GL_COLOR_ATTACHMENT0_EXT, 
@@ -997,11 +997,18 @@ void iplPrintImageInfo(IplImage* ipl){
 void vglPrintImageInfo(VglImage* image){
         IplImage* ipl = image->ipl;
         printf("====== vglPrintImageInfo:\n");
-        printf("Image @ %p: w x h = %d(%d) x %d\n", 
-                image, ipl->width, ipl->widthStep, ipl->height);
-        printf("nChannels = %d\n", ipl->nChannels);
+        printf("ipl @ %p\n", image->ipl);
+        printf("ndarray @ %p\n", image->ndarray);
+        printf("ndim = %d\n", image->ndim);
+        printf("dimensions = [%d", image->shape[0]);
+        for (int i = 1; i < image->ndim; i++)
+        {
+            printf(", %d", image->shape[i]);
+	}
+        printf("]\n");
+        printf("nChannels = %d\n", image->nChannels);
         printf("depth = ");
-        switch (ipl->depth){
+        switch (image->depth){
           case IPL_DEPTH_1U:  printf("IPL_DEPTH_1U");  break; 
           case IPL_DEPTH_8U:  printf("IPL_DEPTH_8U");  break; 
           case IPL_DEPTH_16U: printf("IPL_DEPTH_16U"); break; 
@@ -1015,6 +1022,32 @@ void vglPrintImageInfo(VglImage* image){
         printf("TEX = %d\n", image->tex);
         printf("FBO = %d\n", image->fbo);
         printf("Context = %d\n", image->inContext);
+}
+
+/** Print image pixels in text format to stdout
+
+ */
+void vglPrintImageData(VglImage* image){
+    int ndarraySize = 1;
+    int w = image->shape[0];
+    int h = image->shape[1];
+    for(int dim = 0; dim < image->ndim; dim++)
+    {
+        ndarraySize *= image->shape[dim];
+    }
+    for(int i = 0; i < ndarraySize;)
+    {
+        if (i % w == 0)
+	{
+            printf("%d: ", i / w);
+	}
+        printf("%c", ((char*)image->ndarray)[i]);
+        i++;
+        if (i % w == 0)
+	{
+            printf("\n"); 
+        }
+    }
 }
 
 

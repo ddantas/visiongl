@@ -1,6 +1,7 @@
 #ifdef __GDCM__
 
 #include <vglGdcmIo.h>
+#include <vglContext.h>
 #include <gdcmImageReader.h>
 #include <gdcmImage.h>
 #include <gdcmWriter.h>
@@ -60,29 +61,43 @@ VglImage vglGdcmLoadDicom(char* filename, char* outfilename)
 
   imagevgl.filename = (char *) malloc(strlen(filename));
   imagevgl.filename = filename;
+  imagevgl.ipl = NULL;
   imagevgl.shape[0] = image.GetColumns(); // width/columns
   imagevgl.shape[1] = image.GetRows(); // height/rows
   imagevgl.shape[2] = (image.GetDimensions())[2]; // number of frames
   imagevgl.nChannels = pixelformat.GetSamplesPerPixel(); // number of channels of image 
   imagevgl.ndim = image.GetNumberOfDimensions(); // number of dimensions
+  imagevgl.inContext = VGL_RAM_CONTEXT;            // context = RAM
+  imagevgl.has_mipmap = 0;
+  imagevgl.ipl = NULL;
+  imagevgl.fbo = -1;
+  imagevgl.tex = -1;
+  imagevgl.cudaPtr = NULL;
+  imagevgl.cudaPbo = -1;
+#ifdef __OPENCL__
+  imagevgl.iplRGBA = NULL;
+  imagevgl.oclPtr = NULL;
+#endif
+
 
   int ndarraySize = imagevgl.shape[0]*imagevgl.shape[1]*imagevgl.shape[2]*imagevgl.nChannels;
 
   if(pixelformat.GetBitsAllocated() == 16)
      ndarraySize = ndarraySize*2;
+  else if(pixelformat.GetBitsAllocated() == 32)
+     ndarraySize = ndarraySize*4;
   
   char* buffer = (char*) malloc(ndarraySize);
   image.GetBuffer(buffer);
   imagevgl.ndarray = buffer; // pixels of image
 
-  if(pixelformat.GetBitsAllocated() == 8) //depth of image
-     imagevgl.depth = CV_8U; // 8 bits
-     else
-       if(pixelformat.GetBitsAllocated() == 16) 
-	  imagevgl.depth = CV_16U; // 16 bits
-       else
-	 if(pixelformat.GetBitsAllocated() == 32) 
-	    imagevgl.depth = CV_32S; // 32 bits       
+  printf("%s:%s: getbitsallocated = %d\n", __FILE__, __FUNCTION__, pixelformat.GetBitsAllocated());
+  if     (pixelformat.GetBitsAllocated() == 8)  //depth of image
+     imagevgl.depth = IPL_DEPTH_8U;             // 8 bits
+  else if(pixelformat.GetBitsAllocated() == 16) 
+     imagevgl.depth = IPL_DEPTH_16U;            // 16 bits
+  else if(pixelformat.GetBitsAllocated() == 32) 
+     imagevgl.depth = IPL_DEPTH_32S;            // 32 bits       
        
   
 
@@ -99,7 +114,7 @@ VglImage vglGdcmLoadDicom(char* filename, char* outfilename)
 	   unsigned char* ybr = &((unsigned char*) (imagevgl.ndarray))[3*i];
 	   YBR2RGB(rgb, ybr);
 	   //printf("i = %d, imag.ndarray = %d , %d, %d ; rgb = %d , %d, %d\n\n", i, ybr[0], ybr[1], ybr[2], rgb[0], rgb[1], rgb[2]);
-	   memcpy(imagevgl.ndarray+3*i, rgb, 3);
+	   memcpy((unsigned char*)imagevgl.ndarray+3*i, rgb, 3);
 	}
      else
        if(!(PI == gdcm::PhotometricInterpretation::RGB))
