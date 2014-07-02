@@ -283,6 +283,10 @@ void vglUpload(VglImage* image, int swapRGB){
     glGenTextures(1, &image->tex);
   }
 
+  if (depth != IPL_DEPTH_8U){
+    fprintf(stderr, "%s: %s: Pixel type not supported. Must be IPL_DEPTH_8U\n", __FILE__, __FUNCTION__);
+  }
+
   if (ndim <= 0){
     fprintf(stderr, "vglUpload: Image ndim (depth) must be greater than zero. Assuming ndim = 2\n");
     ndim =2;
@@ -320,7 +324,7 @@ void vglUpload(VglImage* image, int swapRGB){
 
   switch (depth){
           case IPL_DEPTH_8U:  glType = GL_UNSIGNED_BYTE;  break; 
-          case IPL_DEPTH_16U: glType = GL_UNSIGNED_SHORT; exit(1); break; 
+          case IPL_DEPTH_16U: glType = GL_UNSIGNED_SHORT; break; 
           case IPL_DEPTH_32F: glType = GL_FLOAT; break; 
           case IPL_DEPTH_8S:  glType = GL_BYTE; exit(1);  break; 
           case IPL_DEPTH_16S: glType = GL_SHORT; exit(1); break; 
@@ -486,6 +490,7 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
   vglImage->iplRGBA = NULL;
   vglImage->oclPtr = NULL;
 #endif
+  vglImage->filename = NULL;
 
   vglSetContext(vglImage, VGL_BLANK_CONTEXT);
   vglUpload(vglImage);
@@ -495,23 +500,23 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
 
 /** Create image as described by the parameters
  */
-VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap)
+VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, int has_mipmap)
 {
   VglImage* vglImage = new VglImage;
-  IplImage* ipl = cvCreateImage(size, depth, nChannels);
-  if (!ipl){
+  IplImage* ipl = NULL;//cvCreateImage(size, depth, nChannels);
+  /*if (!ipl){
     fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
     free(vglImage);
     return 0;
-  }
+  }*/
   
   vglImage->ipl = ipl;
-  vglImage->shape[VGL_WIDTH] = ipl->width;
-  vglImage->shape[VGL_HEIGHT] = ipl->height;
-  vglImage->shape[VGL_LENGTH] = nlength;
+  vglImage->shape[VGL_WIDTH] = size.width;
+  vglImage->shape[VGL_HEIGHT] = size.height;
+  vglImage->shape[VGL_LENGTH] = layers;
   vglImage->ndim      = 3;
-  vglImage->depth     = ipl->depth;
-  vglImage->nChannels = ipl->nChannels;
+  vglImage->depth     = depth;
+  vglImage->nChannels = nChannels;
   vglImage->has_mipmap = has_mipmap;
   vglImage->fbo = -1;
   vglImage->tex = -1;
@@ -521,15 +526,22 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, i
   vglImage->iplRGBA = NULL;
   vglImage->oclPtr = NULL;
 #endif
+  vglImage->filename = NULL;
 
-  int d = vglImage->depth / 8;
-  if (d < 1) d = 1;
 
-  vglImage->ndarray = malloc(size.width*size.height*4*nlength*d);
+  int bytesPerPixel = vglImage->depth / 8;
+  if (bytesPerPixel < 1) bytesPerPixel = 1;
 
+  int c = 1;
+  if (nChannels >= 3)
+  {
+    c = 4; // Although image may be RGB, a fourth channel is allocated, as needed by OpenCL.
+  }
+
+  vglImage->ndarray = malloc(size.width*size.height*c*layers*bytesPerPixel);
 
   vglSetContext(vglImage, VGL_BLANK_CONTEXT);
-  vglUpload(vglImage);
+  //vglUpload(vglImage);
 
   return vglImage;
 }
@@ -572,6 +584,7 @@ VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap)
   vglImage->iplRGBA = iplRGBA;
   vglImage->oclPtr = NULL;
 #endif
+  vglImage->filename = NULL;
 
   int d = vglImage->depth / 8;
   if (d < 1) d = 1;
@@ -951,6 +964,7 @@ VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
   vglImage->iplRGBA = NULL;
   vglImage->oclPtr = NULL;
 #endif
+  vglImage->filename = NULL;
 
   vglSetContext(vglImage, VGL_RAM_CONTEXT);
   vglUpload(vglImage);

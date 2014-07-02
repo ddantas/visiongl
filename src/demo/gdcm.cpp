@@ -26,7 +26,7 @@ demo_gdcm <input file> <output file> -c\n\
   char *outfilename = argv[2]; // name of the output file
 
   VglImage imagevgl;
-  VglImage imagevgl2;
+
   imagevgl = vglGdcmLoadDicom(filename, outfilename);
 
   vglPrintImageInfo(&imagevgl);

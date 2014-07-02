@@ -86,7 +86,8 @@ ifeq ($(WITH_DCMTK), 1)
 	DCMTK_LIBPATH     = $(DCMTK_PATH)/lib
 	DCMTK_INCLUDEDIR  = -I $(DCMTK_INCLUDEPATH)
 	DCMTK_LIBDIR      = -L $(DCMTK_LIBPATH)
-	DCMTK_LIBRARIES   = -ldcmjpeg -lijg8 -lijg12  -lijg16 -ldcmimage -ldcmpstat -ldcmimgle -ldcmqrdb -ldcmnet -ldcmdata -loflog -lofstd -lz -lpthread -ltiff -lpng
+	DCMTK_LIBRARIES   = -ldcmjpeg -lijg8 -lijg12  -lijg16 -ldcmimage -ldcmpstat -ldcmimgle -ldcmqrdb -ldcmnet -ldcmdata -loflog -lofstd -lz -lpthread 
+        #-ltiff -lpng
 	CC                = c++ 
 endif
 
@@ -244,10 +245,12 @@ rundemocam:
 	cd $(OUTPUT_BINPATH); ./demo_$(CAM_NAME)
 
 rundemogdcm:
-	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm2.dcm
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm
+	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) /home/ddantas/bkp/dicom/16bits/E1154S7I.dcm /tmp/outputgdcm16.dcm
 
 rundemodcmtk:
 	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm /tmp/outputdcmtk.dcm
+	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) /home/ddantas/bkp/dicom/16bits/E1154S7I.dcm /tmp/outputdcmtk16.dcm
 
 rundemobenchmark:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 1000
