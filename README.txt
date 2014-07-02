@@ -58,7 +58,6 @@ If you're willing to use Visual Studio 2010 as generator, use the following comm
 
 cmake . -G "Visual Studio 10"
 
-
         Compilation using Makefile_linux
 
 Please open Makefile_linux and edit the variables OPENCV_PATH, CUDA_PATH, 
@@ -90,6 +89,40 @@ make -f Makefile_linux frag_stereo
 make -f Makefile_linux frag_diffeq
 make -f Makefile_linux cuda
 
+        Compilation with GDCM
+
+Please download gdcm-2.4.2 source code or later. It is available in: 
+http://sourceforge.net/projects/gdcm/files/gdcm%202.x/GDCM%202.4.2/
+
+Set the options below as follows:
+GDCM_BUILD_SHARED_LIBS: ON
+CMAKE_INSTALL_PREFFIX: /usr/local/gdcm
+
+Optionally, set also
+GDCM_BUILD_APPLICATIONS: ON
+
+Then run:
+make
+sudo make install
+
+To compile VisionGL with support to GDCM, please set WITH_GDCM = 1 in 
+the VisionGL makefile.
+
+        Compilation with DCMTK
+
+Please download dcmtk-3.6.1_20131114 source code or later, available in:
+http://sourceforge.net/projects/gdcm/files/gdcm%202.x/GDCM%202.4.2/
+
+Set the options below as follows:
+GDCM_BUILD_SHARED_LIBS: ON
+CMAKE_INSTALL_PREFFIX: /usr/local/dcmtk
+
+Then run:
+make
+sudo make install
+
+To compile VisionGL with support to GDCM, please set WITH_DCMTK = 1 in 
+the VisionGL makefile.
 
 References
 

@@ -140,7 +140,7 @@ sub LineStartSemicolon { # ($line) {
 sub LineStartSemantics { # ($line) {
   my $line = $_[0];
 
-  $line =~ s#^\s*([a-zA-Z_]\w*)\s*##;
+  $line =~ s#^\s*(__read_only|__write_only|__constant)\s*##;
   $semantics = $1;
   if ($semantics){
     if (!($semantics =~ m#^(__read_only|__write_only|__constant)$#))
