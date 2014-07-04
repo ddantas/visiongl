@@ -148,12 +148,15 @@ void vglGreen(VglImage* src, VglImage* dst);
 void vglVerticalFlip2(VglImage* src, VglImage* dst);
 void vglHorizontalFlip2(VglImage* src, VglImage* dst);
 void vglClear(VglImage* image, float r, float g, float b, float a = 0.0);
+void vglNdarray3To4Channels(VglImage* img);
+void vglNdarray4To3Channels(VglImage* img);
 int SavePPM(char* filename, int w, int h, void* savebuf);
 int vglSavePPM(VglImage* img, char* filename);
 int SavePGM(char* filename, int w, int h, void* savebuf);
 int vglSavePGM(VglImage* img, char* filename);
 IplImage* LoadPGM(char* filename);
 VglImage* vglLoadPGM(char* filename);
+
 
 
 void vglDistTransformCross3(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, int times = 1);

@@ -19,6 +19,9 @@
 //vglDilateSq3, vglErodeSq3
 #include "glsl2cpp_shaders.h"
 
+//uint8_t 16 32 64
+#include <stdint.h>
+
   /** \brief Refresh all output images.
    */
   void VglNamedWindowList::RefreshAll(int split){
@@ -645,6 +648,100 @@ void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
 	}
 }		
 
+//converts ndarray from 3 channels to 4 channels
+void vglNdarray3To4Channels(VglImage* img)
+{
+	int d = img->depth / 8;
+	if (d < 1) d = 1;
+	
+	int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * img->nChannels * d * img->shape[VGL_LENGTH];
+
+	//int actualAddress = (datasize-(datasize/4));
+	int offset = (datasize/d)/4;
+	uint8_t temp_alpha = 0;
+	for(int i = (datasize/d)-1; i >= 0; i--)
+	{
+		if (((i+1) % 4) == 0)
+		{
+			switch(d)
+			{
+				case 1:
+					((uint8_t*)img->ndarray)[i] = temp_alpha;
+					break;
+				case 8:
+					((uint8_t*)img->ndarray)[i] = temp_alpha;
+					break;
+				case 16:
+					((uint16_t*)img->ndarray)[i] = temp_alpha;
+					break;
+				case 32:
+					((uint32_t*)img->ndarray)[i] = temp_alpha;
+					break;
+				case 64:
+					((uint64_t*)img->ndarray)[i] = temp_alpha;
+					break;
+			}
+			offset--;
+		}
+		else
+		{
+			switch(d)
+			{
+				case 1:
+					((uint8_t*)img->ndarray)[i] = ((uint8_t*)img->ndarray)[i-offset];
+					break;
+				case 8:
+					((uint8_t*)img->ndarray)[i] = ((uint8_t*)img->ndarray)[i-offset];
+					break;
+				case 16:
+					((uint16_t*)img->ndarray)[i] = ((uint16_t*)img->ndarray)[i-offset];
+					break;
+				case 32:
+					((uint32_t*)img->ndarray)[i] = ((uint32_t*)img->ndarray)[i-offset];
+					break;
+				case 64:
+					((uint64_t*)img->ndarray)[i] = ((uint64_t*)img->ndarray)[i-offset];
+					break;
+			}
+		}
+	}
+}
+
+void vglNdarray4To3Channels(VglImage* img)
+{
+	int d = img->depth / 8;
+	if (d < 1) d = 1;
+	
+	int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * img->nChannels * d * img->shape[VGL_LENGTH];
+
+	int offset = 0;
+	uint8_t temp_alpha = 0;
+	for(int i = 0 ; i < (datasize/d); i++)
+	{
+		if (((i+1) % 4) != 0)
+		{
+			switch(d)
+			{
+				case 1:
+					((uint8_t*)img->ndarray)[offset] = ((uint8_t*)img->ndarray)[i];
+					break;
+				case 8:
+					((uint8_t*)img->ndarray)[offset] = ((uint8_t*)img->ndarray)[i];
+					break;
+				case 16:
+					((uint16_t*)img->ndarray)[offset] = ((uint16_t*)img->ndarray)[i];
+					break;
+				case 32:
+					((uint32_t*)img->ndarray)[offset] = ((uint32_t*)img->ndarray)[i];
+					break;
+				case 64:
+					((uint64_t*)img->ndarray)[offset] = ((uint64_t*)img->ndarray)[i];
+					break;
+			}
+			offset++;
+		}
+	}
+}
 
 /** Release memory occupied by image in RAM and GPU
  */

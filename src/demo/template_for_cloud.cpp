@@ -166,6 +166,7 @@ int main(int argc, char* argv[])
 
 	vglInit(30,30);
 	vglClInit();
+
 	VglImage* input = vglLoadImage((char*) input_path.c_str(),1);
 	VglImage* output = vglCreateImage(input);
 	
