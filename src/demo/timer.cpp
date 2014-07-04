@@ -93,9 +93,9 @@ char* getTimeElapsed()
 {
 	char *ret = (char*) malloc(sizeof(char)*255);
 #ifdef __linux__
-	sprintf(ret,"%d us",TimerElapsed());
+	sprintf(ret,"%ld us", TimerElapsed());
 #else
-	sprintf(ret,"%.2f us",TimerElapsed());
+	sprintf(ret,"%.2f us", TimerElapsed());
 #endif
 	return ret;
 }
@@ -104,9 +104,9 @@ char* getTimeElapsedInSeconds()
 {
 	char *ret = (char*) malloc(sizeof(char)*255);
 #ifdef __linux__
-	sprintf(ret,"%.6f s",TimerElapsed()/1000000.0f);
+	sprintf(ret,"%.6f s", TimerElapsed()/1000000.0f);
 #else
-	sprintf(ret,"%.6f s",TimerElapsed()/1000000.0f);
+	sprintf(ret,"%.6f s", TimerElapsed()/1000000.0f);
 #endif
 	return ret;
 }

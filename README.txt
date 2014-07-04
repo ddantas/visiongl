@@ -74,10 +74,12 @@ make -f Makefile_linux install
 To build the demos:
 make -f Makefile_linux democam
 make -f Makefile_linux demofrac
+make -f Makefile_linux demobenchmark
 
 To run the demos:
 make -f Makefile_linux rundemocam
 make -f Makefile_linux rundemofrac
+make -f Makefile_linux rundemobenchmark
 
 To build the documentation:
 build dox
@@ -123,6 +125,42 @@ sudo make install
 
 To compile VisionGL with support to GDCM, please set WITH_DCMTK = 1 in 
 the VisionGL makefile.
+
+        About the demos
+
+demofrac: Probably the most basic demo. Does not require any aditional 
+library besides the minimum. Use the arrows in the numpad to navigate,
+ z/x to zoom in/out, and q to quit. 
+ 
+democam: Another basic demo that does not require aditional libraries.
+Captures images from the first webcam found. The capture is done by 
+OpenCV function cvCaptureFromCAM. An OpenGL window shows four versions 
+of the captured image after a few operations.
+
+demogdcm: To run this example, please compile VisionGL with
+GDCM support. In a previous section there are instructions about how
+to compile GDCM.
+
+demodcmtk: To run this example, please compile VisionGL with
+DCMTK support. In a previous section there are instructions about how
+to compile DCMTK.
+
+demogdcm: To run this example, please compile VisionGL with
+GDCM support.
+
+demobenchmark: This demo is composed by three programs.
+ - demobenchmark_cv: The simplest one, requires OpenCV.
+ - demobenchmark_cl: To run this example, please compile VisionGL with
+                     OpenCL support.
+ - demobenchmark_cvocl: To run this example, please compile OpenCV with
+                     OpenCL support. Download OpenCV and look for the 
+                     folder modules/ocl. It may be not present in the
+                     master branch from the git repository, but it is 
+                     present in the 2.4.8 and 2.4.9 tags. Get OpenCV
+                     with git by running:
+
+                     git clone https://github.com/Itseez/opencv.git
+                     git checkout 2.4.9
 
 References
 

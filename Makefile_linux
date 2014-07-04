@@ -253,9 +253,9 @@ rundemodcmtk:
 	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) /home/ddantas/bkp/dicom/16bits/E1154S7I.dcm /tmp/outputdcmtk16.dcm
 
 rundemobenchmark:
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 1000
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 1000
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 1000
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 1000 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 1000 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 1000 /tmp
 
 cuda:
 	./kernel2cu.pl -o src/kernel2cu_shaders src/CUDA/*.kernel

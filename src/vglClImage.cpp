@@ -35,8 +35,8 @@ void vglClCheckError(cl_int error, char* name)
     if (error != CL_SUCCESS)
     {
         printf("Erro %d while doing the following operation %s\n",error,name);
-        system("pause");
-		exit(1);
+        //system("pause");
+	exit(1);
     }
 }
 
@@ -120,7 +120,7 @@ void vglClBuildDebug(cl_int err, cl_program program)
 			&length // the actual size in bytes of data copied to buffer
 		);
 		printf("%s\n",buffer);
-		system("pause");
+		//system("pause");
 		exit(1);
 	}
 }

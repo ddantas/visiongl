@@ -302,8 +302,7 @@ void vglUpload(VglImage* image, int swapRGB){
     fprintf(stderr, "%s: %s: Error: images with more than 3 dimensions not supported\n", __FILE__, __FUNCTION__);
   }
 
-  printf("%s:%s: w x h x d = %d x %d x %d\n", __FILE__, __FUNCTION__, image->shape[0], image->shape[1], image->shape[2]);
-
+  //printf("%s:%s: w x h x d = %d x %d x %d\n", __FILE__, __FUNCTION__, image->shape[0], image->shape[1], image->shape[2]);
 
   glBindTexture(glTarget, image->tex);
   glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

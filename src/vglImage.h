@@ -179,7 +179,6 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1);
 { \
  GLenum status; \
  status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); \
- printf("status = %d\n", status); \
  switch(status) { \
  case GL_FRAMEBUFFER_COMPLETE_EXT: \
    break; \
