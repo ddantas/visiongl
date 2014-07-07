@@ -565,9 +565,6 @@ VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap)
     return 0;
   }
 
-  IplImage* iplRGBA = cvCreateImage(cvSize(ipl->width,ipl->height),ipl->depth,4);
-  cvCvtColor(ipl, iplRGBA, CV_BGR2RGBA);
-  
   
   int n = lEnd-lStart+1;
   vglImage->ipl = ipl;
@@ -575,40 +572,39 @@ VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap)
   vglImage->shape[VGL_HEIGHT] = ipl->height;
   vglImage->shape[VGL_LENGTH] = n;
   vglImage->ndim      = 3;
-  vglImage->depth     = iplRGBA->depth;
-  vglImage->nChannels = iplRGBA->nChannels;
+  vglImage->depth     = ipl->depth;
+  vglImage->nChannels = ipl->nChannels;
   vglImage->has_mipmap = has_mipmap;
   vglImage->fbo = -1;
   vglImage->tex = -1;
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
 #ifdef __OPENCL__
-  vglImage->iplRGBA = iplRGBA;
+  vglImage->iplRGBA = NULL;
   vglImage->oclPtr = NULL;
 #endif
   vglImage->filename = NULL;
 
   int d = vglImage->depth / 8;
-  if (d < 1) d = 1;
+  if (d < 1) d = 1; //d is the byte size of the depth color format
 
-  vglImage->ndarray = (char*)malloc(iplRGBA->height*iplRGBA->width*iplRGBA->nChannels*d*vglImage->shape[VGL_LENGTH]);
+  vglImage->ndarray = (char*)malloc(ipl->height*ipl->width*ipl->nChannels*d*vglImage->shape[VGL_LENGTH]);
   
-  memcpy(vglImage->ndarray,(void*) iplRGBA->imageData,iplRGBA->height*iplRGBA->width*iplRGBA->nChannels*d);
-  iplRGBA->imageData = (char*)vglImage->ndarray;
-  int c = iplRGBA->height*iplRGBA->width*d*iplRGBA->nChannels;
+  memcpy(vglImage->ndarray,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);
+  ipl->imageData = (char*)vglImage->ndarray;
+  int c = ipl->height*ipl->width*d*ipl->nChannels;
   for(int i = lStart+1; i <= lEnd; i++)
   {
 	  sprintf(temp_filename,filename,i);
 	  ipl = cvLoadImage(temp_filename);
-	  cvCvtColor(ipl, iplRGBA, CV_BGR2RGBA);
 	  if (!ipl){
 		fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
 		free(vglImage);
 		return 0;
 	  }
 
-	  memcpy(((char*)vglImage->ndarray)+c,(void*) iplRGBA->imageData,iplRGBA->height*iplRGBA->width*iplRGBA->nChannels*d);//needs tests
-	  c+=iplRGBA->height*iplRGBA->width*d*iplRGBA->nChannels;
+	  memcpy(((char*)vglImage->ndarray)+c,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);//needs tests
+	  c+=ipl->height*ipl->width*d*ipl->nChannels;
   }
 
   vglSetContext(vglImage, VGL_RAM_CONTEXT);
@@ -626,24 +622,23 @@ void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
 	char* temp_filename = (char*)malloc(strlen(filename)+256);
 	sprintf(temp_filename,filename,lStart);
 	int d = image->depth / 8;
-	if (d < 1) d = 1;
-
+	if (d < 1) d = 1; //d is the byte size of the depth color format
 
 	char* temp_image = (char*)malloc(image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
 	memcpy(temp_image,image->ndarray,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
 
-	IplImage* iplRGBA = cvCreateImage(cvSize(image->ipl->width,image->ipl->height),image->ipl->depth,4);
-	iplRGBA->imageData = temp_image;
 
-	cvSaveImage(temp_filename,iplRGBA);
+	IplImage* ipl = cvCreateImage(cvSize(image->ipl->width,image->ipl->height),image->ipl->depth,image->nChannels);
+	ipl->imageData = temp_image;
+
+	cvSaveImage(temp_filename,ipl);
 	int c = image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*d*image->nChannels;
 	for(int i = lStart+1; i <= lEnd; i++)
 	{
-		sprintf(temp_filename,filename,i);
 		memcpy(temp_image,((char*)image->ndarray)+c,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
-		iplRGBA->imageData = temp_image;
-		//cvCvtColor(image->iplRGBA,image->ipl,CV_RGBA2BGR);
-		cvSaveImage(temp_filename,iplRGBA);
+		ipl->imageData = temp_image;
+		sprintf(temp_filename,filename,i);
+		cvSaveImage(temp_filename,ipl);
 		c += image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d;
 	}
 }		
@@ -659,16 +654,15 @@ void vglNdarray3To4Channels(VglImage* img)
 	}
 
 	int d = img->depth / 8;
-	if (d < 1) d = 1;
+	if (d < 1) d = 1; //d is the byte size of the depth color format
 	
-	int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * img->nChannels * d * img->shape[VGL_LENGTH];
+	int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 4 * d * img->shape[VGL_LENGTH];
 
 	void* newndarray = (char*)malloc(img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 4 * d * img->shape[VGL_LENGTH]);
 
-	//int actualAddress = (datasize-(datasize/4));
-	int offset = (datasize/d)/4;
+	int offset = 0;
 	uint8_t temp_alpha = 0;
-	for(int i = (datasize/d)-1; i >= 0; i--)
+	for(int i = 0; i < (datasize/d); i++)//for(int i = (datasize/d)-1; i >= 0; i--)
 	{
 		if (((i+1) % 4) == 0)
 		{
@@ -677,41 +671,35 @@ void vglNdarray3To4Channels(VglImage* img)
 				case 1:
 					((uint8_t*)newndarray)[i] = temp_alpha;
 					break;
-				case 8:
-					((uint8_t*)newndarray)[i] = temp_alpha;
-					break;
-				case 16:
+				case 2:
 					((uint16_t*)newndarray)[i] = temp_alpha;
 					break;
-				case 32:
+				case 4:
 					((uint32_t*)newndarray)[i] = temp_alpha;
 					break;
-				case 64:
+				case 8:
 					((uint64_t*)newndarray)[i] = temp_alpha;
 					break;
 			}
-			offset--;
 		}
 		else
 		{
 			switch(d)
 			{
 				case 1:
-					((uint8_t*)newndarray)[i] = ((uint8_t*)img->ndarray)[i-offset];
+					((uint8_t*)newndarray)[i] = ((uint8_t*)img->ndarray)[offset];
+					break;
+				case 2:
+					((uint16_t*)newndarray)[i] = ((uint16_t*)img->ndarray)[offset];
+					break;
+				case 4:
+					((uint32_t*)newndarray)[i] = ((uint32_t*)img->ndarray)[offset];
 					break;
 				case 8:
-					((uint8_t*)newndarray)[i] = ((uint8_t*)img->ndarray)[i-offset];
-					break;
-				case 16:
-					((uint16_t*)newndarray)[i] = ((uint16_t*)img->ndarray)[i-offset];
-					break;
-				case 32:
-					((uint32_t*)newndarray)[i] = ((uint32_t*)img->ndarray)[i-offset];
-					break;
-				case 64:
-					((uint64_t*)newndarray)[i] = ((uint64_t*)img->ndarray)[i-offset];
+					((uint64_t*)newndarray)[i] = ((uint64_t*)img->ndarray)[offset];
 					break;
 			}
+			offset++;
 		}
 	}
 	free(img->ndarray);
@@ -746,16 +734,13 @@ void vglNdarray4To3Channels(VglImage* img)
 				case 1:
 					((uint8_t*)newndarray)[offset] = ((uint8_t*)img->ndarray)[i];
 					break;
-				case 8:
-					((uint8_t*)newndarray)[offset] = ((uint8_t*)img->ndarray)[i];
-					break;
-				case 16:
+				case 2:
 					((uint16_t*)newndarray)[offset] = ((uint16_t*)img->ndarray)[i];
 					break;
-				case 32:
+				case 4:
 					((uint32_t*)newndarray)[offset] = ((uint32_t*)img->ndarray)[i];
 					break;
-				case 64:
+				case 8:
 					((uint64_t*)newndarray)[offset] = ((uint64_t*)img->ndarray)[i];
 					break;
 			}
