@@ -651,10 +651,19 @@ void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
 //converts ndarray from 3 channels to 4 channels
 void vglNdarray3To4Channels(VglImage* img)
 {
+
+	if (img->nChannels == 4)
+	{
+		printf("Can't convert 4 channels to 4 channels using vglNdarray3to4Channels\n");
+		return;
+	}
+
 	int d = img->depth / 8;
 	if (d < 1) d = 1;
 	
 	int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * img->nChannels * d * img->shape[VGL_LENGTH];
+
+	void* newndarray = (char*)malloc(img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 4 * d * img->shape[VGL_LENGTH]);
 
 	//int actualAddress = (datasize-(datasize/4));
 	int offset = (datasize/d)/4;
@@ -666,19 +675,19 @@ void vglNdarray3To4Channels(VglImage* img)
 			switch(d)
 			{
 				case 1:
-					((uint8_t*)img->ndarray)[i] = temp_alpha;
+					((uint8_t*)newndarray)[i] = temp_alpha;
 					break;
 				case 8:
-					((uint8_t*)img->ndarray)[i] = temp_alpha;
+					((uint8_t*)newndarray)[i] = temp_alpha;
 					break;
 				case 16:
-					((uint16_t*)img->ndarray)[i] = temp_alpha;
+					((uint16_t*)newndarray)[i] = temp_alpha;
 					break;
 				case 32:
-					((uint32_t*)img->ndarray)[i] = temp_alpha;
+					((uint32_t*)newndarray)[i] = temp_alpha;
 					break;
 				case 64:
-					((uint64_t*)img->ndarray)[i] = temp_alpha;
+					((uint64_t*)newndarray)[i] = temp_alpha;
 					break;
 			}
 			offset--;
@@ -688,31 +697,43 @@ void vglNdarray3To4Channels(VglImage* img)
 			switch(d)
 			{
 				case 1:
-					((uint8_t*)img->ndarray)[i] = ((uint8_t*)img->ndarray)[i-offset];
+					((uint8_t*)newndarray)[i] = ((uint8_t*)img->ndarray)[i-offset];
 					break;
 				case 8:
-					((uint8_t*)img->ndarray)[i] = ((uint8_t*)img->ndarray)[i-offset];
+					((uint8_t*)newndarray)[i] = ((uint8_t*)img->ndarray)[i-offset];
 					break;
 				case 16:
-					((uint16_t*)img->ndarray)[i] = ((uint16_t*)img->ndarray)[i-offset];
+					((uint16_t*)newndarray)[i] = ((uint16_t*)img->ndarray)[i-offset];
 					break;
 				case 32:
-					((uint32_t*)img->ndarray)[i] = ((uint32_t*)img->ndarray)[i-offset];
+					((uint32_t*)newndarray)[i] = ((uint32_t*)img->ndarray)[i-offset];
 					break;
 				case 64:
-					((uint64_t*)img->ndarray)[i] = ((uint64_t*)img->ndarray)[i-offset];
+					((uint64_t*)newndarray)[i] = ((uint64_t*)img->ndarray)[i-offset];
 					break;
 			}
 		}
 	}
+	free(img->ndarray);
+
+	img->ndarray = newndarray;
+	img->nChannels = 4;
 }
 
 void vglNdarray4To3Channels(VglImage* img)
 {
+	if (img->nChannels == 3)
+	{
+		printf("Can't convert 3 channels to 3 channels using vglNdarray4to3Channels\n");
+		return;
+	}
+
 	int d = img->depth / 8;
 	if (d < 1) d = 1;
 	
 	int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * img->nChannels * d * img->shape[VGL_LENGTH];
+
+	void* newndarray = malloc(img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 3 * d * img->shape[VGL_LENGTH]);
 
 	int offset = 0;
 	uint8_t temp_alpha = 0;
@@ -723,24 +744,29 @@ void vglNdarray4To3Channels(VglImage* img)
 			switch(d)
 			{
 				case 1:
-					((uint8_t*)img->ndarray)[offset] = ((uint8_t*)img->ndarray)[i];
+					((uint8_t*)newndarray)[offset] = ((uint8_t*)img->ndarray)[i];
 					break;
 				case 8:
-					((uint8_t*)img->ndarray)[offset] = ((uint8_t*)img->ndarray)[i];
+					((uint8_t*)newndarray)[offset] = ((uint8_t*)img->ndarray)[i];
 					break;
 				case 16:
-					((uint16_t*)img->ndarray)[offset] = ((uint16_t*)img->ndarray)[i];
+					((uint16_t*)newndarray)[offset] = ((uint16_t*)img->ndarray)[i];
 					break;
 				case 32:
-					((uint32_t*)img->ndarray)[offset] = ((uint32_t*)img->ndarray)[i];
+					((uint32_t*)newndarray)[offset] = ((uint32_t*)img->ndarray)[i];
 					break;
 				case 64:
-					((uint64_t*)img->ndarray)[offset] = ((uint64_t*)img->ndarray)[i];
+					((uint64_t*)newndarray)[offset] = ((uint64_t*)img->ndarray)[i];
 					break;
 			}
 			offset++;
 		}
 	}
+
+	free(img->ndarray);
+
+	img->ndarray = newndarray;
+	img->nChannels = 3;
 }
 
 /** Release memory occupied by image in RAM and GPU
