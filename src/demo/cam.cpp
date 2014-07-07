@@ -14,6 +14,8 @@
 
 //IplImage, cvLoadImage
 #include <opencv2/highgui/highgui_c.h>
+//cvCvtColor
+#include <opencv2/imgproc/imgproc_c.h>
 
 //time
 #include <time.h>
@@ -28,6 +30,9 @@ void reshape(int w, int h);
 void keyboard(unsigned char key, int x, int y);
 
 using namespace std;
+
+// NUM_CHANNELS \in {3, 4}
+#define   NUM_CHANNELS    4
 
 #define   NUM_IMG         20
 VglImage* img[NUM_IMG];
@@ -79,7 +84,14 @@ void display_cam(void)
     for (int i = 0; i < num_cam; i++)
     {
         cvGrabFrame(capture[i]);
-        cvCopy(cvRetrieveFrame(capture[i]), img[i]->ipl);
+        if (NUM_CHANNELS == 3)
+	{
+            cvCopy(cvRetrieveFrame(capture[i]), img[i]->ipl);
+	}
+        else
+	{
+            cvCvtColor(cvRetrieveFrame(capture[i]), img[i]->ipl, CV_RGB2RGBA);
+	}
         vglSetContext(img[i], VGL_RAM_CONTEXT);
         vglUpload(img[i]);
     }
@@ -199,7 +211,7 @@ int main(int argc, char** argv)
 
   for (int i = 0; i < num_cam; i++){
     const int HAS_MIPMAP = 0;
-    img[i]      = vglCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 3, 2, HAS_MIPMAP);
+    img[i]      = vglCreateImage(cvSize(640, 480), IPL_DEPTH_8U, NUM_CHANNELS, 2, HAS_MIPMAP);
     img_gray[i] = vglCreateImage(cvSize(640, 480), IPL_DEPTH_8U, 1, 2, HAS_MIPMAP);
 
     if (!img[i]){

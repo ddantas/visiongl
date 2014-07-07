@@ -265,6 +265,20 @@ void vglUpload(VglImage* image, int swapRGB){
     return;
   }
 
+  if (nChannels == 3 && false){
+    printf("\t\t\tswapRGB = %d\n", swapRGB);
+    //swapRGB = (swapRGB + 1) % 2;
+    IplImage* iplRGBA = cvCreateImage(cvGetSize(image->ipl), depth, 4);
+    printf("\t\t\t    ipl->nChannels = %d\n", image->ipl->nChannels);
+    printf("\t\t\tiplRGBA->nChannels = %d\n", iplRGBA->nChannels);
+    cvCvtColor(image->ipl, iplRGBA, CV_RGB2RGBA);
+    cvReleaseImage(&(image->ipl));
+    image->ipl = iplRGBA;
+    image->nChannels = 4;
+    printf("\t\t\tipl->nChannels = %d\n", image->ipl->nChannels);
+    nChannels = 4;
+  }
+
   if (nChannels == 3){
     if (swapRGB){
       glFormat = GL_RGB;
@@ -275,7 +289,12 @@ void vglUpload(VglImage* image, int swapRGB){
   }
   else if (nChannels == 4)
   {
-	  glFormat = GL_RGBA;
+    if (swapRGB){
+      glFormat = GL_RGBA;
+    }
+    else{
+      glFormat = GL_BGRA;
+    }
   }
   else{
     glFormat = GL_LUMINANCE;
@@ -338,7 +357,7 @@ void vglUpload(VglImage* image, int swapRGB){
             exit(1);
   }
 
-  if (nChannels == 3){
+  if (nChannels >= 3){
     if (glType == GL_FLOAT){
         internalFormat = GL_RGBA32F_ARB;
     }
@@ -360,6 +379,8 @@ void vglUpload(VglImage* image, int swapRGB){
                  ipl->width, ipl->height, 0,
                  glFormat, glType, ipl->imageData);
   }
+
+  printf("%s:%s: checking framebuffer...\n", __FILE__, __FUNCTION__);
 
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
