@@ -26,13 +26,32 @@ int main(int argc, char* argv[])
     }
     vglInit(50,50);
     vglClInit();
-    int limite = atoi(argv[2]);
+
+    int nSteps = atoi(argv[2]);
     char* inFilename = argv[1];
     char* outPath = argv[3];
     char* outFilename = (char*) malloc(strlen(outPath) + 200);
-    printf("VisionGL-OpenCL on %s, %d operations\n\n", inFilename, limite);
+
+    printf("VisionGL-OpenCL on %s, %d operations\n\n", inFilename, nSteps);
 	
+    printf("CREATING IMAGE\n");
     VglImage* img = vglLoadImage(inFilename, 1, 0);
+
+    printf("CHECKING NCHANNELS\n");
+    if (img->nChannels == 3)
+    {
+        printf("NCHANNELS = 3\n");
+        if (img->ndarray)
+        {
+            printf("NDARRAY not null\n");
+            vglNdarray3To4Channels(img);
+        }
+        else
+        {
+            printf("NDARRAY IS null\n");
+            vglIpl3To4Channels(img);
+        }
+    }
 
     if (img == NULL)
     {
@@ -49,12 +68,12 @@ int main(int argc, char* argv[])
     //Total time spent on n operations Blur 3x3
     int p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
         vglClBlurSq3(img, out);
     }
-    printf("Time spent on %8d Blur 3x3:                %s\n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d Blur 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_blur33.tif");
@@ -79,12 +98,12 @@ int main(int argc, char* argv[])
     //Total time spent on n operations Convolution 3x3
     p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
         vglClConvolution(img, out, (float*) kernel33, 3, 3);
     }
-    printf("Time spent on %8d Convolution 3x3:         %s \n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d Convolution 3x3:         %s \n", nSteps, getTimeElapsedInSeconds());
 
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -94,12 +113,12 @@ int main(int argc, char* argv[])
     //Total time spent on n operations Convolution 5x5
     p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
         vglClConvolution(img, out, (float*) kernel55, 5, 5);
     }
-    printf("Time spent on %8d Convolution 5x5:         %s\n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d Convolution 5x5:         %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_conv33.tif");
@@ -113,12 +132,12 @@ int main(int argc, char* argv[])
     //Total time spent on n operations Erode 3x3
     p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
         vglClErosion(img, out, erodemask, 3, 3);
     }
-    printf("Time spent on %8d Erode 3x3:               %s\n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d Erode 3x3:               %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_erosion.tif");
@@ -131,12 +150,12 @@ int main(int argc, char* argv[])
     //Total time spent on n operations Invert
     p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
         vglClInvert(img, out);
     }
-    printf("Time spent on %8d Invert:                  %s\n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d Invert:                  %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_invert.tif");
@@ -149,12 +168,12 @@ int main(int argc, char* argv[])
     //Total time spent on n operations Copy GPU->GPU
     p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
         vglClCopy(img, out);
     }
-    printf("Time spent on %8d copy GPU->GPU:           %s\n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d copy GPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_gpuCopy.tif");
@@ -169,35 +188,38 @@ int main(int argc, char* argv[])
     //Total time spent on n operations Convert BGR->Gray
     p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
         cvCvtColor(img->ipl, gray->ipl, CV_BGR2GRAY);
     }
-    printf("Time spent on %8d Convert BGR->Gray (CPU): %s\n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d Convert BGR->Gray (CPU): %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(gray, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_bgrToGrayCpu.tif");
     cvSaveImage(outFilename, gray->ipl);
 
     //First call to Convert BGR->RGBA
+    IplImage* iplBGR  = cvCreateImage(cvGetSize(img->ipl), img->depth, 3);
+    IplImage* iplRGBA = cvCreateImage(cvGetSize(img->ipl), img->depth, 4);
+    cvCvtColor(img->ipl, iplBGR, CV_RGBA2BGR);
+
     TimerStart();
-    cvCvtColor(img->ipl, out->iplRGBA, CV_BGR2RGBA);
+    cvCvtColor(iplBGR, iplRGBA, CV_BGR2RGBA);
     printf("First call to          Convert BGR->RGBA (CPU): %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Convert BGR->RGBA
     p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
-        cvCvtColor(img->ipl, out->iplRGBA, CV_BGR2RGBA);
+        cvCvtColor(iplBGR, iplRGBA, CV_BGR2RGBA);
     }
-    printf("Time spent on %8d Convert BGR->RGBA (CPU): %s\n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d Convert BGR->RGBA (CPU): %s\n", nSteps, getTimeElapsedInSeconds());
 
 
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_rgbToRgbaCpu.tif");
-    cvSaveImage(outFilename, out->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_bgrToRgbaCpu.tif");
+    cvSaveImage(outFilename, iplRGBA);
 
     //First call to Copy CPU->GPU
     TimerStart();
@@ -206,12 +228,12 @@ int main(int argc, char* argv[])
     //Total time spent on n operations Copy CPU->GPU
     p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
         vglClUpload(img);
     }
-    printf("Time spent on %8d copy CPU->GPU:           %s\n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d copy CPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(img, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_upload.tif");
@@ -224,12 +246,12 @@ int main(int argc, char* argv[])
     //Total time spent on n operations Copy GPU->CPU
     p = 0;
     TimerStart();
-    while (p < limite)
+    while (p < nSteps)
     {
         p++;
         vglClDownload(img);
     }
-    printf("Time spent on %8d copy GPU->CPU:           %s\n", limite, getTimeElapsedInSeconds());
+    printf("Time spent on %8d copy GPU->CPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(img, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_download.tif");

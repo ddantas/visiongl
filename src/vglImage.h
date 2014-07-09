@@ -70,7 +70,7 @@ class VglImage{
   void*     cudaPtr;
   GLuint    cudaPbo;
 #ifdef __OPENCL__
-  IplImage* iplRGBA;
+  //IplImage* iplRGBA;
   cl_mem    oclPtr;
 #endif
   int       inContext;
@@ -126,7 +126,7 @@ VglImage* vglCreateImage(VglImage* img_in);
 VglImage* vglCopyCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int ndim = 2, int has_mipmap = 0);
-VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap);
+VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
 VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
 void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd);
 VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
@@ -150,6 +150,8 @@ void vglHorizontalFlip2(VglImage* src, VglImage* dst);
 void vglClear(VglImage* image, float r, float g, float b, float a = 0.0);
 void vglNdarray3To4Channels(VglImage* img);
 void vglNdarray4To3Channels(VglImage* img);
+void vglIpl4To3Channels(VglImage* img);
+void vglIpl3To4Channels(VglImage* img);
 int SavePPM(char* filename, int w, int h, void* savebuf);
 int vglSavePPM(VglImage* img, char* filename);
 int SavePGM(char* filename, int w, int h, void* savebuf);

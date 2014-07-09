@@ -499,6 +499,7 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
   }
   
   vglImage->ipl = ipl;
+  vglImage->ndarray = NULL;
   vglImage->shape[VGL_WIDTH] = ipl->width;
   vglImage->shape[VGL_HEIGHT] = ipl->height;
   vglImage->ndim      = ndim;
@@ -510,7 +511,7 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
 #ifdef __OPENCL__
-  vglImage->iplRGBA = NULL;
+  //vglImage->iplRGBA = NULL;
   vglImage->oclPtr = NULL;
 #endif
   vglImage->filename = NULL;
@@ -523,7 +524,7 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
 
 /** Create image as described by the parameters
  */
-VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, int has_mipmap)
+VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, int has_mipmap /*=0*/)
 {
   VglImage* vglImage = new VglImage;
   IplImage* ipl = NULL;//cvCreateImage(size, depth, nChannels);
@@ -534,6 +535,7 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, in
   }*/
   
   vglImage->ipl = ipl;
+  vglImage->ndarray = NULL;
   vglImage->shape[VGL_WIDTH] = size.width;
   vglImage->shape[VGL_HEIGHT] = size.height;
   vglImage->shape[VGL_LENGTH] = layers;
@@ -546,7 +548,7 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, in
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
 #ifdef __OPENCL__
-  vglImage->iplRGBA = NULL;
+  //vglImage->iplRGBA = NULL;
   vglImage->oclPtr = NULL;
 #endif
   vglImage->filename = NULL;
@@ -573,65 +575,67 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, in
 /** Create image from PGM as a 3d image
     char* filename, pass filename formated with C/printf supported format
 */
-VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap)
+VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap /*=0*/)
 {
-  VglImage* vglImage = new VglImage;
+  VglImage* img = new VglImage;
   char* temp_filename = (char*)malloc(strlen(filename) + 256);
   sprintf(temp_filename,filename,lStart);
   IplImage* ipl = cvLoadImage(temp_filename);
 
   if (!ipl){
-    fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
-    free(vglImage);
+    fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
+    free(img);
     return 0;
   }
 
   
   int n = lEnd-lStart+1;
-  vglImage->ipl = ipl;
-  vglImage->shape[VGL_WIDTH] = ipl->width;
-  vglImage->shape[VGL_HEIGHT] = ipl->height;
-  vglImage->shape[VGL_LENGTH] = n;
-  vglImage->ndim      = 3;
-  vglImage->depth     = ipl->depth;
-  vglImage->nChannels = ipl->nChannels;
-  vglImage->has_mipmap = has_mipmap;
-  vglImage->fbo = -1;
-  vglImage->tex = -1;
-  vglImage->cudaPtr = NULL;
-  vglImage->cudaPbo = -1;
+  img->ipl = ipl;
+  img->ndarray = NULL;
+  img->shape[VGL_WIDTH] = ipl->width;
+  img->shape[VGL_HEIGHT] = ipl->height;
+  img->shape[VGL_LENGTH] = n;
+  img->ndim      = 3;
+  img->depth     = ipl->depth;
+  img->nChannels = ipl->nChannels;
+  img->has_mipmap = has_mipmap;
+  img->fbo = -1;
+  img->tex = -1;
+  img->cudaPtr = NULL;
+  img->cudaPbo = -1;
 #ifdef __OPENCL__
-  vglImage->iplRGBA = NULL;
-  vglImage->oclPtr = NULL;
+  //img->iplRGBA = NULL;
+  img->oclPtr = NULL;
 #endif
-  vglImage->filename = NULL;
+  img->filename = NULL;
 
-  int d = vglImage->depth / 8;
+  int d = img->depth / 8;
   if (d < 1) d = 1; //d is the byte size of the depth color format
 
-  vglImage->ndarray = (char*)malloc(ipl->height*ipl->width*ipl->nChannels*d*vglImage->shape[VGL_LENGTH]);
+  img->ndarray = (char*)malloc(ipl->height*ipl->width*ipl->nChannels*d*img->shape[VGL_LENGTH]);
   
-  memcpy(vglImage->ndarray,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);
-  ipl->imageData = (char*)vglImage->ndarray;
+  memcpy(img->ndarray,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);
+  ipl->imageData = (char*)img->ndarray;
   int c = ipl->height*ipl->width*d*ipl->nChannels;
   for(int i = lStart+1; i <= lEnd; i++)
   {
 	  sprintf(temp_filename,filename,i);
 	  ipl = cvLoadImage(temp_filename);
 	  if (!ipl){
-		fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
-		free(vglImage);
+		fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
+		free(img);
 		return 0;
 	  }
 
-	  memcpy(((char*)vglImage->ndarray)+c,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);//needs tests
+	  memcpy(((char*)img->ndarray)+c,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);//needs tests
 	  c+=ipl->height*ipl->width*d*ipl->nChannels;
   }
 
-  vglSetContext(vglImage, VGL_RAM_CONTEXT);
-  vglUpload(vglImage); //must be fixed before enabling
+  cvReleaseImage(&(img->ipl));
+  vglSetContext(img, VGL_RAM_CONTEXT);
+  vglUpload(img); //must be fixed before enabling
 
-  return vglImage;
+  return img;
 }
 
 
@@ -774,6 +778,45 @@ void vglNdarray4To3Channels(VglImage* img)
 	img->ndarray = newndarray;
 	img->nChannels = 3;
 }
+
+/** Convert ipl field of VglImage from 3 to 4 channels
+ */
+void vglIpl3To4Channels(VglImage* img)
+{
+    if (!img->ipl){
+        return;
+    }
+    if (img->ipl->nChannels != 3)
+    {
+        return;
+    }
+  
+    IplImage* iplRGBA = cvCreateImage(cvGetSize(img->ipl), img->ipl->depth, 4);
+    cvCvtColor(img->ipl, iplRGBA, CV_RGB2RGBA);
+    cvReleaseImage(&(img->ipl));
+    img->ipl = iplRGBA;
+    img->nChannels = 4;
+}
+
+/** Convert ipl field of VglImage from 4 to 3 channels
+ */
+void vglIpl4To3Channels(VglImage* img)
+{
+    if (!img->ipl){
+        return;
+    }
+    if (img->ipl->nChannels != 4)
+    {
+        return;
+    }
+  
+    IplImage* iplRGB = cvCreateImage(cvGetSize(img->ipl), img->ipl->depth, 3);
+    cvCvtColor(img->ipl, iplRGB, CV_RGBA2RGB);
+    cvReleaseImage(&(img->ipl));
+    img->ipl = iplRGB;
+    img->nChannels = 4;
+}
+
 
 /** Release memory occupied by image in RAM and GPU
  */
@@ -1070,37 +1113,38 @@ void vglDownloadPGM(VglImage* image){
  */
 VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
 {
-  VglImage* vglImage = new VglImage;
+  VglImage* img = new VglImage;
   IplImage* ipl = cvLoadImage(filename, iscolor);
   if (!ipl){
     fprintf(stderr, "vglCreateImage: Error loading image from file %s\n", filename);
-    free(vglImage);
+    free(img);
     return 0;
   }
-  vglImage->ipl = ipl;
-  vglImage->shape[VGL_WIDTH]     = ipl->width;
-  vglImage->shape[VGL_HEIGHT]    = ipl->height;
-  vglImage->ndim      = 2;
-  vglImage->depth     = ipl->depth;
-  vglImage->nChannels = ipl->nChannels;
-  vglImage->has_mipmap = has_mipmap;
-  vglImage->fbo = -1;
-  vglImage->tex = -1;
-  vglImage->cudaPtr = NULL;
-  vglImage->cudaPbo = -1;
+  img->ipl = ipl;
+  img->ndarray = NULL;
+  img->shape[VGL_WIDTH]     = ipl->width;
+  img->shape[VGL_HEIGHT]    = ipl->height;
+  img->ndim      = 2;
+  img->depth     = ipl->depth;
+  img->nChannels = ipl->nChannels;
+  img->has_mipmap = has_mipmap;
+  img->fbo = -1;
+  img->tex = -1;
+  img->cudaPtr = NULL;
+  img->cudaPbo = -1;
 #ifdef __OPENCL__
-  vglImage->iplRGBA = NULL;
-  vglImage->oclPtr = NULL;
+  //img->iplRGBA = NULL;
+  img->oclPtr = NULL;
 #endif
-  vglImage->filename = NULL;
+  img->filename = NULL;
 
-  vglSetContext(vglImage, VGL_RAM_CONTEXT);
-  vglUpload(vglImage);
-  if (vglImage->ipl){
-    return vglImage;
+  vglSetContext(img, VGL_RAM_CONTEXT);
+  vglUpload(img);
+  if (img->ipl){
+    return img;
   }
   else{
-    free(vglImage);
+    free(img);
     return 0;
   }
 
@@ -1163,6 +1207,9 @@ void vglPrintImageInfo(VglImage* image){
         printf("\n");
         printf("TEX = %d\n", image->tex);
         printf("FBO = %d\n", image->fbo);
+#ifdef __OPENCL__
+        printf("FBO @ %p\n", image->oclPtr);
+#endif
         printf("Context = %d\n", image->inContext);
 }
 

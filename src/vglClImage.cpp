@@ -44,6 +44,7 @@ void vglClInit()
 {
 	cl_int err;
 	cl_uint num_platforms, num_devices;
+        cl_device_type device_type = CL_DEVICE_TYPE_CPU;
 	err = clGetPlatformIDs(0, NULL, &num_platforms);
 	vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
 	cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);
@@ -57,10 +58,10 @@ void vglClInit()
 	else
 		printf("found 1 platform for opencl\n\n");
 
-	err = clGetDeviceIDs(*cl.platformId,CL_DEVICE_TYPE_GPU,0,NULL,&num_devices);
+	err = clGetDeviceIDs(*cl.platformId, device_type, 0, NULL, &num_devices);
 	vglClCheckError(err, (char*) "clGetDeviceIDs get number of devices");
 	cl.deviceId = (cl_device_id*)malloc(sizeof(cl_device_id)*num_devices);
-	err = clGetDeviceIDs(*cl.platformId,CL_DEVICE_TYPE_GPU,num_devices,cl.deviceId,NULL);
+	err = clGetDeviceIDs(*cl.platformId, device_type, num_devices, cl.deviceId, NULL);
 	vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
 	//precisa adicionar a propriedade CL_KHR_gl_sharing no contexto e pra isso precisará do id do contexto do GL que deverá ser o parametro window
 	//cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
@@ -86,6 +87,13 @@ void vglClInit()
 
 	cl.commandQueue = clCreateCommandQueue( cl.context, *cl.deviceId, 0, &err );
 	vglClCheckError( err, (char*) "clCreateCommandQueue" );
+
+
+
+        int msgLen = 2048;
+        char msg[msgLen];
+        err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
+        printf("%s: %s: CL_DEVICE_EXTENSIONS:\n%s\n", __FILE__, __FUNCTION__, msg);
 
 }
 
@@ -127,6 +135,17 @@ void vglClBuildDebug(cl_int err, cl_program program)
 
 void vglClUpload(VglImage* img)
 {
+    printf("%s: %s: check 10\n", __FILE__, __FUNCTION__);
+    if (img->nChannels == 3)
+    {
+        fprintf(stderr, "%s: %s: Error: image with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
+        exit(1);
+    }
+    if (img->nChannels == 3)
+    {
+        fprintf(stderr, "%s: %s: Error: ipl image field with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
+        exit(1);
+    }
     cl_int err;
 
     if (!vglIsInContext(img, VGL_RAM_CONTEXT)  && 
@@ -135,8 +154,11 @@ void vglClUpload(VglImage* img)
       return;
     }
 
+    printf("%s: %s: check100\n", __FILE__, __FUNCTION__);
+
     if (img->oclPtr == NULL)
     {
+        printf("%s: %s: check110\n", __FILE__, __FUNCTION__);
         /*if (img->fbo != -1)
         {
           img->oclPtr = clCreateFromGLTexture2D(cl.context,CL_MEM_READ_WRITE,GL_TEXTURE_2D,0,img->fbo,&err);
@@ -153,13 +175,15 @@ void vglClUpload(VglImage* img)
             format.image_channel_order = CL_R;
             format.image_channel_data_type = CL_UNORM_INT8;
         }
-        else
+        else if (img->nChannels == 4)
         {
+	  /*
             if (img->iplRGBA == NULL)
             {
                 printf("creating RGBA\n");
                 img->iplRGBA = cvCreateImage(cvGetSize(img->ipl), IPL_DEPTH_8U, 4);
             }
+	  */
             format.image_channel_order = CL_RGBA;
             format.image_channel_data_type = CL_UNORM_INT8;
         }
@@ -216,16 +240,18 @@ void vglClUpload(VglImage* img)
 	*/
 	}
 
+    printf("%s: %s: check500\n", __FILE__, __FUNCTION__);
+
     if (vglIsInContext(img, VGL_RAM_CONTEXT))
     {
-        cvCvtColor(img->ipl, img->iplRGBA, CV_BGR2RGBA);
+      //cvCvtColor(img->ipl, img->iplRGBA, CV_BGR2RGBA);
 
         size_t Origin[3] = { 0, 0, 0};
 
 		if(img->ndim == 2)
 		{
 			size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
-			err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, img->iplRGBA->imageData, 0, NULL, NULL );
+			err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, img->ipl->imageData, 0, NULL, NULL );
 			vglClCheckError( err, (char*) "clEnqueueWriteImage" );
 		}
 		else
@@ -242,6 +268,17 @@ void vglClUpload(VglImage* img)
 
 void vglClDownload(VglImage* img)
 {
+    if (img->nChannels == 3)
+    {
+        fprintf(stderr, "%s: %s: Error: image with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
+        exit(1);
+    }
+    if (img->nChannels == 3)
+    {
+        fprintf(stderr, "%s: %s: Error: ipl image field with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
+        exit(1);
+    }
+
     if (!vglIsInContext(img, VGL_CL_CONTEXT))
     {
       fprintf(stderr, "vglClDownload: Error: image context = %d not in VGL_CL_CONTEXT\n", img->inContext);
@@ -250,20 +287,20 @@ void vglClDownload(VglImage* img)
 
     size_t Origin[3] = { 0, 0, 0};
 
-	if(img->ndim == 2)
-	{
-		size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
-		cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->iplRGBA->imageData, 0, NULL, NULL );
-		vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
+    if(img->ndim == 2)
+    {
+        size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
+        cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ipl->imageData, 0, NULL, NULL );
+	vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
 
-		cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
-	}
-	else
-	{
-		size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
-		cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ndarray, 0, NULL, NULL );
-		vglClCheckError( err_cl, (char*) "clEnqueueWriteImage3D" );
-	}
+        //cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
+    }
+    else
+    {
+        size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
+        cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ndarray, 0, NULL, NULL );
+        vglClCheckError( err_cl, (char*) "clEnqueueWriteImage3D" );
+    }
 
     vglAddContext(img, VGL_RAM_CONTEXT);
 }

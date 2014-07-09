@@ -11,9 +11,10 @@ FRACTAL_NAME         = fractal
 CAM_NAME             = cam
 GDCM_NAME	     = gdcm
 DCMTK_NAME	     = dcmtk
-BENCHMARK_CL_NAME    = benchmark_cl
 BENCHMARK_CV_NAME    = benchmark_cv
 BENCHMARK_CVOCL_NAME = benchmark_cvocl
+BENCHMARK_CL_NAME    = benchmark_cl
+BENCHMARK_CL3D_NAME  = benchmark_cl3d
 
 ROOTPATH           = .
 INCLUDE_PATH       = $(ROOTPATH)/src
@@ -35,8 +36,8 @@ OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 0
-WITH_OPENCL = 0
+WITH_CUDA = 1
+WITH_OPENCL = 1
 WITH_GDCM = 0
 WITH_DCMTK = 0
 
@@ -61,10 +62,11 @@ endif
 
 ifeq ($(WITH_OPENCL), 1)
         OPENCL_PATH        = /usr/local/cuda/
+        OPENCL_PATH        = /opt/intel/opencl-1.2-4.4.0.117/lib64/
         OPENCL_INCLUDEPATH = $(OPENCL_PATH)/include/
-       #OPENCL_LIBPATH     = $(OPENCL_PATH)/lib
+        OPENCL_LIBPATH     = $(OPENCL_PATH)/lib64
         OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
-       #OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
+        OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
         OPENCL_LIBRARIES   = -lOpenCL
         OPENCL_FILES = src/cl2cpp_shaders.cpp src/vglClImage.cpp
 endif
@@ -175,6 +177,12 @@ ifeq ($(WITH_OPENCL), 1)
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS) \
 
+        LINUXAMD64_DEMO_BENCHMARK_CL3D = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_CL3D_NAME) \
+                         src/demo/$(BENCHMARK_CL3D_NAME).cpp src/demo/timer.cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS) \
+
 endif
 
 LINUXAMD64_DEMO_BENCHMARK_CV = $(CC) $(COMPILER_FLAGS) \
@@ -228,9 +236,10 @@ demo3d:
 	$(LINUXAMD64_DEMO_3D)
 
 demobenchmark:
-	$(LINUXAMD64_DEMO_BENCHMARK_CL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CV)
 	$(LINUXAMD64_DEMO_BENCHMARK_CVOCL)
+	$(LINUXAMD64_DEMO_BENCHMARK_CL)
+	$(LINUXAMD64_DEMO_BENCHMARK_CL3D)
 
 .PHONY: lib
 
@@ -253,9 +262,10 @@ rundemodcmtk:
 	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) /home/ddantas/bkp/dicom/16bits/E1154S7I.dcm /tmp/outputdcmtk16.dcm
 
 rundemobenchmark:
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 1000 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 1000 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 1000 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 100 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 100 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 100 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 100 /tmp
 
 cuda:
 	./kernel2cu.pl -o src/kernel2cu_shaders src/CUDA/*.kernel
