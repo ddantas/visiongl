@@ -645,15 +645,14 @@ void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
 {
 	//vglDownload(image); //must be fixed before enabling
 	char* temp_filename = (char*)malloc(strlen(filename)+256);
-	sprintf(temp_filename,filename,lStart);
+	sprintf(temp_filename, filename, lStart);
 	int d = image->depth / 8;
 	if (d < 1) d = 1; //d is the byte size of the depth color format
 
 	char* temp_image = (char*)malloc(image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
 	memcpy(temp_image,image->ndarray,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
 
-
-	IplImage* ipl = cvCreateImage(cvSize(image->ipl->width,image->ipl->height),image->ipl->depth,image->nChannels);
+	IplImage* ipl = cvCreateImage(cvSize(image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT]), image->depth, image->nChannels);
 	ipl->imageData = temp_image;
 
 	cvSaveImage(temp_filename,ipl);
@@ -662,8 +661,8 @@ void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
 	{
 		memcpy(temp_image,((char*)image->ndarray)+c,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
 		ipl->imageData = temp_image;
-		sprintf(temp_filename,filename,i);
-		cvSaveImage(temp_filename,ipl);
+		sprintf(temp_filename, filename, i);
+		cvSaveImage(temp_filename, ipl);
 		c += image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d;
 	}
 }		

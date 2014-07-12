@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 	printf("Tempo gasto para fazer %d blur 3x3: %s\n",nSteps, getTimeElapsedInSeconds());
 
         vglCheckContext(out, VGL_RAM_CONTEXT);
-        vglSaveImage(out,"../images/output/lenaout_blur333.%d.jpg", 0,16);
+        vglSaveImage(out, "../images/output/lenaout_blur333.%d.jpg", 0, 16);
 
     // Kernels para convolucao
 	float* mask333 = (float*) malloc(sizeof(float)*27);

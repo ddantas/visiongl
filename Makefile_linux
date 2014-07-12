@@ -65,6 +65,8 @@ ifeq ($(WITH_OPENCL), 1)
         OPENCL_PATH        = /opt/intel/opencl-1.2-4.4.0.117/lib64/
         OPENCL_INCLUDEPATH = $(OPENCL_PATH)/include/
         OPENCL_LIBPATH     = $(OPENCL_PATH)/lib64
+        OPENCL_INCLUDEPATH = /opt/AMDAPP/include/
+        OPENCL_LIBPATH     = /usr/lib/
         OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
         OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
         OPENCL_LIBRARIES   = -lOpenCL
