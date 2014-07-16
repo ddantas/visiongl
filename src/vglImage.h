@@ -70,7 +70,6 @@ class VglImage{
   void*     cudaPtr;
   GLuint    cudaPbo;
 #ifdef __OPENCL__
-  //IplImage* iplRGBA;
   cl_mem    oclPtr;
 #endif
   int       inContext;
@@ -126,7 +125,6 @@ VglImage* vglCreateImage(VglImage* img_in);
 VglImage* vglCopyCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int ndim = 2, int has_mipmap = 0);
-VglImage* vglCreateImage(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
 VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
 void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd);
 VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
@@ -137,6 +135,7 @@ void vglDownloadPPM(VglImage* image);
 void vglDownloadFBO(VglImage* image);
 void vglDownloadFaster(VglImage* image/*, VglImage* buf*/);
 VglImage* vglLoadImage(char* filename, int iscolor = 1, int has_mipmap = 0);
+VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
 void vglPrintImageInfo(VglImage* image);
 void vglPrintImageData(VglImage* image);
 void iplPrintImageInfo(IplImage* ipl);

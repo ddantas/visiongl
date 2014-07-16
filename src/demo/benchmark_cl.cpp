@@ -121,13 +121,13 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Convolution 5x5:         %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_conv33.tif");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_conv55.tif");
     cvSaveImage(outFilename, out->ipl);
 
-    //First call to Erode
-    float erodemask[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
+    //First call to Erode 3x3
+    float erodeMask[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
     TimerStart();
-    vglClErosion(img,out,erodemask,3,3);
+    vglClErosion(img, out, erodeMask, 3, 3);
     printf("First call to          Erode 3x3:               %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Erode 3x3
     p = 0;
@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClErosion(img, out, erodemask, 3, 3);
+        vglClErosion(img, out, erodeMask, 3, 3);
     }
     printf("Time spent on %8d Erode 3x3:               %s\n", nSteps, getTimeElapsedInSeconds());
 
