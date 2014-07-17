@@ -49,6 +49,55 @@ int convertDepthVglToDcmtk(int vglDepth)
      return 32;
 }
 
+/** Function for create DICOM Header with DCMTK library
+  */
+
+int vglCreateHeaderDcmtk(VglImage imagevgl, DcmFileFormat *fileformat)
+{
+    
+    DcmDataset *dataset = fileformat->getDataset();
+    
+    char columns[4];
+    char rows[4];
+    char frames[4];
+    char depth[4];
+    char highbit[4];
+    int i, dcmDepth =  convertDepthDcmtkToVgl(imagevgl.depth);
+    int hbit = dcmDepth-1;
+    i = sprintf(columns, "%d", imagevgl.shape[0]); // width/columns
+    i = sprintf(rows, "%d", imagevgl.shape[1]);    // height/rows
+    i = sprintf(frames, "%d", imagevgl.shape[2]);  // number of Frames
+    i = sprintf(depth, "%d", dcmDepth);
+    i = sprintf(highbit, "%d", hbit);
+
+    char* samplesPerPixel;
+    char* photometricInterpretation;
+    if(imagevgl.nChannels == 1)
+    {
+      samplesPerPixel = "1";
+      photometricInterpretation = "MONOCHROME2";
+    }
+    else
+    {
+      samplesPerPixel = "3";
+      photometricInterpretation = "RGB";
+    }   
+    
+    dataset->putAndInsertString(DCM_SamplesPerPixel, samplesPerPixel);
+    dataset->putAndInsertString(DCM_PhotometricInterpretation, photometricInterpretation);
+    dataset->putAndInsertString(DCM_Rows, rows);
+    dataset->putAndInsertString(DCM_Columns, columns);
+    dataset->putAndInsertString(DCM_NumberOfFrames, frames);
+    dataset->putAndInsertString(DCM_BitsAllocated, depth);
+    dataset->putAndInsertString(DCM_BitsStored, depth);
+    dataset->putAndInsertString(DCM_HighBit, highbit);
+    dataset->putAndInsertString(DCM_PixelRepresentation, "0000H");
+    dataset->putAndInsertString(DCM_PlanarConfiguration, "0"); 
+    
+  return 0;
+}
+
+
 /** Function for loading DICOM images with DCMTK library
   */
 
@@ -175,7 +224,11 @@ int vglDcmtkSaveDicom(VglImage imagevgl, char* opt_ofname)
     */
   
     DcmFileFormat *dfile = new DcmFileFormat();
-    OFCondition cond = dfile->loadFile(imagevgl.filename, opt_transferSyntax, EGL_withoutGL, DCM_MaxReadLength, opt_readMode);
+    if(!imagevgl.filename)
+      int r = vglCreateHeaderDcmtk(imagevgl, dfile);
+    else
+      OFCondition cond = dfile->loadFile(imagevgl.filename, opt_transferSyntax, EGL_withoutGL, DCM_MaxReadLength, opt_readMode);
+    
     DcmDataset *dataset = dfile->getDataset();
     int dcmDepth = convertDepthVglToDcmtk(imagevgl.depth); 
     int totalPixels = imagevgl.shape[0]*imagevgl.shape[1]*imagevgl.shape[2]*imagevgl.nChannels;
