@@ -26,19 +26,19 @@ demo_dcmtk <input file> <output file> -c\n\
   char *filename = argv[1]; // name of the input file
   char *outfilename = argv[2]; // name of the output file
 
-  VglImage imagevgl;
+  VglImage* imagevgl;
 
   imagevgl = vglDcmtkLoadDicom(filename);
 
-  vglPrintImageInfo(&imagevgl);
+  vglPrintImageInfo(imagevgl);
   //vglPrintImageData(&imagevgl);
 
   vglInit(1, 1);
-  vglUpload(&imagevgl);
-  vgl3dNot(&imagevgl, &imagevgl); 
+  vglUpload(imagevgl);
+  vgl3dNot(imagevgl, imagevgl); 
   // The GLSL 3d version of this shader works only in the first frame. 
   // Please use the OpenCL version vglCl3dNot.
-  vglDownload(&imagevgl);
+  vglDownload(imagevgl);
 
   if(argc == 3)
      int i = vglDcmtkSaveDicom(imagevgl, outfilename);
