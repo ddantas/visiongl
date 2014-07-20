@@ -36,8 +36,8 @@ OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 1
-WITH_OPENCL = 1
+WITH_CUDA = 0
+WITH_OPENCL = 0
 WITH_GDCM = 0
 WITH_DCMTK = 0
 
@@ -63,10 +63,11 @@ endif
 ifeq ($(WITH_OPENCL), 1)
         OPENCL_PATH        = /usr/local/cuda/
         OPENCL_PATH        = /opt/intel/opencl-1.2-4.4.0.117/lib64/
+        OPENCL_PATH        = /opt/opencl
         OPENCL_INCLUDEPATH = $(OPENCL_PATH)/include/
-        OPENCL_LIBPATH     = $(OPENCL_PATH)/lib64
-        OPENCL_INCLUDEPATH = /opt/AMDAPP/include/
-        OPENCL_LIBPATH     = /usr/lib/
+        OPENCL_LIBPATH     = $(OPENCL_PATH)/lib
+        #OPENCL_INCLUDEPATH = /opt/AMDAPP/include/
+        #OPENCL_LIBPATH     = /usr/lib/
         OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
         OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
         OPENCL_LIBRARIES   = -lOpenCL
@@ -92,7 +93,6 @@ ifeq ($(WITH_DCMTK), 1)
 	DCMTK_LIBDIR      = -L $(DCMTK_LIBPATH)
 	DCMTK_LIBRARIES   = -ldcmjpeg -lijg8 -lijg12  -lijg16 -ldcmimage -ldcmpstat -ldcmimgle -ldcmqrdb -ldcmnet -ldcmdata -loflog -lofstd -lz -lpthread 
         #-ltiff -lpng
-	CC                = c++ 
 endif
 
 
@@ -125,6 +125,7 @@ LINUXAMD64_DIRS_LIBS =  $(INCLUDE_DIR) \
                         $(CUDA_LIBRARIES)\
                         $(OPENCL_DEF) \
                         $(OPENCL_INCLUDEDIR) \
+                        $(OPENCL_LIBDIR) \
                         $(OPENCL_LIBRARIES) \
                         $(GDCM_DEF) \
                         $(GDCM_INCLUDEDIR) \

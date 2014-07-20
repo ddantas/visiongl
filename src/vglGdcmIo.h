@@ -11,9 +11,9 @@
 
 #include <vglImage.h>
 
-VglImage vglGdcmLoadDicom(char* filename, char* outfilename);
-int vglGdcmSaveDicom(VglImage imagevgl, char* outfilename);
-int vglGdcmSaveDicomCompressed(VglImage imagevgl, char* outfilename);
+VglImage* vglGdcmLoadDicom(char* filename, char* outfilename);
+int vglGdcmSaveDicom(VglImage* imagevgl, char* outfilename);
+int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outfilename);
 
 #endif
 
