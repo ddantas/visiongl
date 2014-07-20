@@ -90,10 +90,25 @@ void vglClInit()
 
 
 
-    int msgLen = 2048;
+    const int msgLen = 2048;
     char msg[msgLen];
     err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
     printf("%s: %s: CL_DEVICE_EXTENSIONS:\n%s\n", __FILE__, __FUNCTION__, msg);
+	cl_ulong vlong;
+	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &vlong, NULL);
+	printf("%s: %s: CL_DEVICE_MAX_MEM_ALLOC_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
+	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &vlong, NULL);
+	printf("%s: %s: CL_DEVICE_GLOBAL_MEM_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
+	size_t img3d;
+	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_DEPTH, sizeof(size_t), &img3d, NULL);
+	printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_DEPTH: %d px\n", __FILE__, __FUNCTION__, img3d);
+	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_HEIGHT, sizeof(size_t), &img3d, NULL);
+	printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_HEIGHT: %d px\n", __FILE__, __FUNCTION__, img3d);
+	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_WIDTH, sizeof(size_t), &img3d, NULL);
+	printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_WIDTH: %d px\n", __FILE__, __FUNCTION__, img3d);
+	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_PARAMETER_SIZE, sizeof(size_t), &img3d, NULL);
+	printf("%s: %s: CL_DEVICE_MAX_PARAMETER_SIZE: %d mb\n", __FILE__, __FUNCTION__, img3d);
+	
 
 }
 
@@ -104,11 +119,6 @@ void vglClFlush()
     vglClCheckError(err, (char*) "clFlush command_queue");
     err = clFinish( cl.commandQueue );
     vglClCheckError(err, (char*) "clFinish command_queue");
-    err = clReleaseCommandQueue( cl.commandQueue );
-    vglClCheckError(err, (char*) "clReleaseCommandQueue command_queue");
-    err = clReleaseContext( cl.context );
-    vglClCheckError(err, (char*) "clReleaseContext context");
-
 }
 
 void vglClBuildDebug(cl_int err, cl_program program)
@@ -188,12 +198,13 @@ void vglClUpload(VglImage* img)
             img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
             vglClCheckError( err, (char*) "clCreateImage2D" );
 	}
-        else if(img->ndim == 3)
+    else if(img->ndim == 3)
 	{
-	  img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH], 0, 0, NULL, &err);
-            vglClCheckError( err, (char*) "clCreateImage2D" );
+			img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH], 0, 0, NULL, &err);
+            vglClCheckError( err, (char*) "clCreateImage3D" );
 	}
-        else{
+    else
+	{
             fprintf(stderr, "%s: %s: Unsupported number of dimensions = %d\n", __FILE__, __FUNCTION__, img->ndim);
 	}
 
@@ -247,21 +258,21 @@ void vglClUpload(VglImage* img)
 
         void* imageData = NULL;
         if (img->ipl)
-	{
+		{
             imageData = img->ipl->imageData;
-	}
+		}
         else if (img->ndarray)
-	{
+		{
             imageData = img->ndarray;
-	}
+		}
         else
         {
             fprintf(stderr, "%s: %s: Error: both ipl and ndarray are NULL.\n", __FILE__, __FUNCTION__);
             exit(1);
-	}
+		}
    
         size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
-        err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, imageData, 0, NULL, NULL );
+        err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, (char*)imageData, 0, NULL, NULL );
         vglClCheckError( err, (char*) "clEnqueueWriteImage" );
         clFinish(cl.commandQueue);
     }
@@ -294,15 +305,15 @@ void vglClDownload(VglImage* img)
     {
         size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
         cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ipl->imageData, 0, NULL, NULL );
-	vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
+	    vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
 
         //cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
     }
     else
     {
         size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
-        cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ndarray, 0, NULL, NULL );
-        vglClCheckError( err_cl, (char*) "clEnqueueWriteImage3D" );
+        cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0,(char*) img->ndarray, 0, NULL, NULL );
+        vglClCheckError( err_cl, (char*) "clEnqueueReadImage3D" );
     }
 
     vglAddContext(img, VGL_RAM_CONTEXT);

@@ -22,7 +22,8 @@
 #include "dcmtk/dcmjpeg/djrploss.h"      /* for DJ_RPLossy */
 #include "dcmtk/dcmjpeg/dipijpeg.h"      /* for dcmimage JPEG plugin */
 
-
+#include <opencv2/highgui/highgui_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
 /** \brief Convert depth from dcm's format to vgl's format.
   */
 
@@ -57,16 +58,16 @@ int vglCreateHeaderDcmtk(VglImage imagevgl, DcmFileFormat *fileformat)
     
     DcmDataset *dataset = fileformat->getDataset();
     
-    char columns[4];
-    char rows[4];
-    char frames[4];
-    char depth[4];
-    char highbit[4];
-    int i, dcmDepth =  convertDepthDcmtkToVgl(imagevgl.depth);
+    char* columns = (char*) malloc(4);
+    char* rows = (char*) malloc(4);
+    char* frames = (char*) malloc(4);
+    char* depth = (char*) malloc(4);
+    char* highbit = (char*) malloc(4);
+    int i, dcmDepth = convertDepthDcmtkToVgl(imagevgl.depth);
     int hbit = dcmDepth-1;
-    i = sprintf(columns, "%d", imagevgl.shape[0]); // width/columns
-    i = sprintf(rows, "%d", imagevgl.shape[1]);    // height/rows
-    i = sprintf(frames, "%d", imagevgl.shape[2]);  // number of Frames
+    i = sprintf(columns, "%d", imagevgl.shape[VGL_WIDTH]); // width/columns
+    i = sprintf(rows, "%d", imagevgl.shape[VGL_HEIGHT]);    // height/rows
+    i = sprintf(frames, "%d", imagevgl.shape[VGL_LENGTH]);  // number of Frames
     i = sprintf(depth, "%d", dcmDepth);
     i = sprintf(highbit, "%d", hbit);
 
@@ -101,7 +102,7 @@ int vglCreateHeaderDcmtk(VglImage imagevgl, DcmFileFormat *fileformat)
 /** Function for loading DICOM images with DCMTK library
   */
 
-VglImage vglDcmtkLoadDicom(char* opt_ifname)
+VglImage vglDcmtkLoadDicom(char* opt_ifname, bool uploadGL)
 {
     E_FileReadMode      opt_readMode = ERM_autoDetect;    /* default: fileformat or dataset */
      /* Other values to opt_readMode:
@@ -177,7 +178,7 @@ VglImage vglDcmtkLoadDicom(char* opt_ifname)
     if(!di->isMonochrome())
        nChannels = 3;
 
-    imagevgl = *vglCreate3dImage(cvSize(width,height), iplDepth, nChannels, layers);
+    imagevgl = *vglCreate3dImage(cvSize(width,height), iplDepth, nChannels, layers, false, uploadGL);
     imagevgl.filename = filename;
 
     int pixelsPerFrame = imagevgl.shape[0]*imagevgl.shape[1]*imagevgl.nChannels;
@@ -202,6 +203,108 @@ VglImage vglDcmtkLoadDicom(char* opt_ifname)
     DJDecoderRegistration::cleanup();
 
     return imagevgl; 
+}
+
+/** Function for converting stacks of images into DICOM image with DCMTK library and then save it
+	***NOT WORKING FOR NOW***
+*/
+
+int vglDcmtkConvertStackToDicom(char* stack_filename, char* opt_ofname, int fStart, int fEnd)
+{ 
+    E_FileReadMode      opt_readMode = ERM_autoDetect;    /* default: fileformat or dataset */
+    /* Other values to opt_readMode:
+      - to file, opt_readMode = ERM_fileOnly;
+      - to dataset, opt_readMode = ERM_dataset;
+    */
+    E_TransferSyntax    opt_transferSyntax = EXS_Unknown; /* default: xfer syntax recognition */
+    /* Other possible values to opt_transferSyntax:
+       opt_transferSyntax = EXS_Unknown;
+       opt_transferSyntax = EXS_LittleEndianExplicit;
+       opt_transferSyntax = EXS_BigEndianExplicit;
+       opt_transferSyntax = EXS_LittleEndianImplicit
+    */
+  
+	char* temp_filename = (char*)malloc(strlen(stack_filename) + 256);
+	sprintf(temp_filename,stack_filename,fStart);
+	IplImage* ipl = cvLoadImage(temp_filename);
+
+	if (!ipl){
+	fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
+	free(ipl);
+	return 0;
+	}
+	/*creating header of dcm*/
+    DcmFileFormat *dfile = new DcmFileFormat();
+    DcmDataset *dataset = dfile->getDataset();
+    
+    char* columns = (char*) malloc(4);
+    char* rows = (char*) malloc(4);
+    char* frames = (char*) malloc(4);
+    char* depth = (char*) malloc(4);
+    char* highbit = (char*) malloc(4);
+	int i, dcmDepth = convertDepthDcmtkToVgl(ipl->depth);
+    int hbit = dcmDepth-1;
+	i = sprintf(columns, "%d", ipl->width); // width/columns
+	i = sprintf(rows, "%d", ipl->height);    // height/rows
+    i = sprintf(frames, "%d", fEnd-fStart+1);  // number of Frames
+    i = sprintf(depth, "%d", dcmDepth);
+    i = sprintf(highbit, "%d", hbit);
+
+    char* samplesPerPixel;
+    char* photometricInterpretation;
+	if(ipl->nChannels == 1)
+    {
+      samplesPerPixel = "1";
+      photometricInterpretation = "MONOCHROME2";
+    }
+    else
+    {
+      samplesPerPixel = "3";
+      photometricInterpretation = "RGB";
+    }   
+    
+    dataset->putAndInsertString(DCM_SamplesPerPixel, samplesPerPixel);
+    dataset->putAndInsertString(DCM_PhotometricInterpretation, photometricInterpretation);
+    dataset->putAndInsertString(DCM_Rows, rows);
+    dataset->putAndInsertString(DCM_Columns, columns);
+    dataset->putAndInsertString(DCM_NumberOfFrames, frames);
+    dataset->putAndInsertString(DCM_BitsAllocated, depth);
+    dataset->putAndInsertString(DCM_BitsStored, depth);
+    dataset->putAndInsertString(DCM_HighBit, highbit);
+    dataset->putAndInsertString(DCM_PixelRepresentation, "0000H");
+    dataset->putAndInsertString(DCM_PlanarConfiguration, "0"); 
+    
+    int totalPixels = ipl->width*ipl->height*ipl->nChannels;
+    
+	if(dcmDepth == 8)
+		dataset->putAndInsertUint8Array(DCM_PixelData, (Uint8 *)ipl->imageData, totalPixels, false);
+    else if(dcmDepth == 16)
+		dataset->putAndInsertUint16Array(DCM_PixelData, (Uint16 *)ipl->imageData, totalPixels, false);
+
+	for(int i = fStart+1; i <= fEnd; i++)
+	{
+		sprintf(temp_filename,stack_filename,i);
+		ipl = cvLoadImage(temp_filename);
+		if (!ipl){
+			fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
+			free(ipl);
+			return 0;
+		}
+
+	  
+		if(dcmDepth == 8)
+			dataset->putAndInsertUint8Array(DCM_PixelData, (Uint8 *)ipl->imageData, totalPixels, false);
+		else if(dcmDepth == 16)
+			dataset->putAndInsertUint16Array(DCM_PixelData, (Uint16 *)ipl->imageData, totalPixels, false);
+
+	}
+
+    if(ipl->nChannels == 3)
+       dataset->putAndInsertString(DCM_PhotometricInterpretation, "RGB"); 
+    
+    dfile->saveFile(opt_ofname, EXS_LittleEndianExplicit);
+    
+    return 0;
 }
 
 
@@ -231,19 +334,18 @@ int vglDcmtkSaveDicom(VglImage imagevgl, char* opt_ofname)
     
     DcmDataset *dataset = dfile->getDataset();
     int dcmDepth = convertDepthVglToDcmtk(imagevgl.depth); 
-    int totalPixels = imagevgl.shape[0]*imagevgl.shape[1]*imagevgl.shape[2]*imagevgl.nChannels;
+    int totalPixels = imagevgl.shape[VGL_WIDTH]*imagevgl.shape[VGL_HEIGHT]*imagevgl.shape[VGL_LENGTH]*imagevgl.nChannels;
     
     if(dcmDepth == 8)
        dataset->putAndInsertUint8Array(DCM_PixelData, (Uint8 *)imagevgl.ndarray, totalPixels);
-    else
-      if(dcmDepth == 16)
-	 dataset->putAndInsertUint16Array(DCM_PixelData, (Uint16 *)imagevgl.ndarray, totalPixels);
+    else if(dcmDepth == 16)
+	   dataset->putAndInsertUint16Array(DCM_PixelData, (Uint16 *)imagevgl.ndarray, totalPixels);
         
     if(imagevgl.nChannels == 3)
        dataset->putAndInsertString(DCM_PhotometricInterpretation, "RGB"); 
     
     dfile->saveFile(opt_ofname, EXS_LittleEndianExplicit);
-    
+
     return 0;
 }
 
@@ -383,9 +485,9 @@ int vglDcmtkSaveDicomCompressed(VglImage imagevgl, char* opt_ofname)
 
     DcmDataset *dataset = fileformat.getDataset();
     
-    int nPixels = imagevgl.shape[0]*imagevgl.shape[1]*imagevgl.nChannels;
+    int nPixels = imagevgl.shape[VGL_WIDTH]*imagevgl.shape[VGL_HEIGHT]*imagevgl.nChannels;
     int dcmDepth = convertDepthVglToDcmtk(imagevgl.depth); 
-    int totalPixels = imagevgl.shape[0]*imagevgl.shape[1]*imagevgl.shape[2]*imagevgl.nChannels;
+    int totalPixels = imagevgl.shape[VGL_WIDTH]*imagevgl.shape[VGL_HEIGHT]*imagevgl.shape[VGL_LENGTH]*imagevgl.nChannels;
     
     if(dcmDepth == 8)
        dataset->putAndInsertUint8Array(DCM_PixelData, (Uint8 *)imagevgl.ndarray, totalPixels);
