@@ -205,7 +205,8 @@ void vglClUpload(VglImage* img)
 	}
     else
 	{
-            fprintf(stderr, "%s: %s: Unsupported number of dimensions = %d\n", __FILE__, __FUNCTION__, img->ndim);
+			img->oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE,img->getTotalSizeInBytes(),NULL,&err);
+			vglClCheckError( err, (char*) "clCreateNDImage" );
 	}
 
 	/*
@@ -271,10 +272,17 @@ void vglClUpload(VglImage* img)
             exit(1);
 		}
    
-        size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
-        err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, (char*)imageData, 0, NULL, NULL );
-        vglClCheckError( err, (char*) "clEnqueueWriteImage" );
-        clFinish(cl.commandQueue);
+		if (img->ndim <=3)
+		{
+			size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
+			err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, (char*)imageData, 0, NULL, NULL );
+			vglClCheckError( err, (char*) "clEnqueueWriteImage" );
+			clFinish(cl.commandQueue);
+		}
+		else
+		{
+			err = clEnqueueWriteBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), NULL, NULL, NULL, NULL);
+		}
     }
 
     vglAddContext(img, VGL_CL_CONTEXT);
@@ -309,12 +317,19 @@ void vglClDownload(VglImage* img)
 
         //cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
     }
-    else
+    else if(img->ndim == 3)
     {
         size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
         cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0,(char*) img->ndarray, 0, NULL, NULL );
         vglClCheckError( err_cl, (char*) "clEnqueueReadImage3D" );
     }
+	else
+	{
+		
+		cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), img->ndarray, NULL, NULL, NULL);
+		vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
+	}
+
 
     vglAddContext(img, VGL_RAM_CONTEXT);
 }

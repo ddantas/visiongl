@@ -69,6 +69,22 @@ class VglImage{
   GLuint    tex;
   void*     cudaPtr;
   GLuint    cudaPbo;
+
+  size_t getTotalSizeInBytes()
+  {
+		int bytesPerPixel = this->depth / 8;
+		if (bytesPerPixel < 1)
+			bytesPerPixel = 1;
+
+		size_t totalSize = 1;
+		for(int i = 0; i < this->ndim; i++)
+		{
+			totalSize *= this->shape[i];
+		}
+		totalSize *= this->nChannels * bytesPerPixel;
+		return totalSize;
+  }
+
 #ifdef __OPENCL__
   cl_mem    oclPtr;
 #endif
