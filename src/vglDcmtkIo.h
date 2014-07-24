@@ -14,9 +14,10 @@
 #include <vglImage.h>
 #include "dcmtk/dcmdata/dctk.h"
 
-VglImage* vglDcmtkLoadDicom(char* opt_ifname);
-int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname);
-int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* opt_ofname);
+VglImage* vglDcmtkLoadDicom(char* inFilename);
+int vglDcmtkSaveDicom(VglImage* imagevgl, char* outFilename, int compress);
+int vglDcmtkSaveDicomUncompressed(VglImage* imagevgl, char* outFilename);
+int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* outFilename);
 int convertDepthDcmtkToVgl(int dcmDepth);
 int convertDepthVglToDcmtk(int vglDepth);
 

@@ -28,7 +28,7 @@ OUTPUT_INCLUDEDIR  = -I $(OUTPUT_INCLUDEPATH)
 OUTPUT_LIBDIR      = -L $(OUTPUT_LIBPATH)
 
 
-OPENCV_PATH        = /usr/local/opencv/
+OPENCV_PATH        = /usr/local/opencv
 OPENCV_INCLUDEPATH = $(OPENCV_PATH)/include/
 OPENCV_LIBPATH     = $(OPENCV_PATH)/lib
 OPENCV_INCLUDEDIR  = -I $(OPENCV_INCLUDEPATH)
@@ -257,12 +257,21 @@ rundemocam:
 	cd $(OUTPUT_BINPATH); ./demo_$(CAM_NAME)
 
 rundemogdcm:
-	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm
-	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) /home/ddantas/bkp/dicom/16bits/E1154S7I.dcm /tmp/outputgdcm16.dcm
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm  
+	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/esopecho.dcm /tmp/outputgdcmrgb.dcm -c 
+	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/I_000032.dcm /tmp/outputgdcmybr.dcm -c
+	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm.%d.PGM /tmp/outputgdcmheader.dcm 0 3  
+	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/I_000003.dcm.%d.PGM /tmp/outputgdcmheadercor.dcm 0 3 -c 
+	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) /home/davy/Desktop/imageTest/16bits/E1154S7I.dcm /tmp/outputgdcm16.dcm -c  
+	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) /tmp/outputgdcm16.dcm /tmp/outputgdcm16verif.dcm
 
 rundemodcmtk:
-	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm /tmp/outputdcmtk.dcm
-	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) /home/ddantas/bkp/dicom/16bits/E1154S7I.dcm /tmp/outputdcmtk16.dcm
+	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm /tmp/outputdcmtk.dcm -c
+	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/esopecho.dcm /tmp/outputdcmtkrgb.dcm -c 
+	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/I_000032.dcm /tmp/outputdcmtkybr.dcm -c
+	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm.%d.PGM /tmp/outputdcmtkheader.dcm 0 3 -c
+	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/I_000003.dcm.%d.PGM /tmp/outputdcmtkheadercor.dcm 0 3 -c
+	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) /home/davy/Desktop/imageTest/16bits/E1154S7I.dcm /tmp/outputdcmtk16.dcm -c
 
 rundemobenchmark:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 100 /tmp

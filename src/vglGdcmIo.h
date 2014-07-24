@@ -11,9 +11,12 @@
 
 #include <vglImage.h>
 
-VglImage* vglGdcmLoadDicom(char* filename, char* outfilename);
-int vglGdcmSaveDicom(VglImage* imagevgl, char* outfilename);
-int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outfilename);
+VglImage* vglGdcmLoadDicom(char* inFilename);
+int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress);
+int vglGdcmSaveDicomUncompressed(VglImage* imagevgl, char* outFilename);
+int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outFilename);
+int convertDepthGdcmToVgl(int dcmDepth);
+int convertDepthVglToGdcm(int vglDepth);
 
 #endif
 

@@ -1087,8 +1087,8 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
 {
   VglImage* img = new VglImage;
   char* temp_filename = (char*)malloc(strlen(filename) + 256);
-  sprintf(temp_filename,filename,lStart);
-  IplImage* ipl = cvLoadImage(temp_filename);
+  sprintf(temp_filename, filename, lStart);
+  IplImage* ipl = cvLoadImage(temp_filename, CV_LOAD_IMAGE_UNCHANGED);
 
   if (!ipl){
     fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
@@ -1096,7 +1096,6 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
     return 0;
   }
 
-  
   int n = lEnd-lStart+1;
   img->ipl = ipl;
   img->ndarray = NULL;
@@ -1116,10 +1115,14 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
 #endif
   img->filename = NULL;
 
+  
+
+
   int d = img->depth / 8;
   if (d < 1) d = 1; //d is the byte size of the depth color format
 
   img->ndarray = (char*)malloc(ipl->height*ipl->width*ipl->nChannels*d*img->shape[VGL_LENGTH]);
+
   
   memcpy(img->ndarray,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);
   ipl->imageData = (char*)img->ndarray;
@@ -1127,7 +1130,7 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
   for(int i = lStart+1; i <= lEnd; i++)
   {
 	  sprintf(temp_filename,filename,i);
-	  ipl = cvLoadImage(temp_filename);
+	  ipl = cvLoadImage(temp_filename, CV_LOAD_IMAGE_UNCHANGED);
 	  if (!ipl){
 		fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
 		free(img);
@@ -1138,9 +1141,10 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
 	  c+=ipl->height*ipl->width*d*ipl->nChannels;
   }
 
+
   cvReleaseImage(&(img->ipl));
   vglSetContext(img, VGL_RAM_CONTEXT);
-  vglUpload(img); //must be fixed before enabling
+  //vglUpload(img); //must be fixed before enabling
 
   return img;
 }

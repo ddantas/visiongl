@@ -25,25 +25,43 @@ demo_dcmtk <input file> <output file> -c\n\
 
   char *filename = argv[1]; // name of the input file
   char *outfilename = argv[2]; // name of the output file
+  char *compressType = argv[argc-1];
+
+  int size_filename = strlen(argv[1]+1);
+  char extension[10];
+  strcpy(extension, &filename[size_filename-3]);
 
   VglImage* imagevgl;
 
-  imagevgl = vglDcmtkLoadDicom(filename);
-
+  for(int i = 0; i < strlen(extension); i++)
+    extension[i] = toupper(extension[i]);
+  
+  if(strcmp(extension, ".DCM") == 0) 
+    imagevgl = vglDcmtkLoadDicom(filename);   
+  else
+    if(strcmp(extension, ".DCM") != 0)
+    {
+      int   imgIFirst = atoi(argv[3]);
+      int   imgILast  = atoi(argv[4]);
+      printf("\nfilename: %s\n", filename);
+      imagevgl = vglLoad3dImage(filename, imgIFirst, imgILast); 
+    }
+  
   vglPrintImageInfo(imagevgl);
   //vglPrintImageData(&imagevgl);
 
-  vglInit(1, 1);
-  vglUpload(imagevgl);
-  vgl3dNot(imagevgl, imagevgl); 
+  //vglInit(1, 1);
+  //vglUpload(imagevgl);
+  //vgl3dNot(imagevgl, imagevgl); 
   // The GLSL 3d version of this shader works only in the first frame. 
   // Please use the OpenCL version vglCl3dNot.
-  vglDownload(imagevgl);
+  //vglDownload(imagevgl);
 
-  if(argc == 3)
-     int i = vglDcmtkSaveDicom(imagevgl, outfilename);
+  
+  if(strcmp(compressType, "-c") != 0)
+    int i = vglDcmtkSaveDicomUncompressed(imagevgl, outfilename);
   else
-     int i = vglDcmtkSaveDicomCompressed(imagevgl, outfilename);
+    int i = vglDcmtkSaveDicomCompressed(imagevgl, outfilename);
 
   return 0;
 }

@@ -28,6 +28,21 @@ int convertDepthGdcmToVgl(int dcmDepth)
      return IPL_DEPTH_32S;
 }
 
+/** \brief Convert depth from vlg's format to dcm's format.
+  */
+
+int convertDepthVglToDcm(int vglDepth)
+{
+  if(vglDepth == IPL_DEPTH_8U)
+     return 8;
+  else
+     if(vglDepth <= IPL_DEPTH_16U)
+       return 16;
+     else
+       if(vglDepth <= IPL_DEPTH_32S)
+	 return 32;
+}
+
 /** \brief Convert ybr array with 3 bytes to rgb array with 3 bytes.
   */
 
@@ -50,15 +65,64 @@ inline void YBR2RGB(unsigned char rgb[3], unsigned char ybr[3])
     rgb[2] = B;
 }
 
+/** Function for create DICOM Header with GDCM library
+  */
+
+int vglCreateHeaderGdcm(VglImage* imagevgl, gdcm::Image* img)
+{ 
+  //img = reader.GetImage();
+    
+  img->SetNumberOfDimensions(3); 
+  gdcm::PhotometricInterpretation pi;
+  int samplesPerPixel = imagevgl->nChannels;
+  int bits = convertDepthVglToDcm(imagevgl->depth);
+  
+  if(imagevgl->nChannels == 3)
+    pi = gdcm::PhotometricInterpretation::RGB;
+  else
+    pi = gdcm::PhotometricInterpretation:: MONOCHROME2;
+  img->SetPhotometricInterpretation(pi);
+
+  /* Reference local in pixelFormat parameters
+     SamplesPerPixel;     position 1
+     BitsAllocated;       position 2
+     BitsStored;          position 3
+     HighBit;             position 4
+     PixelRepresentation; position 5
+  */
+  gdcm::PixelFormat pixelFormat(samplesPerPixel, bits, bits, bits-1,0);
+  img->SetPixelFormat(pixelFormat);
+  
+  int dim[3] = {};
+  dim[0] = imagevgl->shape[0]; // rows/height 
+  dim[1] = imagevgl->shape[1]; // columns/width
+  dim[2] = imagevgl->shape[2]; // number of frames
+  img->SetNumberOfDimensions(3);
+  
+  img->SetDimension(0, dim[0]); 
+  img->SetDimension(1, dim[1]);
+  img->SetDimension(2, dim[2]);
+  
+  int dcmDepth = convertDepthVglToDcm(imagevgl->depth);
+  int pixelsPerFrame = imagevgl->shape[0]*imagevgl->shape[1];
+  int bytesPerFrame = pixelsPerFrame*imagevgl->nChannels;
+  int totalBytes = bytesPerFrame*imagevgl->shape[2];
+  if(imagevgl->depth == IPL_DEPTH_16U)
+    totalBytes = totalBytes*2;
+
+  return 0;
+
+}
+
 /** Function for loading DICOM images with GDCM library
   */
 
-VglImage* vglGdcmLoadDicom(char* opt_ifname, char* outfilename)
+VglImage* vglGdcmLoadDicom(char* inFilename)
 {
     gdcm::ImageReader reader;
-    reader.SetFileName(opt_ifname);
+    reader.SetFileName(inFilename);
     if(!reader.Read())
-        std::cerr << "Could not read: " << opt_ifname << std::endl;
+        std::cerr << "Could not read: " << inFilename << std::endl;
   
     // The output of gdcm::Reader is a gdcm::File
     //gdcm::File &file = reader.GetFile();
@@ -78,8 +142,8 @@ VglImage* vglGdcmLoadDicom(char* opt_ifname, char* outfilename)
     int layers = (image.GetDimensions())[2];
     int depth  = pixelformat.GetBitsAllocated();          // bits per pixel
     int iplDepth = convertDepthGdcmToVgl(depth);           // depth \in {IPL_DEPTH_8U, ...}
-    char* filename = (char *) malloc(strlen(opt_ifname)+1);
-    strcpy(filename, opt_ifname);
+    char* filename = (char *) malloc(strlen(inFilename)+1);
+    strcpy(filename, inFilename);
     
     int nChannels = pixelformat.GetSamplesPerPixel(); // number of channels
 
@@ -121,24 +185,23 @@ VglImage* vglGdcmLoadDicom(char* opt_ifname, char* outfilename)
 }
   
 
-/** Function for saving uncompressed DICOM images with GDCM library
+/** Function for saving DICOM images with GDCM library
   */
 
-int vglGdcmSaveDicom(VglImage* imagevgl, char* outfilename)
+int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
 {
   gdcm::ImageReader reader;
-  reader.SetFileName(imagevgl->filename);
-  if(!reader.Read())
+  gdcm::Image* image = &reader.GetImage();
+  if(!imagevgl->filename)
+    int r = vglCreateHeaderGdcm(imagevgl, image);
+  else
+  {
+    reader.SetFileName(imagevgl->filename);
+    if(!reader.Read())
       std::cerr << "Could not read: " << imagevgl->filename << std::endl;
+    image = &reader.GetImage();
+  }
   
-  // The output of gdcm::Reader is a gdcm::File
-  //gdcm::File &file = reader.GetFile();
-
-  // the dataset is the the set of element we are interested in:
-  //gdcm::DataSet &ds = file.GetDataSet();
-
-  gdcm::Image &image = reader.GetImage();
-  //image.Print( std::cout );
 
   int ndarraySize = imagevgl->shape[0]*imagevgl->shape[1]*imagevgl->shape[2]*imagevgl->nChannels;
 
@@ -146,101 +209,62 @@ int vglGdcmSaveDicom(VglImage* imagevgl, char* outfilename)
      ndarraySize = ndarraySize*2;
   
   gdcm::ImageChangeTransferSyntax change;
-  change.SetTransferSyntax(gdcm::TransferSyntax::ExplicitVRLittleEndian);
-  change.SetInput( image );
-  bool b = change.Change();
-  if(!b)
-     std::cerr << "Could not change the Transfer Syntax" << std::endl;
-
+  if(imagevgl->filename)
+  {
+    change.SetTransferSyntax(gdcm::TransferSyntax::ExplicitVRLittleEndian);
+    change.SetInput( *image );
+    bool b = change.Change();
+    if(!b)
+      std::cerr << "Could not change the Transfer Syntax" << std::endl;
+  }
+  
   gdcm::DataElement pixeldata(gdcm::Tag(0x7fe0,0x0010));
   pixeldata.SetByteValue((char*)(imagevgl->ndarray), (uint32_t)ndarraySize);
-  image.SetDataElement(pixeldata);
+  image->SetDataElement(pixeldata);
 
+  if(!imagevgl->filename)
+  {
+    if(compress == 0)
+      change.SetTransferSyntax(gdcm::TransferSyntax::ExplicitVRLittleEndian);
+    else
+      change.SetTransferSyntax(gdcm::TransferSyntax::JPEGBaselineProcess1/*ExplicitVRLittleEndian*/);
+    change.SetInput( *image );
+    bool b = change.Change();
+    if(!b)
+      std::cerr << "Could not change the Transfer Syntax" << std::endl;
+   }
+  
   gdcm::PhotometricInterpretation PI;
-  PI = image.GetPhotometricInterpretation();
+  PI = image->GetPhotometricInterpretation();
   if(imagevgl->nChannels == 3)
      if(PI == gdcm::PhotometricInterpretation::YBR_FULL)
-        image.SetPhotometricInterpretation( gdcm::PhotometricInterpretation::RGB);
+        image->SetPhotometricInterpretation( gdcm::PhotometricInterpretation::RGB);
      else
         if(!(PI == gdcm::PhotometricInterpretation::RGB))
 	   printf("This format is not supported");  
 
+  if(imagevgl->filename)
+    if(compress == 1)
+    {
+      if(imagevgl->depth == IPL_DEPTH_8U)
+        change.SetTransferSyntax( gdcm::TransferSyntax::JPEGBaselineProcess1 );
+      else
+	if(imagevgl->depth == IPL_DEPTH_16U)
+	  change.SetTransferSyntax( gdcm::TransferSyntax::JPEGLosslessProcess14_1 );
+      
+      change.SetInput( *image );
+      bool b = change.Change();
+      if( !b )
+      {
+	std::cerr << "Could not change the Transfer Syntax" << std::endl;
+	return 1;
+      }
+    }
+	  
   gdcm::ImageWriter writer;
   writer.SetImage( change.GetOutput() );
   writer.SetFile( reader.GetFile() );
-  writer.SetFileName( outfilename );
-  if( !writer.Write() )
-  {
-    std::cerr << "Could not write image" << std::endl;
-  }
-  
-  return 0;
-}
-
-
-/** Function for saving compressed DICOM images with GDCM library
-  */
-
-int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outfilename)
-{
-  gdcm::ImageReader reader;
-  reader.SetFileName(imagevgl->filename);
-  if(!reader.Read())
-      std::cerr << "Could not read: " << imagevgl->filename << std::endl;
-  
-  // The output of gdcm::Reader is a gdcm::File
-  //gdcm::File &file = reader.GetFile();
-
-  // the dataset is the the set of element we are interested in:
-  //gdcm::DataSet &ds = file.GetDataSet();
-
-  gdcm::Image &image = reader.GetImage();
-  //image.Print( std::cout );
-  
-  int ndarraySize = imagevgl->shape[0]*imagevgl->shape[1]*imagevgl->shape[2]*imagevgl->nChannels;
-
-  if(imagevgl->depth == IPL_DEPTH_16U)
-     ndarraySize = ndarraySize*2;
-
-  gdcm::ImageChangeTransferSyntax change;
-  change.SetTransferSyntax( gdcm::TransferSyntax::ExplicitVRLittleEndian );
-  change.SetInput( image );
-  bool b = change.Change();
-  if( !b )
-  {
-    std::cerr << "Could not change the Transfer Syntax 1" << std::endl;
-    return 1;
-  }
-
-  gdcm::PhotometricInterpretation PI;
-  PI = image.GetPhotometricInterpretation();
-  if(imagevgl->nChannels == 3)
-     if(PI == gdcm::PhotometricInterpretation::YBR_FULL)
-        image.SetPhotometricInterpretation( gdcm::PhotometricInterpretation::RGB);
-     else
-        if(!(PI == gdcm::PhotometricInterpretation::RGB))
-	   printf("This format is not supported");  
-  
-  gdcm::DataElement pixeldata(gdcm::Tag(0x7fe0,0x0010));
-  pixeldata.SetByteValue((char*)(imagevgl->ndarray), (uint32_t)ndarraySize);
-  image.SetDataElement(pixeldata);
-
-  change.SetTransferSyntax( gdcm::TransferSyntax::JPEGBaselineProcess1 );
-  //change.SetTransferSyntax( gdcm::TransferSyntax::JPEG2000Lossless );
-  //change.SetTransferSyntax( gdcm::TransferSyntax::JPEGLosslessProcess14_1 );
-  //change.SetTransferSyntax( image.GetTransferSyntax() );
-  change.SetInput( image );
-  /*bool*/ b = change.Change();
-  if( !b )
-  {
-    std::cerr << "Could not change the Transfer Syntax" << std::endl;
-    return 1;
-  }
-
-  gdcm::ImageWriter writer;
-  writer.SetImage( change.GetOutput() );
-  writer.SetFile( reader.GetFile() );
-  writer.SetFileName( outfilename );
+  writer.SetFileName( outFilename );
   if( !writer.Write() )
   {
     std::cerr << "Could not write image" << std::endl;
@@ -249,5 +273,25 @@ int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outfilename)
   return 0;
 }
 
+
+/** Function for saving uncompressed DICOM images with GDCM library
+  */
+
+int vglGdcmSaveDicomUncompressed(VglImage* imagevgl, char* outFilename)
+{
+  int compress = 0;
+  int r = vglGdcmSaveDicom(imagevgl, outFilename, compress);
+}
+
+
+/** Function for saving compressed DICOM images with GDCM library
+  */
+
+
+int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outFilename)
+{
+  int compress = 1;
+  int r = vglGdcmSaveDicom(imagevgl, outFilename, compress);
+}
 
 #endif

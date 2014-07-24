@@ -74,13 +74,13 @@ int vglCreateHeaderDcmtk(VglImage* imagevgl, DcmFileFormat *fileformat)
     char* photometricInterpretation;
     if(imagevgl->nChannels == 1)
     {
-      samplesPerPixel = "1";
-      photometricInterpretation = "MONOCHROME2";
+      samplesPerPixel = (char*) "1";
+      photometricInterpretation = (char*) "MONOCHROME2";
     }
     else
     {
-      samplesPerPixel = "3";
-      photometricInterpretation = "RGB";
+      samplesPerPixel = (char*) "3";
+      photometricInterpretation = (char*) "RGB";
     }   
     
     dataset->putAndInsertString(DCM_SamplesPerPixel, samplesPerPixel);
@@ -101,7 +101,7 @@ int vglCreateHeaderDcmtk(VglImage* imagevgl, DcmFileFormat *fileformat)
 /** Function for loading DICOM images with DCMTK library
   */
 
-VglImage* vglDcmtkLoadDicom(char* opt_ifname)
+VglImage* vglDcmtkLoadDicom(char* inFilename)
 {
     E_FileReadMode      opt_readMode = ERM_autoDetect;    /* default: fileformat or dataset */
      /* Other values to opt_readMode:
@@ -142,7 +142,7 @@ VglImage* vglDcmtkLoadDicom(char* opt_ifname)
     DJDecoderRegistration::registerCodecs(opt_decompCSconversion);
 
     DcmFileFormat *dfile = new DcmFileFormat();
-    OFCondition cond = dfile->loadFile(opt_ifname, opt_transferSyntax, EGL_withoutGL, DCM_MaxReadLength, opt_readMode);
+    OFCondition cond = dfile->loadFile(inFilename, opt_transferSyntax, EGL_withoutGL, DCM_MaxReadLength, opt_readMode);
 
     DcmDataset *dataset = dfile->getDataset();
     E_TransferSyntax xfer = dataset->getOriginalXfer();
@@ -170,8 +170,8 @@ VglImage* vglDcmtkLoadDicom(char* opt_ifname)
     int layers = di->getFrameCount();
     int depth  = (di->getDepth()/8)*8;             // bits per pixel
     int iplDepth = convertDepthDcmtkToVgl(depth);  // depth \in {IPL_DEPTH_8U, ...}
-    char* filename = (char *) malloc(strlen(opt_ifname)+1);
-    strcpy(filename, opt_ifname);
+    char* filename = (char *) malloc(strlen(inFilename)+1);
+    strcpy(filename, inFilename);
     
     int nChannels = 1;
     if(!di->isMonochrome())
@@ -205,53 +205,10 @@ VglImage* vglDcmtkLoadDicom(char* opt_ifname)
 }
 
 
-/** Function for saving uncompressed DICOM images with DCMTK library
+/** Function for saving DICOM images with DCMTK library
   */
 
-int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname)
-{ 
-    E_FileReadMode      opt_readMode = ERM_autoDetect;    /* default: fileformat or dataset */
-    /* Other values to opt_readMode:
-      - to file, opt_readMode = ERM_fileOnly;
-      - to dataset, opt_readMode = ERM_dataset;
-    */
-    E_TransferSyntax    opt_transferSyntax = EXS_Unknown; /* default: xfer syntax recognition */
-    /* Other possible values to opt_transferSyntax:
-       opt_transferSyntax = EXS_Unknown;
-       opt_transferSyntax = EXS_LittleEndianExplicit;
-       opt_transferSyntax = EXS_BigEndianExplicit;
-       opt_transferSyntax = EXS_LittleEndianImplicit
-    */
-  
-    DcmFileFormat *dfile = new DcmFileFormat();
-    if(!imagevgl->filename)
-      int r = vglCreateHeaderDcmtk(imagevgl, dfile);
-    else
-      OFCondition cond = dfile->loadFile(imagevgl->filename, opt_transferSyntax, EGL_withoutGL, DCM_MaxReadLength, opt_readMode);
-    
-    DcmDataset *dataset = dfile->getDataset();
-    int dcmDepth = convertDepthVglToDcmtk(imagevgl->depth); 
-    int totalPixels = imagevgl->shape[0]*imagevgl->shape[1]*imagevgl->shape[2]*imagevgl->nChannels;
-    
-    if(dcmDepth == 8)
-       dataset->putAndInsertUint8Array(DCM_PixelData, (Uint8 *)imagevgl->ndarray, totalPixels);
-    else
-      if(dcmDepth == 16)
-	 dataset->putAndInsertUint16Array(DCM_PixelData, (Uint16 *)imagevgl->ndarray, totalPixels);
-        
-    if(imagevgl->nChannels == 3)
-       dataset->putAndInsertString(DCM_PhotometricInterpretation, "RGB"); 
-    
-    dfile->saveFile(opt_ofname, EXS_LittleEndianExplicit);
-    
-    return 0;
-}
-
-
-/** Function for saving compressed DICOM images with DCMTK library
-  */
-
-int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* opt_ofname)
+int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname, int compress)
 {
 #define OFFIS_CONSOLE_APPLICATION "dcmcjpeg"
 
@@ -290,16 +247,16 @@ int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* opt_ofname)
     OFCmdUnsignedInt opt_itempad = 0;
     OFBool opt_acceptWrongPaletteTags = OFFalse;
     OFBool opt_acrNemaCompatibility = OFFalse;
-
+    
     // JPEG options
     E_TransferSyntax opt_oxfer =  EXS_JPEGProcess1; // value to baseline (lossy) mode
     /* Other values to opt_oxfer:
-      - to lossless, selection value 1, opt_oxfer = EXS_JPEGProcess14SV1;
-      - to lossless with any selection value lossless, opt_oxfer = EXS_JPEGProcess14;
-      - to extended sequential (lossy, 8/12 bit), opt_oxfer = EXS_JPEGProcess2_4;
-      - to spectral selection, non-hierarchical (lossy, 8/12 bit), opt_oxfer = EXS_JPEGProcess6_8;
-      - to full progression, non-hierarchical (lossy, 8/12 bit), opt_oxfer = EXS_JPEGProcess10_12;
-      - for more values access the file: dcxfer.h
+       - to lossless, selection value 1, opt_oxfer = EXS_JPEGProcess14SV1;
+       - to lossless with any selection value lossless, opt_oxfer = EXS_JPEGProcess14;
+       - to extended sequential (lossy, 8/12 bit), opt_oxfer = EXS_JPEGProcess2_4;
+       - to spectral selection, non-hierarchical (lossy, 8/12 bit), opt_oxfer = EXS_JPEGProcess6_8;
+       - to full progression, non-hierarchical (lossy, 8/12 bit), opt_oxfer = EXS_JPEGProcess10_12;
+       - for more values access the file: dcxfer.h
     */ 
     OFCmdUnsignedInt opt_selection_value = 6;
     OFCmdUnsignedInt opt_point_transform = 0;
@@ -339,49 +296,55 @@ int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* opt_ofname)
     OFBool           opt_useModalityRescale = OFFalse;
     OFBool           opt_trueLossless = OFTrue;
     OFBool           lossless = OFTrue;  /* see opt_oxfer */
+    
 
+    if(compress == 1)
+    {
+      // check for JPEG lossless output transfer syntaxes
+      lossless = (opt_oxfer == EXS_JPEGProcess14SV1) || (opt_oxfer == EXS_JPEGProcess14);
 
-    // check for JPEG lossless output transfer syntaxes
-    lossless = (opt_oxfer == EXS_JPEGProcess14SV1) || (opt_oxfer == EXS_JPEGProcess14);
+      // disable true lossless mode since we are not encoding with JPEG lossless
+      if (!lossless) opt_trueLossless = OFFalse;
+    
+      // register global decompression codecs
+      DJDecoderRegistration::registerCodecs(
+        opt_decompCSconversion,
+        opt_uidcreation);
 
-    // disable true lossless mode since we are not encoding with JPEG lossless
-    if (!lossless) opt_trueLossless = OFFalse;
+      // register global compression codecs
+      DJEncoderRegistration::registerCodecs(
+        opt_compCSconversion,
+	opt_uidcreation,
+	opt_huffmanOptimize,
+	OFstatic_cast(int, opt_smoothing),
+	opt_compressedBits,
+	OFstatic_cast(Uint32, opt_fragmentSize),
+	opt_createOffsetTable,
+	opt_sampleFactors,
+	opt_useYBR422,
+	opt_secondarycapture,
+	opt_windowType,
+	opt_windowParameter,
+	opt_windowCenter,
+	opt_windowWidth,
+	opt_roiLeft,
+	opt_roiTop,
+	opt_roiWidth,
+	opt_roiHeight,
+	opt_usePixelValues,
+	opt_useModalityRescale,
+	opt_acceptWrongPaletteTags,
+	opt_acrNemaCompatibility,
+	opt_trueLossless);
+    }
 
-    // register global decompression codecs
-    DJDecoderRegistration::registerCodecs(
-      opt_decompCSconversion,
-      opt_uidcreation);
+    DcmFileFormat *fileformat = new DcmFileFormat();
+    if(!imagevgl->filename)
+      int r = vglCreateHeaderDcmtk(imagevgl, fileformat);
+    else
+      OFCondition error = fileformat->loadFile(imagevgl->filename, opt_ixfer, EGL_noChange, DCM_MaxReadLength, opt_readMode);
 
-    // register global compression codecs
-    DJEncoderRegistration::registerCodecs(
-      opt_compCSconversion,
-      opt_uidcreation,
-      opt_huffmanOptimize,
-      OFstatic_cast(int, opt_smoothing),
-      opt_compressedBits,
-      OFstatic_cast(Uint32, opt_fragmentSize),
-      opt_createOffsetTable,
-      opt_sampleFactors,
-      opt_useYBR422,
-      opt_secondarycapture,
-      opt_windowType,
-      opt_windowParameter,
-      opt_windowCenter,
-      opt_windowWidth,
-      opt_roiLeft,
-      opt_roiTop,
-      opt_roiWidth,
-      opt_roiHeight,
-      opt_usePixelValues,
-      opt_useModalityRescale,
-      opt_acceptWrongPaletteTags,
-      opt_acrNemaCompatibility,
-      opt_trueLossless);
-
-    DcmFileFormat fileformat;
-    OFCondition error = fileformat.loadFile(imagevgl->filename, opt_ixfer, EGL_noChange, DCM_MaxReadLength, opt_readMode);
-
-    DcmDataset *dataset = fileformat.getDataset();
+    DcmDataset *dataset = fileformat->getDataset();
     
     int nPixels = imagevgl->shape[0]*imagevgl->shape[1]*imagevgl->nChannels;
     int dcmDepth = convertDepthVglToDcmtk(imagevgl->depth); 
@@ -396,38 +359,63 @@ int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* opt_ofname)
     if(imagevgl->nChannels == 3)
        dataset->putAndInsertString(DCM_PhotometricInterpretation, "RGB");
 
-    DcmXfer original_xfer(dataset->getOriginalXfer());
-
-    OFString sopClass;
-    if (fileformat.getMetaInfo()->findAndGetOFString(DCM_MediaStorageSOPClassUID, sopClass).good())
+    if(compress == 1)
     {
+      DcmXfer original_xfer(dataset->getOriginalXfer());
+
+      OFString sopClass;
+      if (fileformat->getMetaInfo()->findAndGetOFString(DCM_MediaStorageSOPClassUID, sopClass).good())
+      {
         /* check for DICOMDIR files */
         if (sopClass == UID_MediaStorageDirectoryStorage)
-        {
-            OFLOG_FATAL(dcmcjpegLogger, "DICOMDIR files (Media Storage Directory Storage SOP Class) cannot be compressed!");
-	    return 1;
+	{
+	  OFLOG_FATAL(dcmcjpegLogger, "DICOMDIR files (Media Storage Directory Storage SOP Class) cannot be compressed!");
+	  return 1;
         }
-    }
+      }
 
-    DcmXfer opt_oxferSyn(opt_oxfer);
+      DcmXfer opt_oxferSyn(opt_oxfer);
 
-    // create representation parameters for lossy and lossless
-    DJ_RPLossless rp_lossless(OFstatic_cast(int, opt_selection_value), OFstatic_cast(int, opt_point_transform));
-    DJ_RPLossy rp_lossy(OFstatic_cast(int, opt_quality));
+      // create representation parameters for lossy and lossless
+      DJ_RPLossless rp_lossless(OFstatic_cast(int, opt_selection_value), OFstatic_cast(int, opt_point_transform));
+      DJ_RPLossy rp_lossy(OFstatic_cast(int, opt_quality));
 
-    const DcmRepresentationParameter *rp = &rp_lossy;
-    if (lossless)
-       rp = &rp_lossless;
+      const DcmRepresentationParameter *rp = &rp_lossy;
+      if(lossless)
+	rp = &rp_lossless;
 
-    dataset->chooseRepresentation(opt_oxfer, rp);
+      dataset->chooseRepresentation(opt_oxfer, rp);
 
-    fileformat.saveFile(opt_ofname, opt_oxfer, opt_oenctype, opt_oglenc,
+      fileformat->saveFile(opt_ofname, opt_oxfer, opt_oenctype, opt_oglenc,
             opt_opadenc, OFstatic_cast(Uint32, opt_filepad), OFstatic_cast(Uint32, opt_itempad), EWM_updateMeta);
 
-    DJDecoderRegistration::cleanup();
-    DJEncoderRegistration::cleanup();
+      DJDecoderRegistration::cleanup();
+      DJEncoderRegistration::cleanup();
+    }
+    else
+      fileformat->saveFile(opt_ofname, EXS_LittleEndianExplicit);
 
     return 0;
+}
+
+/** Function for saving uncompressed DICOM images with DCMTK library
+  */
+
+int vglDcmtkSaveDicomUncompressed(VglImage* imagevgl, char* outfilename)
+{
+  int compressionMode = 0;
+  int r = vglDcmtkSaveDicom(imagevgl, outfilename, compressionMode);
+}
+
+
+/** Function for saving compressed DICOM images with DCMTK library
+  */
+
+
+int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* outfilename)
+{
+  int compressionMode = 1;
+  int r = vglDcmtkSaveDicom(imagevgl, outfilename, compressionMode);
 }
 
 #endif
