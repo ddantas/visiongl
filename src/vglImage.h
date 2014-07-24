@@ -69,6 +69,22 @@ class VglImage{
   GLuint    tex;
   void*     cudaPtr;
   GLuint    cudaPbo;
+
+  size_t getTotalSizeInBytes()
+  {
+		int bytesPerPixel = this->depth / 8;
+		if (bytesPerPixel < 1)
+			bytesPerPixel = 1;
+
+		size_t totalSize = 1;
+		for(int i = 0; i < this->ndim; i++)
+		{
+			totalSize *= this->shape[i];
+		}
+		totalSize *= this->nChannels * bytesPerPixel;
+		return totalSize;
+  }
+
 #ifdef __OPENCL__
   cl_mem    oclPtr;
 #endif
@@ -121,11 +137,11 @@ int vglInit();
 int vglInit(int w, int h);
 void vglUpload(VglImage* image, int swapRGB = 0);
 VglImage* vglCopyCreateImage(VglImage* img_in);
-VglImage* vglCreateImage(VglImage* img_in);
+VglImage* vglCreateImage(VglImage* img_in, bool uploadGL = true);
 VglImage* vglCopyCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
-VglImage* vglCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
-VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int ndim = 2, int has_mipmap = 0);
-VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
+VglImage* vglCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0, bool uploadGL = true);
+VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int ndim = 2, int has_mipmap = 0, bool uploadGL = true);
+VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0, bool uploadGL = true);
 void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd);
 VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 void vglReleaseImage(VglImage** p_image);
@@ -135,7 +151,7 @@ void vglDownloadPPM(VglImage* image);
 void vglDownloadFBO(VglImage* image);
 void vglDownloadFaster(VglImage* image/*, VglImage* buf*/);
 VglImage* vglLoadImage(char* filename, int iscolor = 1, int has_mipmap = 0);
-VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
+VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap , bool uploadGL = true, int isColor = 1);
 void vglPrintImageInfo(VglImage* image);
 void vglPrintImageData(VglImage* image);
 void iplPrintImageInfo(IplImage* ipl);
