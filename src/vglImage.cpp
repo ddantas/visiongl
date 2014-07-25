@@ -1086,12 +1086,12 @@ VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
 VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /*=0*/)
 {
   VglImage* img = new VglImage;
-  char* temp_filename = (char*)malloc(strlen(filename) + 256);
-  sprintf(temp_filename, filename, lStart);
-  IplImage* ipl = cvLoadImage(temp_filename, CV_LOAD_IMAGE_UNCHANGED);
+  char* tempFilename = (char*)malloc(strlen(filename) + 256);
+  sprintf(tempFilename, filename, lStart);
+  IplImage* ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
 
   if (!ipl){
-    fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
+    fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
     free(img);
     return 0;
   }
@@ -1115,9 +1115,6 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
 #endif
   img->filename = NULL;
 
-  
-
-
   int d = img->depth / 8;
   if (d < 1) d = 1; //d is the byte size of the depth color format
 
@@ -1129,18 +1126,18 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
   int c = ipl->height*ipl->width*d*ipl->nChannels;
   for(int i = lStart+1; i <= lEnd; i++)
   {
-	  sprintf(temp_filename,filename,i);
-	  ipl = cvLoadImage(temp_filename, CV_LOAD_IMAGE_UNCHANGED);
-	  if (!ipl){
-		fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
-		free(img);
-		return 0;
-	  }
+    sprintf(tempFilename,filename,i);
+    ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
+    if (!ipl){
+      fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
+      fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
+      free(img);
+      return 0;
+    }
 
-	  memcpy(((char*)img->ndarray)+c,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);//needs tests
-	  c+=ipl->height*ipl->width*d*ipl->nChannels;
+    memcpy(((char*)img->ndarray)+c,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);//needs tests
+    c += ipl->height*ipl->width*d*ipl->nChannels;
   }
-
 
   cvReleaseImage(&(img->ipl));
   vglSetContext(img, VGL_RAM_CONTEXT);
