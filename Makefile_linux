@@ -1,4 +1,5 @@
 
+
 #
 # makefile for visiongl
 #
@@ -63,7 +64,7 @@ endif
 ifeq ($(WITH_OPENCL), 1)
         OPENCL_PATH        = /usr/local/cuda/
         OPENCL_PATH        = /opt/intel/opencl-1.2-4.4.0.117/lib64/
-        OPENCL_PATH        = /opt/opencl
+        OPENCL_PATH        = /opt/AMDAPP
         OPENCL_INCLUDEPATH = $(OPENCL_PATH)/include/
         OPENCL_LIBPATH     = $(OPENCL_PATH)/lib
         #OPENCL_INCLUDEPATH = /opt/AMDAPP/include/
@@ -240,7 +241,7 @@ demo3d:
 
 demobenchmark:
 	$(LINUXAMD64_DEMO_BENCHMARK_CV)
-	$(LINUXAMD64_DEMO_BENCHMARK_CVOCL)
+	#$(LINUXAMD64_DEMO_BENCHMARK_CVOCL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CL3D)
 
@@ -275,7 +276,7 @@ rundemodcmtk:
 
 rundemobenchmark:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 100 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 100 /tmp
+	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 100 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 100 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 15 100 /tmp
 

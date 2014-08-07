@@ -3,6 +3,7 @@
 
 #include "vglClImage.h"
 #include "vglContext.h"
+#include "cl2cpp_shaders.h"
 
 
 #include <fstream>
@@ -34,7 +35,7 @@ void vglClCheckError(cl_int error, char* name)
 {
     if (error != CL_SUCCESS)
     {
-        printf("Erro %d while doing the following operation %s\n",error,name);
+        printf("Error %d while doing the following operation %s\n",error,name);
         //system("pause");
 	exit(1);
     }
@@ -60,11 +61,21 @@ void vglClInit()
 
     err = clGetDeviceIDs(*cl.platformId, device_type, 0, NULL, &num_devices);
     vglClCheckError(err, (char*) "clGetDeviceIDs get number of devices");
+
+    if (num_devices == 0)
+    {
+        printf("unable to find OpenCL devices, halting the program");
+        exit(1);
+    }
+    else
+        printf("found %d device(s)\n\n",num_devices);
+
     cl.deviceId = (cl_device_id*)malloc(sizeof(cl_device_id)*num_devices);
     err = clGetDeviceIDs(*cl.platformId, device_type, num_devices, cl.deviceId, NULL);
     vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
     //precisa adicionar a propriedade CL_KHR_gl_sharing no contexto e pra isso precisará do id do contexto do GL que deverá ser o parametro window
-    //cl_context_properties props[] = {CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
+    //cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
+
 
 #ifdef __linux__
     cl_context_properties properties[] = {
@@ -81,7 +92,6 @@ void vglClInit()
 #endif
 
     cl.context = clCreateContext(properties,1,cl.deviceId,NULL, NULL, &err );
-
     //cl.context = clCreateContext(NULL,1,cl.deviceId,NULL, NULL, &err );
     vglClCheckError(err, (char*) "clCreateContext GPU");
 
@@ -89,26 +99,24 @@ void vglClInit()
     vglClCheckError( err, (char*) "clCreateCommandQueue" );
 
 
-
     const int msgLen = 2048;
     char msg[msgLen];
     err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
     printf("%s: %s: CL_DEVICE_EXTENSIONS:\n%s\n", __FILE__, __FUNCTION__, msg);
-	cl_ulong vlong;
-	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &vlong, NULL);
-	printf("%s: %s: CL_DEVICE_MAX_MEM_ALLOC_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
-	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &vlong, NULL);
-	printf("%s: %s: CL_DEVICE_GLOBAL_MEM_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
-	size_t img3d;
-	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_DEPTH, sizeof(size_t), &img3d, NULL);
-	printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_DEPTH: %d px\n", __FILE__, __FUNCTION__, img3d);
-	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_HEIGHT, sizeof(size_t), &img3d, NULL);
-	printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_HEIGHT: %d px\n", __FILE__, __FUNCTION__, img3d);
-	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_WIDTH, sizeof(size_t), &img3d, NULL);
-	printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_WIDTH: %d px\n", __FILE__, __FUNCTION__, img3d);
-	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_PARAMETER_SIZE, sizeof(size_t), &img3d, NULL);
-	printf("%s: %s: CL_DEVICE_MAX_PARAMETER_SIZE: %d mb\n", __FILE__, __FUNCTION__, img3d);
-	
+    cl_ulong vlong;
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &vlong, NULL);
+    printf("%s: %s: CL_DEVICE_MAX_MEM_ALLOC_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &vlong, NULL);
+    printf("%s: %s: CL_DEVICE_GLOBAL_MEM_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
+    size_t img3d;
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_DEPTH, sizeof(size_t), &img3d, NULL);
+    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_DEPTH: %d px\n", __FILE__, __FUNCTION__, img3d);
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_HEIGHT, sizeof(size_t), &img3d, NULL);
+    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_HEIGHT: %d px\n", __FILE__, __FUNCTION__, img3d);
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_WIDTH, sizeof(size_t), &img3d, NULL);
+    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_WIDTH: %d px\n", __FILE__, __FUNCTION__, img3d);
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_PARAMETER_SIZE, sizeof(size_t), &img3d, NULL);
+    printf("%s: %s: CL_DEVICE_MAX_PARAMETER_SIZE: %d mb\n", __FILE__, __FUNCTION__, img3d);
 
 }
 
@@ -143,6 +151,10 @@ void vglClBuildDebug(cl_int err, cl_program program)
     }
 }
 
+
+/** vglClUpload branch3d
+
+ */
 void vglClUpload(VglImage* img)
 {
     if (img->nChannels == 3)
@@ -288,13 +300,109 @@ void vglClUpload(VglImage* img)
     vglAddContext(img, VGL_CL_CONTEXT);
 }
 
+
+void vglClUploadInterop(VglImage* img)
+{
+    vglUpload(img);
+    vglGlToCl(img);
+}
+
+
+void vglClUploadForce(VglImage* img)
+{
+    vglSetContext(img,VGL_RAM_CONTEXT);
+    vglUpload(img);
+    vglGlToCl(img);
+}
+
+void vglClDownloadForce(VglImage* img)
+{
+    vglSetContext(img,VGL_CL_CONTEXT);
+    vglClToGl(img);
+    vglDownloadFaster(img);
+}
+
+void vglClDownloadInterop(VglImage* img)
+{
+    vglClToGl(img);
+	if (vglIsInContext(img,VGL_GL_CONTEXT) && !vglIsInContext(img,VGL_RAM_CONTEXT))
+		vglDownloadFaster(img);
+}
+
+
+void vglClAlloc(VglImage* img)
+{
+    glFlush();
+    glFinish();
+
+	cl_int err_cl;
+    if (img->oclPtr == NULL)
+    {
+        img->oclPtr = clCreateFromGLTexture2D(cl.context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, img->tex, &err_cl);
+        vglClCheckError(err_cl, (char*) "clCreateFromGLTexture");
+
+    }
+}
+
+
+void vglGlToCl(VglImage* img)
+{
+    glFlush();
+    glFinish();
+
+    if (img->oclPtr == NULL)
+    {
+        vglClAlloc(img);
+    }
+
+    if (!vglIsInContext(img, VGL_CL_CONTEXT))
+    {
+        //printf("==========ACQUIRE: vgl = %p, ocl = %d\n", img, img->oclPtr);
+		cl_int err_cl = clFlush(cl.commandQueue);
+		vglClCheckError(err_cl, (char*) "clFlush");
+
+		err_cl = clFinish(cl.commandQueue);
+		vglClCheckError(err_cl, (char*) "clFinish");
+
+        err_cl = clEnqueueAcquireGLObjects(cl.commandQueue, 1 , (cl_mem*) &img->oclPtr, 0 , NULL, NULL);
+		vglClCheckError(err_cl, (char*) "clEnqueueAcquireGLObjects");
+        
+        vglSetContext(img, VGL_CL_CONTEXT);
+    }
+    //printf("Vai sair de %s\n", __FUNCTION__);
+}
+
+void vglClToGl(VglImage* img)
+{
+    //vglDownload(img);
+
+    if (!vglIsInContext(img, VGL_CL_CONTEXT))
+    {
+        //vglGlToCl(img);      
+        //fprintf(stderr, "vglClToGl: Error: image context = %d not in VGL_CL_CONTEXT\n", img->inContext);
+        return;
+	}
+
+    cl_int err_cl;
+    //printf("==========RELEASE: vgl = %p, ocl = %d\n", img, img->oclPtr);
+    err_cl = clEnqueueReleaseGLObjects(cl.commandQueue, 1 , (cl_mem*) &img->oclPtr, 0 , NULL, NULL);
+    vglClCheckError(err_cl, (char*) "clEnqueueReleaseGLObjects");
+
+    err_cl = clFlush(cl.commandQueue);
+    vglClCheckError(err_cl, (char*) "clFlush");
+
+	err_cl = clFinish(cl.commandQueue);
+	vglClCheckError(err_cl, (char*) "clFinish");
+
+    vglSetContext(img, VGL_GL_CONTEXT);
+
+    //printf("Vai sair de %s\n", __FUNCTION__);
+    
+
+}
+
 void vglClDownload(VglImage* img)
 {
-    if (img->nChannels == 3)
-    {
-        fprintf(stderr, "%s: %s: Error: image with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
-        exit(1);
-    }
     if (img->nChannels == 3)
     {
         fprintf(stderr, "%s: %s: Error: ipl image field with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
@@ -313,7 +421,7 @@ void vglClDownload(VglImage* img)
     {
         size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
         cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ipl->imageData, 0, NULL, NULL );
-	    vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
+        vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
 
         //cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
     }
@@ -323,16 +431,19 @@ void vglClDownload(VglImage* img)
         cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0,(char*) img->ndarray, 0, NULL, NULL );
         vglClCheckError( err_cl, (char*) "clEnqueueReadImage3D" );
     }
-	else
-	{
-		
-		cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), img->ndarray, NULL, NULL, NULL);
-		vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
-	}
-
+    else
+    {
+        cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), img->ndarray, NULL, NULL, NULL);
+        vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
+    }
 
     vglAddContext(img, VGL_RAM_CONTEXT);
 }
 
 
 #endif
+
+
+
+
+

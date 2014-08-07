@@ -259,9 +259,11 @@ void vglUpload(VglImage* image, int swapRGB){
 
 
   //printf("vglUpload: image context = %d\n", image->inContext);
-  if (!vglIsInContext(image, VGL_RAM_CONTEXT)  && 
+  if (!vglIsInContext(image, VGL_RAM_CONTEXT)  &&
       !vglIsInContext(image, VGL_BLANK_CONTEXT)    ){
+#ifdef __DEBUG__
     fprintf(stderr, "vglUpload: Error: image context = %d not in VGL_RAM_CONTEXT or VGL_BLANK_CONTEXT\n", image->inContext);
+#endif
     return;
   }
 
@@ -1151,23 +1153,29 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
     Print width, height, depth and number of channels
 
  */
-void iplPrintImageInfo(IplImage* ipl){
-    printf("====== iplPrintImageInfo:\n");
-    printf("Image @ %p: w x h = %d(%d) x %d\n", 
-               ipl, ipl->width, ipl->widthStep, ipl->height);
-    printf("nChannels = %d\n", ipl->nChannels);
-    printf("depth = ");
-    switch (ipl->depth){
-        case IPL_DEPTH_1U:  printf("IPL_DEPTH_1U");  break; 
-        case IPL_DEPTH_8U:  printf("IPL_DEPTH_8U");  break; 
-        case IPL_DEPTH_16U: printf("IPL_DEPTH_16U"); break; 
-        case IPL_DEPTH_32F: printf("IPL_DEPTH_32F"); break; 
-        case IPL_DEPTH_8S:  printf("IPL_DEPTH_8S");  break; 
-        case IPL_DEPTH_16S: printf("IPL_DEPTH_16S"); break; 
-        case IPL_DEPTH_32S: printf("IPL_DEPTH_32S"); break; 
-        default: printf("unknown");
-    }
-    printf("\n");
+void iplPrintImageInfo(IplImage* ipl, char* msg){
+        if (msg){
+            printf("====== %s:\n", msg);
+	}
+	else
+	{
+            printf("====== iplPrintImageInfo:\n");
+	}
+        printf("Image @ %p: w x h = %d(%d) x %d\n", 
+                ipl, ipl->width, ipl->widthStep, ipl->height);
+        printf("nChannels = %d\n", ipl->nChannels);
+        printf("depth = ");
+        switch (ipl->depth){
+          case IPL_DEPTH_1U:  printf("IPL_DEPTH_1U");  break; 
+          case IPL_DEPTH_8U:  printf("IPL_DEPTH_8U");  break; 
+          case IPL_DEPTH_16U: printf("IPL_DEPTH_16U"); break; 
+          case IPL_DEPTH_32F: printf("IPL_DEPTH_32F"); break; 
+          case IPL_DEPTH_8S:  printf("IPL_DEPTH_8S");  break; 
+          case IPL_DEPTH_16S: printf("IPL_DEPTH_16S"); break; 
+          case IPL_DEPTH_32S: printf("IPL_DEPTH_32S"); break; 
+          default: printf("unknown");
+	}
+        printf("\n");
 }
 
 /** Print information about image.
@@ -1176,29 +1184,28 @@ void iplPrintImageInfo(IplImage* ipl){
     OpenGL FBO handler, and current valid context (RAM, GPU or FBO).
 
  */
-void vglPrintImageInfo(VglImage* image){
-    IplImage* ipl = image->ipl;
-    printf("====== vglPrintImageInfo:\n");
-    printf("ipl @ %p\n", image->ipl);
-    printf("ndarray @ %p\n", image->ndarray);
-    printf("ndim = %d\n", image->ndim);
-    printf("dimensions = [%d", image->shape[0]);
-    for (int i = 1; i < image->ndim; i++)
-    {
-        printf(", %d", image->shape[i]);
-    }
-    printf("]\n");
-    printf("nChannels = %d\n", image->nChannels);
-    printf("depth = ");
-    switch (image->depth){
-        case IPL_DEPTH_1U:  printf("IPL_DEPTH_1U");  break; 
-        case IPL_DEPTH_8U:  printf("IPL_DEPTH_8U");  break; 
-        case IPL_DEPTH_16U: printf("IPL_DEPTH_16U"); break; 
-        case IPL_DEPTH_32F: printf("IPL_DEPTH_32F"); break; 
-        case IPL_DEPTH_8S:  printf("IPL_DEPTH_8S");  break; 
-        case IPL_DEPTH_16S: printf("IPL_DEPTH_16S"); break; 
-        case IPL_DEPTH_32S: printf("IPL_DEPTH_32S"); break; 
-        default: printf("unknown");
+void vglPrintImageInfo(VglImage* image, char* msg){
+        IplImage* ipl = image->ipl;
+        if (msg){
+            printf("====== %s:\n", msg);
+	}
+	else
+	{
+            printf("====== vglPrintImageInfo:\n");
+	}
+        printf("Image @ %p: w x h = %d(%d) x %d\n", 
+                image, ipl->width, ipl->widthStep, ipl->height);
+        printf("nChannels = %d\n", ipl->nChannels);
+        printf("depth = ");
+        switch (ipl->depth){
+          case IPL_DEPTH_1U:  printf("IPL_DEPTH_1U");  break; 
+          case IPL_DEPTH_8U:  printf("IPL_DEPTH_8U");  break; 
+          case IPL_DEPTH_16U: printf("IPL_DEPTH_16U"); break; 
+          case IPL_DEPTH_32F: printf("IPL_DEPTH_32F"); break; 
+          case IPL_DEPTH_8S:  printf("IPL_DEPTH_8S");  break; 
+          case IPL_DEPTH_16S: printf("IPL_DEPTH_16S"); break; 
+          case IPL_DEPTH_32S: printf("IPL_DEPTH_32S"); break; 
+          default: printf("unknown");
     }
     printf("\n");
     printf("TEX = %d\n", image->tex);
@@ -2032,7 +2039,7 @@ void vglMultiOutput_model(VglImage*  src, VglImage*  dst, VglImage*  dst1){
   ERRCHECK()
 
     //glDrawBuffer(GL_COLOR_ATTACHMENT1_EXT);
-    //ERRCHECK()
+    ERRCHECK()
 
   glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
@@ -2109,7 +2116,7 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1){
   ERRCHECK()
 
     //glDrawBuffer(GL_COLOR_ATTACHMENT1_EXT);
-    //ERRCHECK()
+    ERRCHECK()
 
   glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 

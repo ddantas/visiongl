@@ -78,24 +78,27 @@ int vglCheckContext(VglImage* img, int context){
   switch (context){
     case VGL_RAM_CONTEXT:
       if (vglIsInContext(img, VGL_BLANK_CONTEXT)){
+        //printf("%s: case 1\n", __FUNCTION__);
         vglAddContext(img, VGL_RAM_CONTEXT);
       }
       else
 #ifdef __OPENCL__
       if (vglIsInContext(img, VGL_CL_CONTEXT)){
+        //printf("%s: case 2\n", __FUNCTION__);
         vglClDownload(img);
       }
       else
 #endif
       if (!vglIsInContext(img, VGL_RAM_CONTEXT))
       {
+        //printf("%s: case 3\n", __FUNCTION__);
         vglCheckContext(img, VGL_GL_CONTEXT);
         if (vglIsInContext(img, VGL_GL_CONTEXT)){
           vglDownload(img);
         }
       }
       else{
-        fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to RAM from invalid context\n");
+        fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to RAM from invalid context = %d\n", img->inContext);
       }
     break;
     case VGL_GL_CONTEXT:
@@ -119,7 +122,7 @@ int vglCheckContext(VglImage* img, int context){
       }
 #endif
       else{
-        fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to GL from invalid context\n");
+        fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to GL from invalid context = %d\n", img->inContext);
         vglPrintImageInfo(img);
       }
     break;
@@ -136,7 +139,7 @@ int vglCheckContext(VglImage* img, int context){
 	}
       }
       else{
-        fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to CUDA from invalid context\n");
+        fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to CUDA from invalid context = %d\n", img->inContext);
       }
     break;
 #endif
@@ -157,7 +160,7 @@ int vglCheckContext(VglImage* img, int context){
          //}
         }
         else{
-          fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to CL from invalid context\n");
+          fprintf(stderr, "vglCheckContext: Internal Error: unable to transfer to CL from invalid context = %d\n", img->inContext);
         }
       }
     break;
