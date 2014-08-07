@@ -26,5 +26,10 @@ __kernel void vglCl3dThreshold(__read_only image3d_t src,
 	else
 		p.z = 1.0f;
 
+	if( p.w < thresh)
+		p.w = 0.0f;
+	else
+		p.w = 1.0f;
+
 	write_imagef(dst, coords, p);
 }

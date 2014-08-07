@@ -7,6 +7,10 @@
 ***                                                                 ***
 *********************************************************************/
 #include "vglImage.h"
+
+
+void vglClNdNot(VglImage* img_input, VglImage* img_output);
+
 /** Convolution of src image by mask. Result is stored in dst image.
 
   */
@@ -36,6 +40,7 @@ void vglCl3dNot(VglImage* img_input, VglImage* img_output);
 
   */
 void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh);
+void vglCl3dThresholdGray(VglImage* src, VglImage* dst, float thresh);
 
 /** Convolution of src image by mask. Result is stored in dst image.
 
