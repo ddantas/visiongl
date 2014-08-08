@@ -33,6 +33,8 @@ void vglClUploadForce(VglImage* img);
 void vglClDownloadForce(VglImage* img);
 void vglClUpload(VglImage* img);
 void vglClDownload(VglImage* img);
+void vglClUploadInterop(VglImage* img);
+void vglClDownloadInterop(VglImage* img);
 void vglClToGl(VglImage* img);
 void vglGlToCl(VglImage* img);
 void vglClAlloc(VglImage* img);

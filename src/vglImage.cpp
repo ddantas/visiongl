@@ -367,6 +367,9 @@ void vglUpload(VglImage* image, int swapRGB){
         internalFormat = GL_RGBA;
     }
   }
+  else if(nChannels == 3){
+	  internalFormat = GL_RGB;
+  }
   else{
     internalFormat = GL_LUMINANCE;
   }

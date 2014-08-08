@@ -21,6 +21,7 @@
 #endif
 
 VglClContext cl;
+bool Interop = false;
 
 void vglClPrintContext(void)
 {
@@ -75,8 +76,22 @@ void vglClInit()
     vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
     //precisa adicionar a propriedade CL_KHR_gl_sharing no contexto e pra isso precisará do id do contexto do GL que deverá ser o parametro window
     //cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
-
-
+	const int msgLen = 2048;
+    char msg[msgLen];
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
+	
+	char* search = strtok ( msg, " ");
+	bool found = false;
+	while (search != NULL && !found)
+	{
+		if (strcmp(search, "cl_khr_gl_sharing") == 0)
+		{
+			printf("FOUND INTEROPERABILITY\n");
+			Interop = true;
+		}
+		search = strtok(NULL, " ");
+	}
+	
 #ifdef __linux__
     cl_context_properties properties[] = {
         CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
@@ -98,10 +113,7 @@ void vglClInit()
     cl.commandQueue = clCreateCommandQueue( cl.context, *cl.deviceId, 0, &err );
     vglClCheckError( err, (char*) "clCreateCommandQueue" );
 
-
-    const int msgLen = 2048;
-    char msg[msgLen];
-    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
+	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
     printf("%s: %s: CL_DEVICE_EXTENSIONS:\n%s\n", __FILE__, __FUNCTION__, msg);
     cl_ulong vlong;
     err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &vlong, NULL);
@@ -157,147 +169,154 @@ void vglClBuildDebug(cl_int err, cl_program program)
  */
 void vglClUpload(VglImage* img)
 {
-    if (img->nChannels == 3)
-    {
-        fprintf(stderr, "%s: %s: Error: image with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
-        exit(1);
-    }
-    if (img->nChannels == 3)
-    {
-        fprintf(stderr, "%s: %s: Error: ipl image field with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
-        exit(1);
-    }
-    cl_int err;
-
-    if (!vglIsInContext(img, VGL_RAM_CONTEXT)  && 
-        !vglIsInContext(img, VGL_BLANK_CONTEXT)    ){
-      fprintf(stderr, "vglClUpload: Error: image context = %d not in VGL_RAM_CONTEXT or VGL_BLANK_CONTEXT\n", img->inContext);
-      return;
-    }
-
-    if (img->oclPtr == NULL)
-    {
-        /*if (img->fbo != -1)
-        {
-          img->oclPtr = clCreateFromGLTexture2D(cl.context,CL_MEM_READ_WRITE,GL_TEXTURE_2D,0,img->fbo,&err);
-          vglClCheckError( err, (char*) "clCreateFromGlTexture2D interop" );
-          clEnqueueAcquireGLObjects(cl.commandQueue, 1, &img->oclPtr, 0,0,0);
-        }
-        else
-        {*/
-
-        cl_image_format format;
-        if (img->nChannels == 1)
-        {
-            format.image_channel_order = CL_R;
-            format.image_channel_data_type = CL_UNORM_INT8;
-        }
-        else if (img->nChannels == 4)
-        {
-	  /*
-            if (img->iplRGBA == NULL)
-            {
-                printf("creating RGBA\n");
-                img->iplRGBA = cvCreateImage(cvGetSize(img->ipl), IPL_DEPTH_8U, 4);
-            }
-	  */
-            format.image_channel_order = CL_RGBA;
-            format.image_channel_data_type = CL_UNORM_INT8;
-        }
-
-	if (img->ndim == 2)
+	if (Interop)
 	{
-            img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
-            vglClCheckError( err, (char*) "clCreateImage2D" );
+		vglClUploadInterop(img);
 	}
-    else if(img->ndim == 3)
+	else
 	{
-			img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH], 0, 0, NULL, &err);
-            vglClCheckError( err, (char*) "clCreateImage3D" );
-	}
-    else
-	{
-			img->oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE,img->getTotalSizeInBytes(),NULL,&err);
-			vglClCheckError( err, (char*) "clCreateNDImage" );
-	}
+		if (img->nChannels == 3)
+		{
+			fprintf(stderr, "%s: %s: Error: image with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
+			exit(1);
+		}
+		if (img->nChannels == 3)
+		{
+			fprintf(stderr, "%s: %s: Error: ipl image field with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
+			exit(1);
+		}
+		cl_int err;
 
-	/*
-		cl_image_desc desc;
+		if (!vglIsInContext(img, VGL_RAM_CONTEXT)  && 
+			!vglIsInContext(img, VGL_BLANK_CONTEXT)    ){
+		  fprintf(stderr, "vglClUpload: Error: image context = %d not in VGL_RAM_CONTEXT or VGL_BLANK_CONTEXT\n", img->inContext);
+		  return;
+		}
+
+		if (img->oclPtr == NULL)
+		{
+			/*if (img->fbo != -1)
+			{
+			  img->oclPtr = clCreateFromGLTexture2D(cl.context,CL_MEM_READ_WRITE,GL_TEXTURE_2D,0,img->fbo,&err);
+			  vglClCheckError( err, (char*) "clCreateFromGlTexture2D interop" );
+			  clEnqueueAcquireGLObjects(cl.commandQueue, 1, &img->oclPtr, 0,0,0);
+			}
+			else
+			{*/
+
+			cl_image_format format;
+			if (img->nChannels == 1)
+			{
+				format.image_channel_order = CL_R;
+				format.image_channel_data_type = CL_UNORM_INT8;
+			}
+			else if (img->nChannels == 4)
+			{
+		  /*
+				if (img->iplRGBA == NULL)
+				{
+					printf("creating RGBA\n");
+					img->iplRGBA = cvCreateImage(cvGetSize(img->ipl), IPL_DEPTH_8U, 4);
+				}
+		  */
+				format.image_channel_order = CL_RGBA;
+				format.image_channel_data_type = CL_UNORM_INT8;
+			}
 
 		if (img->ndim == 2)
 		{
-			
-			desc.image_type = CL_MEM_OBJECT_IMAGE2D;
-			desc.image_width = img->shape[VGL_WIDTH];
-			desc.image_height = img->shape[VGL_HEIGHT];
-			desc.image_depth = 0;
-			desc.image_array_size = 1;
-			desc.image_row_pitch = 0;
-			desc.image_slice_pitch = 0;
-			desc.num_mip_levels = 0;
-			desc.num_samples = 0;
-			desc.buffer = NULL;
-
+				img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
+				vglClCheckError( err, (char*) "clCreateImage2D" );
+		}
+		else if(img->ndim == 3)
+		{
+				img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH], 0, 0, NULL, &err);
+				vglClCheckError( err, (char*) "clCreateImage3D" );
 		}
 		else
 		{
+				img->oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE,img->getTotalSizeInBytes(),NULL,&err);
+				vglClCheckError( err, (char*) "clCreateNDImage" );
+		}
+
+		/*
+			cl_image_desc desc;
+
+			if (img->ndim == 2)
+			{
 			
-			desc.image_type = CL_MEM_OBJECT_IMAGE3D;
-			desc.image_width = img->shape[VGL_WIDTH];
-			desc.image_height = img->shape[VGL_HEIGHT];
-			desc.image_depth = img->shape[VGL_LENGTH];
-			desc.image_array_size = 0;
-			desc.image_row_pitch = 0;
-			desc.image_slice_pitch = 0;
-			desc.num_mip_levels = 0;
-			desc.num_samples = 0;
-			desc.buffer = NULL;
+				desc.image_type = CL_MEM_OBJECT_IMAGE2D;
+				desc.image_width = img->shape[VGL_WIDTH];
+				desc.image_height = img->shape[VGL_HEIGHT];
+				desc.image_depth = 0;
+				desc.image_array_size = 1;
+				desc.image_row_pitch = 0;
+				desc.image_slice_pitch = 0;
+				desc.num_mip_levels = 0;
+				desc.num_samples = 0;
+				desc.buffer = NULL;
 
+			}
+			else
+			{
+			
+				desc.image_type = CL_MEM_OBJECT_IMAGE3D;
+				desc.image_width = img->shape[VGL_WIDTH];
+				desc.image_height = img->shape[VGL_HEIGHT];
+				desc.image_depth = img->shape[VGL_LENGTH];
+				desc.image_array_size = 0;
+				desc.image_row_pitch = 0;
+				desc.image_slice_pitch = 0;
+				desc.num_mip_levels = 0;
+				desc.num_samples = 0;
+				desc.buffer = NULL;
+
+			}
+			img->oclPtr = clCreateImage(cl.context,CL_MEM_READ_WRITE, &format, &desc,NULL,&err);
+			vglClCheckError(err, (char*) "clCreateImage");
+		*/
 		}
-		img->oclPtr = clCreateImage(cl.context,CL_MEM_READ_WRITE, &format, &desc,NULL,&err);
-		vglClCheckError(err, (char*) "clCreateImage");
-	*/
-	}
 
-    if (vglIsInContext(img, VGL_RAM_CONTEXT))
-    {
-        size_t Origin[3] = { 0, 0, 0};
-
-        int nFrames = 1;
-        if(img->ndim == 3)
-        {
-            nFrames = img->shape[VGL_LENGTH];
-        }
-
-        void* imageData = NULL;
-        if (img->ipl)
+		if (vglIsInContext(img, VGL_RAM_CONTEXT))
 		{
-            imageData = img->ipl->imageData;
-		}
-        else if (img->ndarray)
-		{
-            imageData = img->ndarray;
-		}
-        else
-        {
-            fprintf(stderr, "%s: %s: Error: both ipl and ndarray are NULL.\n", __FILE__, __FUNCTION__);
-            exit(1);
-		}
+			size_t Origin[3] = { 0, 0, 0};
+
+			int nFrames = 1;
+			if(img->ndim == 3)
+			{
+				nFrames = img->shape[VGL_LENGTH];
+			}
+
+			void* imageData = NULL;
+			if (img->ipl)
+			{
+				imageData = img->ipl->imageData;
+			}
+			else if (img->ndarray)
+			{
+				imageData = img->ndarray;
+			}
+			else
+			{
+				fprintf(stderr, "%s: %s: Error: both ipl and ndarray are NULL.\n", __FILE__, __FUNCTION__);
+				exit(1);
+			}
    
-		if (img->ndim <=3)
-		{
-			size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
-			err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, (char*)imageData, 0, NULL, NULL );
-			vglClCheckError( err, (char*) "clEnqueueWriteImage" );
-			clFinish(cl.commandQueue);
+			if (img->ndim <=3)
+			{
+				size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
+				err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d,0,0, (char*)imageData, 0, NULL, NULL );
+				vglClCheckError( err, (char*) "clEnqueueWriteImage" );
+				clFinish(cl.commandQueue);
+			}
+			else
+			{
+				err = clEnqueueWriteBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), NULL, NULL, NULL, NULL);
+			}
 		}
-		else
-		{
-			err = clEnqueueWriteBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), NULL, NULL, NULL, NULL);
-		}
-    }
 
-    vglAddContext(img, VGL_CL_CONTEXT);
+		vglAddContext(img, VGL_CL_CONTEXT);
+	}
 }
 
 
@@ -403,41 +422,48 @@ void vglClToGl(VglImage* img)
 
 void vglClDownload(VglImage* img)
 {
-    if (img->nChannels == 3)
-    {
-        fprintf(stderr, "%s: %s: Error: ipl image field with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
-        exit(1);
-    }
+	if (Interop)
+	{
+		vglClDownloadInterop(img);
+	}
+	else
+	{
+		if (img->nChannels == 3)
+		{
+			fprintf(stderr, "%s: %s: Error: ipl image field with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
+			exit(1);
+		}
 
-    if (!vglIsInContext(img, VGL_CL_CONTEXT))
-    {
-      fprintf(stderr, "vglClDownload: Error: image context = %d not in VGL_CL_CONTEXT\n", img->inContext);
-      return;
-    }
+		if (!vglIsInContext(img, VGL_CL_CONTEXT))
+		{
+		  fprintf(stderr, "vglClDownload: Error: image context = %d not in VGL_CL_CONTEXT\n", img->inContext);
+		  return;
+		}
 
-    size_t Origin[3] = { 0, 0, 0};
+		size_t Origin[3] = { 0, 0, 0};
 
-    if(img->ndim == 2)
-    {
-        size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
-        cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ipl->imageData, 0, NULL, NULL );
-        vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
+		if(img->ndim == 2)
+		{
+			size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
+			cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ipl->imageData, 0, NULL, NULL );
+			vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
 
-        //cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
-    }
-    else if(img->ndim == 3)
-    {
-        size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
-        cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0,(char*) img->ndarray, 0, NULL, NULL );
-        vglClCheckError( err_cl, (char*) "clEnqueueReadImage3D" );
-    }
-    else
-    {
-        cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), img->ndarray, NULL, NULL, NULL);
-        vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
-    }
+			//cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
+		}
+		else if(img->ndim == 3)
+		{
+			size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
+			cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0,(char*) img->ndarray, 0, NULL, NULL );
+			vglClCheckError( err_cl, (char*) "clEnqueueReadImage3D" );
+		}
+		else
+		{
+			cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), img->ndarray, NULL, NULL, NULL);
+			vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
+		}
 
-    vglAddContext(img, VGL_RAM_CONTEXT);
+		vglAddContext(img, VGL_RAM_CONTEXT);
+	}
 }
 
 

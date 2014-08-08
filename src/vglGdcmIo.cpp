@@ -281,6 +281,7 @@ int vglGdcmSaveDicomUncompressed(VglImage* imagevgl, char* outFilename)
 {
   int compress = 0;
   int r = vglGdcmSaveDicom(imagevgl, outFilename, compress);
+  return r;
 }
 
 
@@ -292,6 +293,7 @@ int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outFilename)
 {
   int compress = 1;
   int r = vglGdcmSaveDicom(imagevgl, outFilename, compress);
+  return r;
 }
 
 #endif

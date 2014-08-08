@@ -405,6 +405,7 @@ int vglDcmtkSaveDicomUncompressed(VglImage* imagevgl, char* outfilename)
 {
   int compressionMode = 0;
   int r = vglDcmtkSaveDicom(imagevgl, outfilename, compressionMode);
+  return r;
 }
 
 
@@ -416,6 +417,7 @@ int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* outfilename)
 {
   int compressionMode = 1;
   int r = vglDcmtkSaveDicom(imagevgl, outfilename, compressionMode);
+  return r;
 }
 
 #endif

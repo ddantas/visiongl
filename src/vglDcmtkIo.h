@@ -21,6 +21,7 @@ int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* outFilename);
 int convertDepthDcmtkToVgl(int dcmDepth);
 int convertDepthVglToDcmtk(int vglDepth);
 
+
 #endif
 
 #endif
