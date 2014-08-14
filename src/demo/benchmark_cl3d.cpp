@@ -64,6 +64,10 @@ int main(int argc, char* argv[])
     }
     VglImage* out = vglCreate3dImage(cvSize(img->shape[VGL_WIDTH],img->shape[VGL_HEIGHT]), img->depth, 4, 17, 0);
 
+    printf("IMAGE CREATED\n");
+    vglPrintImageInfo(img, "IMG");
+    vglPrintImageInfo(out, "OUT");
+
     //First call to Blur 3x3x3
     TimerStart();
     vglCl3dBlurSq3(img, out);

@@ -367,9 +367,6 @@ void vglUpload(VglImage* image, int swapRGB){
         internalFormat = GL_RGBA;
     }
   }
-  else if(nChannels == 3){
-	  internalFormat = GL_RGB;
-  }
   else{
     internalFormat = GL_LUMINANCE;
   }
@@ -1196,11 +1193,13 @@ void vglPrintImageInfo(VglImage* image, char* msg){
 	{
             printf("====== vglPrintImageInfo:\n");
 	}
-        printf("Image @ %p: w x h = %d(%d) x %d\n", 
-                image, ipl->width, ipl->widthStep, ipl->height);
-        printf("nChannels = %d\n", ipl->nChannels);
+        printf("Image @ %p: w x h x l = %d x %d x %d\n", 
+	       image, image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH]);
+        printf("Ipl @ %p\n", ipl); 
+        printf("ndim = %d\n", image->ndim);
+        printf("nChannels = %d\n", image->nChannels);
         printf("depth = ");
-        switch (ipl->depth){
+        switch (image->depth){
           case IPL_DEPTH_1U:  printf("IPL_DEPTH_1U");  break; 
           case IPL_DEPTH_8U:  printf("IPL_DEPTH_8U");  break; 
           case IPL_DEPTH_16U: printf("IPL_DEPTH_16U"); break; 
