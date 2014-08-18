@@ -248,9 +248,10 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1);
     /*errString = gluErrorString(errCode);*/     \
     errString = glGetString(errCode); \
     printf ("OpenGL Error %x: %s at %s:%d\n", errCode, errString,  __FILE__,__LINE__); \
-    exit(1); \
+	exit(1); \
   } \
 } \
  
+
 
 #endif

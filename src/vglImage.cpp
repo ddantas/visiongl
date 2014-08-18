@@ -267,18 +267,26 @@ void vglUpload(VglImage* image, int swapRGB){
     return;
   }
 
-  if (nChannels == 3 && false){
+  if (nChannels == 3){
     printf("\t\t\tswapRGB = %d\n", swapRGB);
     //swapRGB = (swapRGB + 1) % 2;
-    IplImage* iplRGBA = cvCreateImage(cvGetSize(image->ipl), depth, 4);
-    printf("\t\t\t    ipl->nChannels = %d\n", image->ipl->nChannels);
-    printf("\t\t\tiplRGBA->nChannels = %d\n", iplRGBA->nChannels);
-    cvCvtColor(image->ipl, iplRGBA, CV_RGB2RGBA);
-    cvReleaseImage(&(image->ipl));
-    image->ipl = iplRGBA;
-    image->nChannels = 4;
-    printf("\t\t\tipl->nChannels = %d\n", image->ipl->nChannels);
-    nChannels = 4;
+	if(ndim == 3)
+	{
+		vglNdarray3To4Channels(image);
+	}
+	else
+	{
+		IplImage* iplRGBA = cvCreateImage(cvGetSize(image->ipl), depth, 4);
+		printf("\t\t\t    ipl->nChannels = %d\n", image->ipl->nChannels);
+		printf("\t\t\tiplRGBA->nChannels = %d\n", iplRGBA->nChannels);
+		cvCvtColor(image->ipl, iplRGBA, CV_BGR2RGBA);
+		cvReleaseImage(&(image->ipl));
+		free(image->ipl);
+		image->ipl = iplRGBA;
+		image->nChannels = 4;
+		printf("\t\t\tipl->nChannels = %d\n", image->ipl->nChannels);
+		nChannels = 4;
+	}
   }
 
   if (nChannels == 3){
@@ -368,7 +376,7 @@ void vglUpload(VglImage* image, int swapRGB){
     }
   }
   else{
-    internalFormat = GL_LUMINANCE;
+		  internalFormat = GL_RGBA; //Must be fixed, but for now, it's the fix.
   }
 
   if (ndim == 3){

@@ -345,7 +345,12 @@ void vglClDownloadInterop(VglImage* img)
 {
     vglClToGl(img);
 	if (vglIsInContext(img,VGL_GL_CONTEXT) && !vglIsInContext(img,VGL_RAM_CONTEXT))
-		vglDownloadFaster(img);
+	{
+		if (img->ndim == 2)
+			vglDownloadFaster(img);
+		else
+			vglDownload(img);
+	}
 }
 
 
@@ -357,8 +362,16 @@ void vglClAlloc(VglImage* img)
 	cl_int err_cl;
     if (img->oclPtr == NULL)
     {
-        img->oclPtr = clCreateFromGLTexture2D(cl.context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, img->tex, &err_cl);
-        vglClCheckError(err_cl, (char*) "clCreateFromGLTexture");
+		if (img->ndim == 2)
+		{
+			img->oclPtr = clCreateFromGLTexture2D(cl.context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, img->tex, &err_cl);
+			vglClCheckError(err_cl, (char*) "clCreateFromGLTexture");
+		}
+		else if(img->ndim == 3)
+		{
+			img->oclPtr = clCreateFromGLTexture3D(cl.context, CL_MEM_READ_WRITE, GL_TEXTURE_3D, 0, img->tex, &err_cl);
+			vglClCheckError(err_cl, (char*) "clCreateFromGLTexture");
+		}
 
     }
 }
