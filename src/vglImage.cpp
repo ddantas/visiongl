@@ -276,7 +276,7 @@ void vglUpload(VglImage* image, int swapRGB){
 	}
 	else
 	{
-		IplImage* iplRGBA = cvCreateImage(cvGetSize(image->ipl), depth, 4);
+		/*IplImage* iplRGBA = cvCreateImage(cvGetSize(image->ipl), depth, 4);
 		printf("\t\t\t    ipl->nChannels = %d\n", image->ipl->nChannels);
 		printf("\t\t\tiplRGBA->nChannels = %d\n", iplRGBA->nChannels);
 		cvCvtColor(image->ipl, iplRGBA, CV_BGR2RGBA);
@@ -285,7 +285,7 @@ void vglUpload(VglImage* image, int swapRGB){
 		image->ipl = iplRGBA;
 		image->nChannels = 4;
 		printf("\t\t\tipl->nChannels = %d\n", image->ipl->nChannels);
-		nChannels = 4;
+		nChannels = 4;*/
 	}
   }
 
