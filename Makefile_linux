@@ -10,8 +10,9 @@ BINARY_NAME          = visiongl
 CUDA_NAME            = vglcuda
 FRACTAL_NAME         = fractal
 CAM_NAME             = cam
-GDCM_NAME	     = gdcm
-DCMTK_NAME	     = dcmtk
+GDCM_NAME            = gdcm
+DCMTK_NAME           = dcmtk
+CL3D_NAME            = cl3d
 BENCHMARK_CV_NAME    = benchmark_cv
 BENCHMARK_CVOCL_NAME = benchmark_cvocl
 BENCHMARK_CL_NAME    = benchmark_cl
@@ -37,10 +38,10 @@ OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 0
-WITH_OPENCL = 0
-WITH_GDCM = 0
-WITH_DCMTK = 0
+WITH_CUDA = 1
+WITH_OPENCL = 1
+WITH_GDCM = 1
+WITH_DCMTK = 1
 
 ifeq ($(WITH_OPENCL), 1)
 	OPENCL_DEF        = -D__OPENCL__
@@ -144,9 +145,9 @@ LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
                           $(CUDA_FILES) $(VGL_FILES) $(OPENCL_FILES) \
                          $(LINUXAMD64_DIRS_LIBS) $(CUDA_DIRS_LIBS) 
 
-LINUXAMD64_DEMO_3D = $(CC) $(COMPILER_FLAGS) \
-                        -o $(OUTPUT_BINPATH)/demo_3d \
-                         src/demo/3dtex.cpp \
+LINUXAMD64_DEMO_CL3D = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(CL3D_NAME) \
+                         src/demo/$(CL3D_NAME).cpp \
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS)
 
@@ -236,8 +237,8 @@ demogdcm:
 demodcmtk:
 	$(LINUXAMD64_DEMO_DCMTK)
 
-demo3d:
-	$(LINUXAMD64_DEMO_3D)
+democl3d:
+	$(LINUXAMD64_DEMO_CL3D)
 
 demobenchmark:
 	$(LINUXAMD64_DEMO_BENCHMARK_CV)
@@ -248,8 +249,8 @@ demobenchmark:
 .PHONY: lib
 
 
-rundemo3d:
-	cd $(OUTPUT_BINPATH); ./demo_3d
+rundemocl3d:
+	cd $(OUTPUT_BINPATH); ./demo_$(CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 /tmp
 
 rundemofrac:
 	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)

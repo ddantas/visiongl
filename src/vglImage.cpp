@@ -582,7 +582,7 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, in
 
 /** Save PGM 3d images on the disk
 */
-void vglSaveImage(VglImage* image, char* filename, int lStart, int lEnd)
+void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
 {
 	//vglDownload(image); //must be fixed before enabling
         char* temp_filename = (char*)malloc(strlen(filename)+256);
