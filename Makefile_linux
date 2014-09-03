@@ -37,8 +37,8 @@ OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 1
-WITH_OPENCL = 1
+WITH_CUDA = 0
+WITH_OPENCL = 0
 WITH_GDCM = 0
 WITH_DCMTK = 0
 
@@ -275,10 +275,10 @@ rundemodcmtk:
 	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) /home/davy/Desktop/imageTest/16bits/E1154S7I.dcm /tmp/outputdcmtk16.dcm -c
 
 rundemobenchmark:
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 100 /tmp
-	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 100 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 100 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 15 100 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 10 /tmp
+	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 10 /tmp
 
 cuda:
 	./kernel2cu.pl -o src/kernel2cu_shaders src/CUDA/*.kernel
