@@ -3,17 +3,18 @@
 #  FREEGLUT_FOUND - System has FreeGLUT
 #  FREEGLUT_INCLUDE_DIR - The FreeGLUT include directory
 #  FREEGLUT_LIBRARY - The library needed to use FreeGLUT
-message("started finding freeglut")
-if (WIN32)
-	find_package(FREEGLUT QUIET)
-	if (NOT ${FREEGLUT_FOUND})
-		message("Package freeglut not found, trying to find it somewhere, if you have any trouble, edit FindMyFREEGLUT.cmake in cmake-modules directory")
-	
-		#please add here a possible path for you computer to find FreeGLUT 
-		#if find_package isnt working // remembering, this paths are windows only
+
+message("Looking for Freeglut")
+find_package(FREEGLUT QUIET)
+
+if (NOT ${FREEGLUT_FOUND})
+	message("Package Freeglut not found, trying to find it somewhere.")
+        if (WIN32)
+		# If find_package is not finding Glew, please add here the path to Glew folder
 		set(possible_paths 
-			#mycustompath
+			# win32 custom path
 			"$ENV{userprofile}/Documents"
+			"c:/lib/freeglut_MSVC"
 		)
 
 		find_path(FREEGLUT_DIR NAMES "include/GL/freeglut.h"
@@ -33,11 +34,12 @@ if (WIN32)
 			
 		if (NOT (${FREEGLUT_INCLUDE_DIR} STREQUAL "FREEGLUT_INCLUDE_DIR-NOTFOUND" AND ${FREEGLUT_LIBRARY} STREQUAL "FREEGLUT_LIBRARY-NOTFOUND"))
 			set(FREEGLUT_FOUND TRUE)
-			message("Managed to find FREEGLUT")
+			message("Glew was found after some tries")
 		endif()
 
 		if(NOT ${FREEGLUT_FOUND})
-			
+			message("Freeglut lib and include not found. Please add Freeglut custom path to cmake-modules/FindMyFREEGLUT.cmake, or set these variables manually as a cmake parameter like -DFREGLUT_INCLUDE_DIR=c:/freeglut/include")
+
 			if(${FREEGLUT_INCLUDE_DIR} STREQUAL "FREEGLUT_INCLUDE_DIR-NOTFOUND")
 				set(FREEGLUT_INCLUDE_DIR CACHE PATH "Path to the FREEGLUT include directory")
 			endif()
@@ -47,17 +49,14 @@ if (WIN32)
 			endif()
 			
 		endif()
-	else()
-		message("FreeGLUT lib and include found successful")
-	endif()
-else()
-		#please add here a possible path for you computer to find FreeGLUT 
+        else()
+		# If find_package is not finding Glew, please add here the path to Freeglut folder
 		set(possible_paths 
 		  "/usr/"
 		  "/usr/include"
 		  "/usr/lib"
 		  "/usr/lib/x86_64-linux-gnu"
-		  #mycustompath
+		  # linux custom path
 		)
 		
 		find_path(FREEGLUT_INCLUDE_DIR NAMES GL/freeglut.h
@@ -73,7 +72,7 @@ else()
 		
 		if (NOT (${FREEGLUT_INCLUDE_DIR} STREQUAL "FREEGLUT_INCLUDE_DIR-NOTFOUND" AND ${FREEGLUT_LIBRARY} STREQUAL "FREEGLUT_LIBRARY-NOTFOUND"))
 			set(FREEGLUT_FOUND TRUE)
-			message("Managed to find FREEGLUT")
+			message("Glew was found after some tries")
 		endif()
 
 		if(NOT ${FREEGLUT_FOUND})
@@ -87,6 +86,11 @@ else()
 			endif()
 			
 		endif()
+        endif()
+else()
+	message("FreeGLUT lib and include found.")
 endif()
-message("freeglut include: " ${FREEGLUT_INCLUDE_DIR})
-message("freeglut library: " ${FREEGLUT_LIBRARY})
+
+message("Freeglut include: " ${FREEGLUT_INCLUDE_DIR})
+message("Freeglut library: " ${FREEGLUT_LIBRARY})
+message("")

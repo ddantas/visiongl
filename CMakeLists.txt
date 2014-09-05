@@ -9,8 +9,8 @@ project(visiongl)
 
 if(NOT DEFINED OpenCV_VERSION)
 	message("No OpenCV_VERSION was given, if you want to set your own OpenCV Version in order to work, please type: cmake . -DOpenCV_VERSION=xxx")
-	message("default OpenCV_VERSION: 246")
-	set(OpenCV_VERSION 246 CACHE FILEPATH "Version of OpenCV without dots")
+	message("default OpenCV_VERSION: 249")
+	set(OpenCV_VERSION 249 CACHE FILEPATH "Version of OpenCV without dots")
 endif()
 
 #creating target subdirectories
@@ -78,7 +78,7 @@ if(WIN32)
 	#opencv_calib3d248d.lib)
 
 	# Adding folders containing libs
-	link_directories(${OPENCV_LIBRARY})
+	#link_directories(${OPENCV_LIBRARY})
 	
 
 	# Adding folders containing header files
