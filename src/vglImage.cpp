@@ -527,7 +527,7 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
 
   vglSetContext(vglImage, VGL_BLANK_CONTEXT);
   vglUpload(vglImage);
-
+  
   return vglImage;
 }
 
@@ -1079,6 +1079,7 @@ VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
 
   vglSetContext(img, VGL_RAM_CONTEXT);
   vglUpload(img);
+
   if (img->ipl){
     return img;
   }
