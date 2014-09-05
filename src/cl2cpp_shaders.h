@@ -7,6 +7,41 @@
 ***                                                                 ***
 *********************************************************************/
 #include "vglImage.h"
+
+
+void vglClNdNot(VglImage* img_input, VglImage* img_output);
+
+/** Convolution of src image by mask. Result is stored in dst image.
+
+  */
+void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output);
+
+/** Convolution of src image by mask. Result is stored in dst image.
+
+  */
+void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+
+/** Direct copy from src to dst.
+
+  */
+void vglCl3dCopy(VglImage* img_input, VglImage* img_output);
+
+/** Erosion of src image by mask. Result is stored in dst image.
+
+  */
+void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+
+/** Direct copy from src to dst.
+
+  */
+void vglCl3dNot(VglImage* img_input, VglImage* img_output);
+
+/** Threshold of src image by float parameter. Result is stored in dst image.
+
+  */
+void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh);
+void vglCl3dThresholdGray(VglImage* src, VglImage* dst, float thresh);
+
 /** Convolution of src image by mask. Result is stored in dst image.
 
   */

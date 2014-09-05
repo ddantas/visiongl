@@ -25,7 +25,7 @@ int vglAddContext(VglImage* img, int context);
 int vglSetContext(VglImage* img, int context);
 int vglCheckContext(VglImage* img, int context);
 int vglCheckContextForOutput(VglImage* img, int context);
-void vglPrintContext(int context, char* msg = "");
-void vglPrintContext(VglImage* img, char* msg = "");
+void vglPrintContext(int context, char* msg = NULL);
+void vglPrintContext(VglImage* img, char* msg = NULL);
 
 #endif

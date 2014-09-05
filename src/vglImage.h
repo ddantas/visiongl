@@ -69,11 +69,27 @@ class VglImage{
   GLuint    tex;
   void*     cudaPtr;
   GLuint    cudaPbo;
+
+  size_t getTotalSizeInBytes()
+  {
+		int bytesPerPixel = this->depth / 8;
+		if (bytesPerPixel < 1)
+			bytesPerPixel = 1;
+
+		size_t totalSize = 1;
+		for(int i = 0; i < this->ndim; i++)
+		{
+			totalSize *= this->shape[i];
+		}
+		totalSize *= this->nChannels * bytesPerPixel;
+		return totalSize;
+  }
+
 #ifdef __OPENCL__
-  IplImage* iplRGBA;
   cl_mem    oclPtr;
 #endif
   int       inContext;
+  char*     filename;
 };
 
 ////////// VglNamedWindow
@@ -122,10 +138,12 @@ int vglInit(int w, int h);
 void vglUpload(VglImage* image, int swapRGB = 0);
 VglImage* vglCopyCreateImage(VglImage* img_in);
 VglImage* vglCreateImage(VglImage* img_in);
-VglImage* vglCopyCreateImage(IplImage* img_in, int dim3 = 1, int has_mipmap = 0);
-VglImage* vglCreateImage(IplImage* img_in, int dim3 = 1, int has_mipmap = 0);
-VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int dim3 = 1, int has_mipmap = 0);
-VglImage* vglCloneImage(IplImage* img_in, int dim3 = 1, int has_mipmap = 0);
+VglImage* vglCopyCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
+VglImage* vglCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
+VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int ndim = 2, int has_mipmap = 0);
+VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
+void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd);
+VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 void vglReleaseImage(VglImage** p_image);
 void vglReplaceIpl(VglImage* image, IplImage* new_ipl);
 void vglDownload(VglImage* image);
@@ -133,8 +151,10 @@ void vglDownloadPPM(VglImage* image);
 void vglDownloadFBO(VglImage* image);
 void vglDownloadFaster(VglImage* image/*, VglImage* buf*/);
 VglImage* vglLoadImage(char* filename, int iscolor = 1, int has_mipmap = 0);
-void vglPrintImageInfo(VglImage* image);
-void iplPrintImageInfo(IplImage* ipl);
+VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
+void vglPrintImageData(VglImage* image);
+void vglPrintImageInfo(VglImage* image, char* msg = NULL);
+void iplPrintImageInfo(IplImage* ipl, char* msg = NULL);
 void vglCopyImageTex(VglImage* src, VglImage* dst);
 void vglAxis(void);
 void vglCopyImageTexVFS(VglImage* src, VglImage* dst);
@@ -143,12 +163,17 @@ void vglGreen(VglImage* src, VglImage* dst);
 void vglVerticalFlip2(VglImage* src, VglImage* dst);
 void vglHorizontalFlip2(VglImage* src, VglImage* dst);
 void vglClear(VglImage* image, float r, float g, float b, float a = 0.0);
+void vglNdarray3To4Channels(VglImage* img);
+void vglNdarray4To3Channels(VglImage* img);
+void vglIpl4To3Channels(VglImage* img);
+void vglIpl3To4Channels(VglImage* img);
 int SavePPM(char* filename, int w, int h, void* savebuf);
 int vglSavePPM(VglImage* img, char* filename);
 int SavePGM(char* filename, int w, int h, void* savebuf);
 int vglSavePGM(VglImage* img, char* filename);
 IplImage* LoadPGM(char* filename);
 VglImage* vglLoadPGM(char* filename);
+
 
 
 void vglDistTransformCross3(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, int times = 1);
@@ -164,6 +189,7 @@ void vglErodeSq3Sep(VglImage* src, VglImage* dst, VglImage* buf, int times = 1);
 void vglErodeSq5Sep(VglImage* src, VglImage* dst, VglImage* buf, int times = 1);
 void vglCErodeCross3(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buf, int times);
 void vglGray2(VglImage*  src, VglImage*  dst, VglImage*  dst1);
+
 
 void vglInOut_model(VglImage*  dst, VglImage*  dst1);
 
@@ -219,11 +245,13 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1);
   static GLenum errCode; \
   const GLubyte *errString; \
   if ((errCode = glGetError()) != GL_NO_ERROR) { \
-    errString = gluErrorString(errCode); \
-    printf ("OpenGL Error: %s at %s:%d\n", errString,  __FILE__,__LINE__); \
-    exit(1); \
+    /*errString = gluErrorString(errCode);*/     \
+    errString = glGetString(errCode); \
+    printf ("OpenGL Error %x: %s at %s:%d\n", errCode, errString,  __FILE__,__LINE__); \
+	exit(1); \
   } \
 } \
  
+
 
 #endif

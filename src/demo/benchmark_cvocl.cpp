@@ -1,12 +1,14 @@
+
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/ocl/ocl.hpp>
 
 #include "demo/timer.h"
+
 #include <fstream>
 
-using namespace std;
-using namespace cv;
+//using namespace std;
+//using namespace cv;
 
 
 /*
@@ -15,179 +17,194 @@ using namespace cv;
 */
 int main(int argc, char* argv[])
 {
-	if (argc != 3)
-	{
-		printf("Usage: OpenCVCLBenchmark lena_1024.tif 1000\n");
-		printf("for this example, will run the program for lena_1024.tif using 1000 operations each\n");
-		printf("bad arguments, read usage again\n");
-		exit(1);
-	}
 
-	int limite = atoi(argv[2]);
-	char* image_path = argv[1];
-	printf("OpenCVCLBenchmark on %s for %d operations\n\n",image_path,limite);
-	cv::Mat imgxm = imread(image_path,1);
+    if (argc != 4)
+    {
+        printf("\nUsage: demo_benchmark_cvocl lena_1024.tiff 1000 /tmp\n\n");
+        printf("In this example, will run the program for lena_1024.tiff in a \nloop with 1000 iterations. Output images will be stored in /tmp.\n\n");
+        printf("Error: Bad number of arguments = %d. 3 arguments required.\n", argc-1);
+        exit(1);
+    }
 
-	cvtColor(imgxm,imgxm,CV_BGR2RGBA);
-	ocl::oclMat img(imgxm), out(imgxm);
+    int nSteps = atoi(argv[2]);
+    char* inFilename = argv[1];
+    char* outPath = argv[3];
+    char* outFilename = (char*) malloc(strlen(outPath) + 200);
+    printf("OpenCVCLBenchmark on %s for %d operations\n\n",inFilename,nSteps);
+    cv::Mat imgxm = cv::imread(inFilename,1);
 
-	vector<int> saveparams;
-	saveparams.push_back(CV_IMWRITE_PNG_COMPRESSION);
-	saveparams.push_back(1);
+    cvtColor(imgxm, imgxm, CV_BGR2RGBA);
+    cv::ocl::oclMat img(imgxm), out(imgxm);
+
+    std::vector<int> saveparams;
+    //saveparams.push_back(CV_IMWRITE_PNG_COMPRESSION);
+    //saveparams.push_back(1);
 	
-	if (img.data == NULL)
-	{
-		std::string str("cvLoadImage/File not found: ");
-		str.append(image_path);
-		printf("%s",str.c_str());
-	}
-	
-	//Primeira chamada a blurSq3
-	Size ksize(3,3);
-	TimerStart();
-	ocl::GaussianBlur(img,out,Size(3,3),0);
-	//ocl::blur(img,out,ksize);
-	printf("Primeira chamada de Blur: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para limite blur 3x3 sem a criação da operação
-	int p = 0;
-	TimerStart();
-	while (p < limite)
-	{
-		p++;
-		//ocl::blur(img,out,ksize);
-		ocl::GaussianBlur(img,out,Size(3,3),0);
-	}
-	printf("Tempo gasto para fazer %d Blur 3x3: %s\n", limite, getTimeElapsedInSeconds());
+    if (img.data == NULL)
+    {
+        std::string str("Error: File not found: ");
+        str.append(inFilename);
+        printf("%s",str.c_str());
+    }
 
-		cv::Mat saveout(out);
-		cvtColor(saveout,saveout,CV_RGBA2BGR);
-        cv::imwrite("../images/lenaout_blur33.png", saveout,saveparams);
-		
-	//Primeira chamada a Convolution
-	
-    Mat cvkernel33 = (Mat_<float>(3,3) << 1/9.0, 1/9.0, 1/9.0, 
-                                          1/9.0, 1/9.0, 1/9.0, 
-	                                      1/9.0, 1/9.0, 1/9.0  );
+    //First call to Blur 3x3
+    cv::Size ksize(3,3);
+    TimerStart();
+    cv::ocl::GaussianBlur(img, out, cv::Size(3,3), 0);
+    //ocl::blur(img,out,ksize);
+    printf("First call to          Blur 3x3:                %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Blur 3x3
+    int p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+	cv::ocl::GaussianBlur(img, out, cv::Size(3,3), 0);
+        //ocl::blur(img,out,ksize);
+    }
+    printf("Time spent on %8d Blur 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
+    
+    cv::Mat saveout(out);
+    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    sprintf(outFilename, "%s%s", outPath, "/out_cvocl_blur33.tif");
+    cv::imwrite(outFilename, saveout, saveparams);
 
-    Mat cvkernel55 = (Mat_<float>(5,5) << 1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
+    // Convolution kernels
+    cv::Mat cvkernel33 = (cv::Mat_<float>(3,3) << 1/9.0, 1/9.0, 1/9.0, 
+                                                  1/9.0, 1/9.0, 1/9.0, 
+	                                          1/9.0, 1/9.0, 1/9.0  );
+
+    cv::Mat cvkernel55 = (cv::Mat_<float>(5,5) << 1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
                                           1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
                                           1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
                                           1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0,
                                           1/25.0, 1/25.0, 1/25.0, 1/25.0, 1/25.0  );
 
+    //First call to Convolution 3x3
+    TimerStart();
+    cv::Ptr<cv::ocl::FilterEngine_GPU> filter33 = cv::ocl::createLinearFilter_GPU(CV_8UC4, CV_8UC4, cvkernel33);
+    filter33->apply(img, out);
+    printf("First call to          Convolution 3x3:         %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Convolution 3x3
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        filter33->apply(img, out);
+    }
+    printf("Time spent on %8d Convolution 3x3:         %s \n", nSteps, getTimeElapsedInSeconds());
+    saveout = *new cv::Mat(out);
+    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    sprintf(outFilename, "%s%s", outPath, "/out_cvocl_conv33.tif");
+    cv::imwrite(outFilename, saveout, saveparams);
+
+    //First call to Convolution 5x5
+    TimerStart();
+    cv::Ptr<cv::ocl::FilterEngine_GPU> filter55 = cv::ocl::createLinearFilter_GPU(CV_8UC4, CV_8UC4, cvkernel55);
+    filter55->apply(img, out);
+    printf("First call to          Convolution 5x5:         %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Convolution 5x5
+    p = 0;
+    filter55->apply(img,out);
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        filter55->apply(img, out);
+    }
+    printf("Time spent on %8d Convolution 5x5:         %s\n", nSteps, getTimeElapsedInSeconds());
+    saveout = *new cv::Mat(out);
+    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    sprintf(outFilename, "%s%s", outPath, "/out_cvocl_conv55.tif");
+    cv::imwrite(outFilename, saveout,saveparams);
+
+    //First call to Erode 3x3
+    TimerStart();
+    cv::Mat cverode33 = getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
+    cv::ocl::erode(img, out, cverode33);
+    printf("First call to          Erode 3x3:               %s \n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Erode 3x3
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+	cv::ocl::erode(img, out, cverode33);
+    }
+    printf("Time spent on %8d Erode 3x3:               %s\n", nSteps, getTimeElapsedInSeconds());
+    saveout = *new cv::Mat(out);
+    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    sprintf(outFilename, "%s%s", outPath, "/out_cvocl_erode33.tif");
+    cv::imwrite(outFilename, saveout,saveparams);
 	
-	TimerStart();
-	cv::Ptr<ocl::FilterEngine_GPU> filter33 = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4, cvkernel33);
-	cv::Ptr<ocl::FilterEngine_GPU> filter55 = ocl::createLinearFilter_GPU(CV_8UC4,CV_8UC4, cvkernel55);
-	filter33->apply(img,out);
-	printf("Primeira chamada da Convolucao com kernel 3x3: %s\n", getTimeElapsedInSeconds());
-	//Mede o tempo para limite convoluções 3x3 sem a criação da operação
-	p = 0;
-	TimerStart();
-	while (p < limite)
-	{
-		p++;
-		filter33->apply(img,out);
-	}
-	printf("Tempo gasto para fazer %d convolucoes 3x3: %s \n", limite, getTimeElapsedInSeconds());
-		
-		saveout = *new cv::Mat(out);
-		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("../images/lenaout_conv33.png", saveout,saveparams);
+    //First call to Invert
+    TimerStart();
+    cv::ocl::bitwise_not(img,out);
+    printf("Fisrt call to          Invert:                  %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Invert
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+	cv::ocl::bitwise_not(img,out);
+    }
+    printf("Time spent on %8d Invert:                  %s\n", nSteps, getTimeElapsedInSeconds());
+    saveout = *new cv::Mat(out);
+    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    sprintf(outFilename, "%s%s", outPath, "/out_cvocl_invert.tif");
+    cv::imwrite(outFilename, saveout,saveparams);
 
-	//Mede o tempo para limite convoluções 5x5 sem a criação da operação
-	p = 0;
-	filter55->apply(img,out);
-	TimerStart();
-	while (p < limite)
-	{
-		p++;
-		filter55->apply(out,out);
-	}
-	printf("Tempo gasto para fazer %d convolucoes 5x5: %s\n", limite, getTimeElapsedInSeconds());
-		
-		saveout = *new cv::Mat(out);
-		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("../images/lenaout_conv55.png", saveout,saveparams);
+    //First call to Copy GPU->GPU
+    TimerStart();
+    cv::ocl::oclMat x1(img.size(), CV_8UC4);
+    img.copyTo(x1);
+    printf("First call to          Copy GPU->GPU:           %s \n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Copy GPU->GPU
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        img.copyTo(x1);
+    }
+    printf("Time spent on %8d copy GPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
+    saveout = *new cv::Mat(out);
+    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    sprintf(outFilename, "%s%s", outPath, "/out_cvocl_gpuCopy.tif");
+    cv::imwrite(outFilename, saveout, saveparams);
 
-	//Primeira chamada a threshold
-	TimerStart();
-	Mat cverode33 = getStructuringElement(MORPH_CROSS, Size( 3, 3 ));
-	ocl::erode(img,out,cverode33);
-	
-	printf("Primeira chamada da Erode: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para limite thresholds sem a criação da operação
-	p = 0;
-	TimerStart();
-	while (p < limite)
-	{
-		p++;
-		ocl::erode(img,out,cverode33);
-	}
-	printf("Tempo gasto para fazer %d Erosions: %s\n", limite, getTimeElapsedInSeconds());
+    //First call to Copy CPU->GPU
+    cv::ocl::oclMat x;
+    p = 0;
+    TimerStart();
+    img.upload(imgxm);
+    printf("First call to          Copy CPU->GPU:           %s \n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Copy CPU->GPU
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        img.upload(imgxm);
+    }
+    printf("Time spent on %8d copy CPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
-		saveout = *new cv::Mat(out);
-		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("../images/lenaout_erosion.png", saveout,saveparams);
-	
-	//Primeira chamada a vglClInvert
-	TimerStart();
-	ocl::bitwise_not(img,out);
-	printf("Primeira chamada da Invert: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para limite invert sem a criação da operação
-	p = 0;
-	TimerStart();
-	while (p < limite)
-	{
-		p++;
-		ocl::bitwise_not(img,out);
-	}
-	printf("Tempo gasto para fazer %d Invert: %s\n",limite, getTimeElapsedInSeconds());
+    //First call to Copy GPU->CPU
+    cv::Mat x2;
+    TimerStart();
+    img.download(x2);
+    printf("First call to          Copy GPU->CPU:           %s \n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Copy GPU->CPU
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        img.download(x2);
+    }
+    printf("Time spent on %8d copy GPU->CPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
-		saveout = *new cv::Mat(out);
-		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("../images/lenaout_invert.png", saveout,saveparams);
-
-	TimerStart();
-	
-	img.copyTo(out);
-	printf("Primeira chamada da Copy: %s \n", getTimeElapsedInSeconds());
-	//Mede o tempo para limite copia GPU->GPU
-	p = 0;
-	TimerStart();
-	ocl::oclMat x1(img.size(), CV_8UC4);
-	while (p < limite)
-	{
-		p++;
-		img.copyTo(x1);
-	}
-	printf("Tempo gasto para fazer %d copia GPU->GPU: %s\n", limite, getTimeElapsedInSeconds());
-
-        saveout = *new cv::Mat(out);
-		cvtColor(saveout,saveout,CV_RGBA2BGR);
-		cv::imwrite("../images/lenaout_copy.png", saveout,saveparams);
-
-	//Mede o tempo para limite copia CPU->GPU
-	
-	ocl::oclMat x;
-	p = 0;
-	TimerStart();
-	while (p < limite)
-	{
-		p++;
-		img.upload(imgxm);
-	}
-	printf("Tempo gasto para fazer %d copia CPU->GPU(Upload) %s\n", limite, getTimeElapsedInSeconds());
-
-	//Mede o tempo para limite copia GPU->CPU
-	cv::Mat x2;
-	p = 0;
-	TimerStart();
-	while (p < limite)
-	{
-		p++;
-		img.download(x2);
-	}
-	printf("Tempo gasto para fazer %d copia GPU->CPU(Download) %s\n", limite, getTimeElapsedInSeconds());
-	return 0;
+    return 0;
 }

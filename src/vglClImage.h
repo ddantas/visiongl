@@ -24,15 +24,20 @@ struct VglClContext
 	cl_command_queue commandQueue;
 };
 
-
 void vglClPrintContext(void);
 void vglClCheckError(cl_int error, char* name);
 void vglClInit();
 void vglClFlush();
 void vglClBuildDebug(cl_int err, cl_program program);
-void vglClUpload(VglImage* src);
-void vglClUpload(VglImage* src, bool force_copy);
+void vglClUploadForce(VglImage* img);
+void vglClDownloadForce(VglImage* img);
+void vglClUpload(VglImage* img);
 void vglClDownload(VglImage* img);
+void vglClUploadInterop(VglImage* img);
+void vglClDownloadInterop(VglImage* img);
+void vglClToGl(VglImage* img);
+void vglGlToCl(VglImage* img);
+void vglClAlloc(VglImage* img);
 
 #endif
 

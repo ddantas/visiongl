@@ -140,12 +140,12 @@ sub LineStartSemicolon { # ($line) {
 sub LineStartSemantics { # ($line) {
   my $line = $_[0];
 
-  $line =~ s#^\s*([a-zA-Z_]\w*)\s*##;
+  $line =~ s#^\s*(__read_only|__write_only|__constant)\s*##;
   $semantics = $1;
   if ($semantics){
     if (!($semantics =~ m#^(__read_only|__write_only|__constant)$#))
     {
-      die "Semantic $semantics invalid. Valid semantics are (__read_only|__write_only|__constant)\n";
+      print "Semantic $semantics invalid. Valid semantics are (__read_only|__write_only|__constant)\n";
     }
   }
   else{
@@ -577,10 +577,10 @@ sub ProcessClHeader { # ($line) {
 
     ($semantics[$i], $line) = LineStartSemantics($line);
     if (!$semantics[$i]){
-      #print "Start-of-line semantics not found\n";
+      print "Start-of-line semantics not found\n";
     }
     else{
-      #print "After eliminating semantics:\n$line\n";
+      print "After eliminating semantics:\n$line\n";
     }
 
     ($type[$i], $line) = LineStartType($line);
@@ -791,7 +791,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   print HEAD "void $basename(";
   for ($i = 0; $i <= $#type; $i++){
     print ">>>$type[$i]<<< becomes ";
-    if ($type[$i] eq "image2d_t"){
+    if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") ){
       $type[$i] = "VglImage*";
     }
     else{
@@ -829,7 +829,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
 ";
 
   for ($i = 0; $i <= $#type; $i++){
-    if ($type[$i] ne "VglImage*"){
+    if ( ($type[$i] ne "VglImage*") and ($is_array[$i]) ){
         $var = $variable[$i];
         my $e = "&";
         if ($is_array[$i]){
@@ -882,11 +882,22 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
     if ($type[$i] eq "VglImage*"){
       $addr = "(void*) &$variable[$i]->oclPtr";
     }
-    else{
+    elsif ($is_array[$i]){
       $addr = "($type[$i]*) &mobj_$variable[$i]";
     }
+    else{
+      $addr = "&$variable[$i]";
+    }
+    if ( ($type[$i] eq "VglImage*") or ($is_array[$i]) ){
+      $sizeof = "cl_mem";
+    }
+    else{
+      $sizeof = "$type[$i]";
+    }
+
+
     print CPP "
-  err = clSetKernelArg( kernel, $i, sizeof( cl_mem ), $addr );
+  err = clSetKernelArg( kernel, $i, sizeof( $sizeof ), $addr );
   vglClCheckError( err, (char*) \"clSetKernelArg $i\" );
 ";
   }
@@ -898,13 +909,23 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   }
  
   print CPP "
-  size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], 1 };
-  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  if ($var_worksize->ndim <= 2){
+    size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], 1 };
+    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  }
+  else if ($var_worksize->ndim == 3){
+    size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], $var_worksize->shape[VGL_LENGTH] };
+    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
+  }
+  else{
+    printf(\"More than 3 dimensions not yet supported\\n\");
+  }
+
   vglClCheckError( err, (char*) \"clEnqueueNDRangeKernel\" );
 ";
 
   for ($i = 0; $i <= $#type; $i++){
-    if (($type[$i] ne "VglImage*") && ($semantics[$i] ne "__write_only")){
+    if (($type[$i] ne "VglImage*") && ($semantics[$i] ne "__write_only") && ($is_array[$i] != 0)){
       print CPP "
   err = clReleaseMemObject( mobj_$variable[$i] );
   vglClCheckError(err, (char*) \"clReleaseMemObject mobj_$variable[$i]\");

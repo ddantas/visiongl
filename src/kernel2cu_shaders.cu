@@ -14,7 +14,7 @@
 #include <iostream>
 
 //kernels
-#include "src/kernel2cu_shaders.kernel"
+#include "kernel2cu_shaders.kernel"
 /** vglCudaCopy
 
     Copy of image in cuda context.

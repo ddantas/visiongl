@@ -9,6 +9,7 @@
 //IplImage, cvLoadImage
 //#include <opencv2/core/core_c.h>
 #include <opencv2/highgui/highgui_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
 //#include <cvaux.h>
 
 #include "vglContext.h"
@@ -17,6 +18,9 @@
 
 //vglDilateSq3, vglErodeSq3
 #include "glsl2cpp_shaders.h"
+
+//uint8_t 16 32 64
+#include <stdint.h>
 
   /** \brief Refresh all output images.
    */
@@ -250,15 +254,39 @@ void vglUpload(VglImage* image, int swapRGB){
   GLenum internalFormat;
   int depth      = image->depth;
   int nChannels  = image->nChannels;
-  int dim3       = image->ndim;
+  int ndim       = image->ndim;
   int has_mipmap = image->has_mipmap;
 
 
   //printf("vglUpload: image context = %d\n", image->inContext);
-  if (!vglIsInContext(image, VGL_RAM_CONTEXT)  && 
+  if (!vglIsInContext(image, VGL_RAM_CONTEXT)  &&
       !vglIsInContext(image, VGL_BLANK_CONTEXT)    ){
+#ifdef __DEBUG__
     fprintf(stderr, "vglUpload: Error: image context = %d not in VGL_RAM_CONTEXT or VGL_BLANK_CONTEXT\n", image->inContext);
+#endif
     return;
+  }
+
+  if (nChannels == 3){
+    printf("\t\t\tswapRGB = %d\n", swapRGB);
+    //swapRGB = (swapRGB + 1) % 2;
+	if(ndim == 3)
+	{
+		vglNdarray3To4Channels(image);
+	}
+	else
+	{
+		/*IplImage* iplRGBA = cvCreateImage(cvGetSize(image->ipl), depth, 4);
+		printf("\t\t\t    ipl->nChannels = %d\n", image->ipl->nChannels);
+		printf("\t\t\tiplRGBA->nChannels = %d\n", iplRGBA->nChannels);
+		cvCvtColor(image->ipl, iplRGBA, CV_BGR2RGBA);
+		cvReleaseImage(&(image->ipl));
+		free(image->ipl);
+		image->ipl = iplRGBA;
+		image->nChannels = 4;
+		printf("\t\t\tipl->nChannels = %d\n", image->ipl->nChannels);
+		nChannels = 4;*/
+	}
   }
 
   if (nChannels == 3){
@@ -267,6 +295,15 @@ void vglUpload(VglImage* image, int swapRGB){
     }
     else{
       glFormat = GL_BGR;
+    }
+  }
+  else if (nChannels == 4)
+  {
+    if (swapRGB){
+      glFormat = GL_RGBA;
+    }
+    else{
+      glFormat = GL_BGRA;
     }
   }
   else{
@@ -278,20 +315,26 @@ void vglUpload(VglImage* image, int swapRGB){
     glGenTextures(1, &image->tex);
   }
 
-  if (dim3 <= 0){
-    fprintf(stderr, "vglUpload: Image dim3 (depth) must be greater than zero. Assuming dim3 = 1\n");
-    dim3 = 1;
+  if (depth != IPL_DEPTH_8U){
+    fprintf(stderr, "%s: %s: Pixel type not supported. Must be IPL_DEPTH_8U\n", __FILE__, __FUNCTION__);
   }
 
-  if (dim3 == 1){
+  if (ndim <= 0){
+    fprintf(stderr, "vglUpload: Image ndim (depth) must be greater than zero. Assuming ndim = 2\n");
+    ndim =2;
+  }
+
+  if (ndim == 2){
     glTarget = GL_TEXTURE_2D;
   }
-  else{
+  else if (ndim == 3){
     glTarget = GL_TEXTURE_3D;
   }
+  else {
+    fprintf(stderr, "%s: %s: Error: images with more than 3 dimensions not supported\n", __FILE__, __FUNCTION__);
+  }
 
-  //printf("w x h x d = %d x %d x %d\n", ipl->width, ipl->height, dim3);
-
+  //printf("%s:%s: w x h x d = %d x %d x %d\n", __FILE__, __FUNCTION__, image->shape[0], image->shape[1], image->shape[2]);
 
   glBindTexture(glTarget, image->tex);
   glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -309,10 +352,10 @@ void vglUpload(VglImage* image, int swapRGB){
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
   }
   ERRCHECK()
-           
+
   switch (depth){
           case IPL_DEPTH_8U:  glType = GL_UNSIGNED_BYTE;  break; 
-          case IPL_DEPTH_16U: glType = GL_UNSIGNED_SHORT; exit(1); break; 
+          case IPL_DEPTH_16U: glType = GL_UNSIGNED_SHORT; break; 
           case IPL_DEPTH_32F: glType = GL_FLOAT; break; 
           case IPL_DEPTH_8S:  glType = GL_BYTE; exit(1);  break; 
           case IPL_DEPTH_16S: glType = GL_SHORT; exit(1); break; 
@@ -324,7 +367,7 @@ void vglUpload(VglImage* image, int swapRGB){
             exit(1);
   }
 
-  if (nChannels == 3){
+  if (nChannels >= 3){
     if (glType == GL_FLOAT){
         internalFormat = GL_RGBA32F_ARB;
     }
@@ -333,20 +376,21 @@ void vglUpload(VglImage* image, int swapRGB){
     }
   }
   else{
-    internalFormat = GL_LUMINANCE;
+		  internalFormat = GL_RGBA; //Must be fixed, but for now, it's the fix.
   }
 
-  if (glTarget == GL_TEXTURE_3D){
+  if (ndim == 3){
     glTexImage3D(glTarget, LEVEL, internalFormat, 
-                 ipl->width, ipl->height, depth, 0,
-                 glFormat, glType, 0);
+                 image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH], 0,
+                 glFormat, glType, image->ndarray);
   }
   else{
-    //printf("uploading with glTexImage2D (w, h) = (%d, %d)\n", ipl->width, ipl->height);
     glTexImage2D(glTarget, LEVEL, internalFormat, 
                  ipl->width, ipl->height, 0,
                  glFormat, glType, ipl->imageData);
   }
+
+  //printf("%s:%s: checking framebuffer...\n", __FILE__, __FUNCTION__);
 
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
@@ -355,8 +399,9 @@ void vglUpload(VglImage* image, int swapRGB){
     glGenFramebuffersEXT(1, &image->fbo);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, image->fbo);
     if (glTarget == GL_TEXTURE_3D){
+      int layer = 0; // will render only to layer 0 
       glFramebufferTexture3DEXT(GL_FRAMEBUFFER_EXT,GL_COLOR_ATTACHMENT0_EXT, 
-				glTarget, image->tex, 0, 0);
+				glTarget, image->tex, 0, layer);
     }
     else{
       glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,GL_COLOR_ATTACHMENT0_EXT, 
@@ -377,7 +422,7 @@ void vglUpload(VglImage* image, int swapRGB){
     Same as vglCopyCreateImage
  */
 /*
-VglImage* vglCloneImage(IplImage* img_in, int dim3 /*=1* /, int has_mipmap /*=0* /)
+VglImage* vglCloneImage(IplImage* img_in, int ndim /*=2* /, int has_mipmap /*=0* /)
 {
   VglImage* vglImage = new VglImage;
   if (!img_in){
@@ -391,7 +436,7 @@ VglImage* vglCloneImage(IplImage* img_in, int dim3 /*=1* /, int has_mipmap /*=0*
   }
   vglImage->width     = img_in->width;
   vglImage->height    = img_in->height;
-  vglImage->dim3      = dim3;
+  vglImage->ndim      = ndim;
   vglImage->depth     = img_in->depth;
   vglImage->nChannels = img_in->nChannels;
   vglImage->has_mipmap = has_mipmap;
@@ -399,7 +444,7 @@ VglImage* vglCloneImage(IplImage* img_in, int dim3 /*=1* /, int has_mipmap /*=0*
   vglImage->tex = -1;
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
-  fprintf(stderr, "vglCloneImage: dim3 = %d\n", vglImage->dim3);
+  fprintf(stderr, "vglCloneImage: ndim = %d\n", vglImage->ndim);
 
   vglSetContext(vglImage, VGL_RAM_CONTEXT);
   vglUpload(vglImage);
@@ -426,9 +471,9 @@ VglImage* vglCopyCreateImage(VglImage* img_in)
 
 /** Create image with same format and data as img_in
  */
-VglImage* vglCopyCreateImage(IplImage* img_in, int dim3 /*=1*/, int has_mipmap /*=0*/)
+VglImage* vglCopyCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /*=0*/)
 {
-  VglImage* retval = vglCreateImage(cvSize(img_in->width, img_in->height), img_in->depth, img_in->nChannels, dim3, has_mipmap);
+  VglImage* retval = vglCreateImage(cvSize(img_in->width, img_in->height), img_in->depth, img_in->nChannels, ndim, has_mipmap);
   cvCopy(img_in, retval->ipl);
   vglSetContext(retval, VGL_RAM_CONTEXT);
   vglUpload(retval);
@@ -445,15 +490,15 @@ VglImage* vglCreateImage(VglImage* img_in)
 
 /** Create image with same format as img_in
  */
-VglImage* vglCreateImage(IplImage* img_in, int dim3 /*=1*/, int has_mipmap /*=0*/)
+VglImage* vglCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /*=0*/)
 {
-  return vglCreateImage(cvGetSize(img_in), img_in->depth, img_in->nChannels, dim3, has_mipmap);
+  return vglCreateImage(cvGetSize(img_in), img_in->depth, img_in->nChannels, ndim, has_mipmap);
 
 }
 
 /** Create image as described by the parameters
  */
-VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int has_mipmap)
+VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int has_mipmap)
 {
   VglImage* vglImage = new VglImage;
   IplImage* ipl = cvCreateImage(size, depth, nChannels);
@@ -464,9 +509,10 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int ha
   }
   
   vglImage->ipl = ipl;
+  vglImage->ndarray = NULL;
   vglImage->shape[VGL_WIDTH] = ipl->width;
   vglImage->shape[VGL_HEIGHT] = ipl->height;
-  vglImage->ndim      = dim3;
+  vglImage->ndim      = ndim;
   vglImage->depth     = ipl->depth;
   vglImage->nChannels = ipl->nChannels;
   vglImage->has_mipmap = has_mipmap;
@@ -475,9 +521,9 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int ha
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
 #ifdef __OPENCL__
-  vglImage->iplRGBA = NULL;
   vglImage->oclPtr = NULL;
 #endif
+  vglImage->filename = NULL;
 
   vglSetContext(vglImage, VGL_BLANK_CONTEXT);
   vglUpload(vglImage);
@@ -485,13 +531,240 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int dim3, int ha
   return vglImage;
 }
 
+/** Create image as described by the parameters
+ */
+VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, int has_mipmap /*=0*/)
+{
+  VglImage* vglImage = new VglImage;
+  IplImage* ipl = NULL;//cvCreateImage(size, depth, nChannels);
+  /*if (!ipl){
+    fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
+    free(vglImage);
+    return 0;
+  }*/
+  
+  vglImage->ipl = ipl;
+  vglImage->ndarray = NULL;
+  vglImage->shape[VGL_WIDTH] = size.width;
+  vglImage->shape[VGL_HEIGHT] = size.height;
+  vglImage->shape[VGL_LENGTH] = layers;
+  vglImage->ndim      = 3;
+  vglImage->depth     = depth;
+  vglImage->nChannels = nChannels;
+  vglImage->has_mipmap = has_mipmap;
+  vglImage->fbo = -1;
+  vglImage->tex = -1;
+  vglImage->cudaPtr = NULL;
+  vglImage->cudaPbo = -1;
+#ifdef __OPENCL__
+  vglImage->oclPtr = NULL;
+#endif
+  vglImage->filename = NULL;
+
+
+  int bytesPerPixel = vglImage->depth / 8;
+  if (bytesPerPixel < 1) bytesPerPixel = 1;
+
+  int c = 1;
+  if (nChannels >= 3)
+  {
+    c = 4; // Although image may be RGB, a fourth channel is allocated, as needed by OpenCL.
+  }
+
+  vglImage->ndarray = malloc(size.width*size.height*c*layers*bytesPerPixel);
+
+  vglSetContext(vglImage, VGL_BLANK_CONTEXT);
+  //vglUpload(vglImage);
+
+  return vglImage;
+}
+
+
+/** Save PGM 3d images on the disk
+*/
+void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
+{
+	//vglDownload(image); //must be fixed before enabling
+        char* temp_filename = (char*)malloc(strlen(filename)+256);
+        sprintf(temp_filename, filename, lStart);
+        int d = image->depth / 8;
+        if (d < 1) d = 1; //d is the byte size of the depth color format
+
+        char* temp_image = (char*)malloc(image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
+        memcpy(temp_image,image->ndarray,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
+
+        IplImage* ipl = cvCreateImage(cvSize(image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT]), image->depth, image->nChannels);
+        ipl->imageData = temp_image;
+
+        cvSaveImage(temp_filename,ipl);
+        int c = image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*d*image->nChannels;
+        for(int i = lStart+1; i <= lEnd; i++)
+        {
+                memcpy(temp_image,((char*)image->ndarray)+c,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
+                ipl->imageData = temp_image;
+                sprintf(temp_filename, filename, i);
+                cvSaveImage(temp_filename, ipl);
+                c += image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d;
+        }
+}                
+
+//converts ndarray from 3 channels to 4 channels
+void vglNdarray3To4Channels(VglImage* img)
+{
+
+    if (img->nChannels == 4)
+    {
+        fprintf(stdout, "%s:%s: Warning: image already has 4 channels\n", __FILE__, __FUNCTION__);
+        return;
+    }
+
+    int d = img->depth / 8;
+    if (d < 1) d = 1; //d is the byte size of the depth color format
+        
+    int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 4 * d * img->shape[VGL_LENGTH];
+
+    void* newndarray = (char*)malloc(img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 4 * d * img->shape[VGL_LENGTH]);
+
+    int offset = 0;
+    uint8_t temp_alpha = 0;
+    for(int i = 0; i < (datasize/d); i++)//for(int i = (datasize/d)-1; i >= 0; i--)
+    {
+        if (((i+1) % 4) == 0)
+        {
+            switch(d)
+            {
+                case 1:
+                    ((uint8_t*)newndarray)[i] = temp_alpha;
+                    break;
+                case 2:
+                    ((uint16_t*)newndarray)[i] = temp_alpha;
+                    break;
+                case 4:
+                    ((uint32_t*)newndarray)[i] = temp_alpha;
+                    break;
+                case 8:
+                  ((uint64_t*)newndarray)[i] = temp_alpha;
+                    break;
+            }
+        }
+        else
+        {
+            switch(d)
+            {
+                case 1:
+                    ((uint8_t*)newndarray)[i] = ((uint8_t*)img->ndarray)[offset];
+                    break;
+                case 2:
+                    ((uint16_t*)newndarray)[i] = ((uint16_t*)img->ndarray)[offset];
+                    break;
+                case 4:
+                    ((uint32_t*)newndarray)[i] = ((uint32_t*)img->ndarray)[offset];
+                    break;
+                case 8:
+                    ((uint64_t*)newndarray)[i] = ((uint64_t*)img->ndarray)[offset];
+                    break;
+            }
+            offset++;
+        }
+    }
+    free(img->ndarray);
+
+    img->ndarray = newndarray;
+    img->nChannels = 4;
+}
+
+void vglNdarray4To3Channels(VglImage* img)
+{
+    if (img->nChannels == 3)
+    {
+        fprintf(stdout, "%s:%s: Warning: image already has 3 channels\n", __FILE__, __FUNCTION__);
+        return;
+    }
+
+    int d = img->depth / 8;
+    if (d < 1) d = 1;
+        
+    int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * img->nChannels * d * img->shape[VGL_LENGTH];
+
+    void* newndarray = malloc(img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 3 * d * img->shape[VGL_LENGTH]);
+
+    int offset = 0;
+    uint8_t temp_alpha = 0;
+    for(int i = 0 ; i < (datasize/d); i++)
+    {
+        if (((i+1) % 4) != 0)
+        {
+            switch(d)
+            {
+               case 1:
+                   ((uint8_t*)newndarray)[offset] = ((uint8_t*)img->ndarray)[i];
+                   break;
+               case 2:
+                   ((uint16_t*)newndarray)[offset] = ((uint16_t*)img->ndarray)[i];
+                   break;
+               case 4:
+                   ((uint32_t*)newndarray)[offset] = ((uint32_t*)img->ndarray)[i];
+                   break;
+               case 8:
+                   ((uint64_t*)newndarray)[offset] = ((uint64_t*)img->ndarray)[i];
+                   break;
+            }
+            offset++;
+        }
+    }
+
+    free(img->ndarray);
+
+    img->ndarray = newndarray;
+    img->nChannels = 3;
+}
+
+/** Convert ipl field of VglImage from 3 to 4 channels
+ */
+void vglIpl3To4Channels(VglImage* img)
+{
+    if (!img->ipl){
+        return;
+    }
+    if (img->ipl->nChannels != 3)
+    {
+        return;
+    }
+  
+    IplImage* iplRGBA = cvCreateImage(cvGetSize(img->ipl), img->ipl->depth, 4);
+    cvCvtColor(img->ipl, iplRGBA, CV_RGB2RGBA);
+    cvReleaseImage(&(img->ipl));
+    img->ipl = iplRGBA;
+    img->nChannels = 4;
+}
+
+/** Convert ipl field of VglImage from 4 to 3 channels
+ */
+void vglIpl4To3Channels(VglImage* img)
+{
+    if (!img->ipl){
+        return;
+    }
+    if (img->ipl->nChannels != 4)
+    {
+        return;
+    }
+  
+    IplImage* iplRGB = cvCreateImage(cvGetSize(img->ipl), img->ipl->depth, 3);
+    cvCvtColor(img->ipl, iplRGB, CV_RGBA2RGB);
+    cvReleaseImage(&(img->ipl));
+    img->ipl = iplRGB;
+    img->nChannels = 4;
+}
+
+
 /** Release memory occupied by image in RAM and GPU
  */
 void vglReleaseImage(VglImage** p_image)
 {
   VglImage* image = *p_image;
   if (!image){
-    fprintf(stdout, "vglReleaseImage: Warning: image is null\n");
+    fprintf(stdout, "%s:%s: Warning: image is null\n", __FILE__, __FUNCTION__);
     return;
   }
   if (image->ipl){
@@ -619,17 +892,15 @@ void vglDownloadFaster(VglImage* image/*, VglImage* aux*/){
     Time to transfer a VGA image = 2.5ms
  */ 
 void vglDownload(VglImage* image){
-  IplImage* ipl = image->ipl;	
+  IplImage* ipl = image->ipl;
   GLenum glFormat;
   GLenum glType;
-  int depth     = image->depth;
-  int nChannels = image->nChannels;
+  int ndim       = image->ndim;
+  int depth      = image->depth;
+  int nChannels  = image->nChannels;
 
   //glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
-  glBindTexture(GL_TEXTURE_2D, image->tex);
-
-  ERRCHECK()
 
   switch (depth){
           case IPL_DEPTH_8U:  glType = GL_UNSIGNED_BYTE;  break; 
@@ -654,7 +925,23 @@ void vglDownload(VglImage* image){
     glFormat = GL_LUMINANCE;
   }
 
-  glGetTexImage(GL_TEXTURE_2D, 0, glFormat, glType, ipl->imageData);
+  if (ndim == 2){
+    glBindTexture(GL_TEXTURE_2D, image->tex);
+    ERRCHECK()
+    glGetTexImage(GL_TEXTURE_2D, 0, glFormat, glType, ipl->imageData);
+    ERRCHECK()
+  }
+  else if (ndim == 3){
+    glBindTexture(GL_TEXTURE_3D, image->tex);
+    ERRCHECK()
+    glGetTexImage(GL_TEXTURE_3D, 0, glFormat, glType, image->ndarray);
+    ERRCHECK()
+  }
+  else {
+    fprintf(stderr, "%s: %s: Error: images with more than 3 dimensions not supported\n", __FILE__, __FUNCTION__);
+  }
+
+
   //glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, ipl->imageData);
 
   ERRCHECK()
@@ -668,7 +955,7 @@ void vglDownload(VglImage* image){
 
  */ 
 void vglDownloadFBO(VglImage* image){
-  IplImage* ipl = image->ipl;	
+  IplImage* ipl = image->ipl;
   GLenum glFormat;
   GLenum glType;
   int depth = image->depth;
@@ -713,7 +1000,7 @@ void vglDownloadFBO(VglImage* image){
     Time to transfer a VGA image = 3ms
  */ 
 void vglDownloadPPM(VglImage* image){
-  IplImage* ipl = image->ipl;	
+  IplImage* ipl = image->ipl;
   GLint pack;
 
   glGetIntegerv(GL_PACK_ALIGNMENT, &pack);
@@ -741,7 +1028,7 @@ void vglDownloadPPM(VglImage* image){
     Time to transfer a VGA image = 10ms
  */ 
 void vglDownloadPGM(VglImage* image){
-  IplImage* ipl = image->ipl;	
+  IplImage* ipl = image->ipl;
   GLint pack;
 
   glGetIntegerv(GL_PACK_ALIGNMENT, &pack);
@@ -766,39 +1053,107 @@ void vglDownloadPGM(VglImage* image){
  */
 VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
 {
-  VglImage* vglImage = new VglImage;
+  VglImage* img = new VglImage;
   IplImage* ipl = cvLoadImage(filename, iscolor);
   if (!ipl){
     fprintf(stderr, "vglCreateImage: Error loading image from file %s\n", filename);
-    free(vglImage);
+    free(img);
     return 0;
   }
-  vglImage->ipl = ipl;
-  vglImage->shape[VGL_WIDTH]     = ipl->width;
-  vglImage->shape[VGL_HEIGHT]    = ipl->height;
-  vglImage->ndim      = 2;
-  vglImage->depth     = ipl->depth;
-  vglImage->nChannels = ipl->nChannels;
-  vglImage->has_mipmap = has_mipmap;
-  vglImage->fbo = -1;
-  vglImage->tex = -1;
-  vglImage->cudaPtr = NULL;
-  vglImage->cudaPbo = -1;
+  img->ipl = ipl;
+  img->ndarray = NULL;
+  img->shape[VGL_WIDTH]     = ipl->width;
+  img->shape[VGL_HEIGHT]    = ipl->height;
+  img->ndim      = 2;
+  img->depth     = ipl->depth;
+  img->nChannels = ipl->nChannels;
+  img->has_mipmap = has_mipmap;
+  img->fbo = -1;
+  img->tex = -1;
+  img->cudaPtr = NULL;
+  img->cudaPbo = -1;
 #ifdef __OPENCL__
-  vglImage->iplRGBA = NULL;
-  vglImage->oclPtr = NULL;
+  img->oclPtr = NULL;
 #endif
+  img->filename = NULL;
 
-  vglSetContext(vglImage, VGL_RAM_CONTEXT);
-  vglUpload(vglImage);
-  if (vglImage->ipl){
-    return vglImage;
+  vglSetContext(img, VGL_RAM_CONTEXT);
+  vglUpload(img);
+  if (img->ipl){
+    return img;
   }
   else{
-    free(vglImage);
+    free(img);
     return 0;
   }
 
+}
+
+/** /brief Load sequence of images as 3d image.
+
+    Filename must have a printf compatible integer format specifier, like %d or %03d.
+*/
+VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /*=0*/)
+{
+  VglImage* img = new VglImage;
+  char* tempFilename = (char*)malloc(strlen(filename) + 256);
+  sprintf(tempFilename, filename, lStart);
+  IplImage* ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
+
+  if (!ipl){
+    fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
+    free(img);
+    return 0;
+  }
+
+  int n = lEnd-lStart+1;
+  img->ipl = ipl;
+  img->ndarray = NULL;
+  img->shape[VGL_WIDTH] = ipl->width;
+  img->shape[VGL_HEIGHT] = ipl->height;
+  img->shape[VGL_LENGTH] = n;
+  img->ndim      = 3;
+  img->depth     = ipl->depth;
+  img->nChannels = ipl->nChannels;
+  img->has_mipmap = has_mipmap;
+  img->fbo = -1;
+  img->tex = -1;
+  img->cudaPtr = NULL;
+  img->cudaPbo = -1;
+#ifdef __OPENCL__
+  img->oclPtr = NULL;
+#endif
+  img->filename = NULL;
+
+  int d = img->depth / 8;
+  if (d < 1) d = 1; //d is the byte size of the depth color format
+
+  img->ndarray = (char*)malloc(ipl->height*ipl->width*ipl->nChannels*d*img->shape[VGL_LENGTH]);
+
+  
+  memcpy(img->ndarray,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);
+  ipl->imageData = (char*)img->ndarray;
+  int c = ipl->height*ipl->width*d*ipl->nChannels;
+  for(int i = lStart+1; i <= lEnd; i++)
+  {
+    sprintf(tempFilename,filename,i);
+    ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
+    if (!ipl){
+      fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
+      fprintf(stderr, "vglCreateImage: Error creating img->ipl field\n");
+      free(img);
+      return 0;
+    }
+
+    memcpy(((char*)img->ndarray)+c,(void*) ipl->imageData,ipl->height*ipl->width*ipl->nChannels*d);//needs tests
+    c += ipl->height*ipl->width*d*ipl->nChannels;
+  }
+
+  cvReleaseImage(&(img->ipl));
+  vglSetContext(img, VGL_RAM_CONTEXT);
+  //vglUpload(img); //must be fixed before enabling
+
+  return img;
 }
 
 /** Print information about image.
@@ -806,8 +1161,14 @@ VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
     Print width, height, depth and number of channels
 
  */
-void iplPrintImageInfo(IplImage* ipl){
-        printf("====== iplPrintImageInfo:\n");
+void iplPrintImageInfo(IplImage* ipl, char* msg){
+        if (msg){
+            printf("====== %s:\n", msg);
+	}
+	else
+	{
+            printf("====== iplPrintImageInfo:\n");
+	}
         printf("Image @ %p: w x h = %d(%d) x %d\n", 
                 ipl, ipl->width, ipl->widthStep, ipl->height);
         printf("nChannels = %d\n", ipl->nChannels);
@@ -831,14 +1192,22 @@ void iplPrintImageInfo(IplImage* ipl){
     OpenGL FBO handler, and current valid context (RAM, GPU or FBO).
 
  */
-void vglPrintImageInfo(VglImage* image){
+void vglPrintImageInfo(VglImage* image, char* msg){
         IplImage* ipl = image->ipl;
-        printf("====== vglPrintImageInfo:\n");
-        printf("Image @ %p: w x h = %d(%d) x %d\n", 
-                image, ipl->width, ipl->widthStep, ipl->height);
-        printf("nChannels = %d\n", ipl->nChannels);
+        if (msg){
+            printf("====== %s:\n", msg);
+	}
+	else
+	{
+            printf("====== vglPrintImageInfo:\n");
+	}
+        printf("Image @ %p: w x h x l = %d x %d x %d\n", 
+	       image, image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH]);
+        printf("Ipl @ %p\n", ipl); 
+        printf("ndim = %d\n", image->ndim);
+        printf("nChannels = %d\n", image->nChannels);
         printf("depth = ");
-        switch (ipl->depth){
+        switch (image->depth){
           case IPL_DEPTH_1U:  printf("IPL_DEPTH_1U");  break; 
           case IPL_DEPTH_8U:  printf("IPL_DEPTH_8U");  break; 
           case IPL_DEPTH_16U: printf("IPL_DEPTH_16U"); break; 
@@ -847,11 +1216,40 @@ void vglPrintImageInfo(VglImage* image){
           case IPL_DEPTH_16S: printf("IPL_DEPTH_16S"); break; 
           case IPL_DEPTH_32S: printf("IPL_DEPTH_32S"); break; 
           default: printf("unknown");
+    }
+    printf("\n");
+    printf("TEX = %d\n", image->tex);
+    printf("FBO = %d\n", image->fbo);
+#ifdef __OPENCL__
+    printf("FBO @ %p\n", image->oclPtr);
+#endif
+    printf("Context = %d\n", image->inContext);
+}
+
+/** Print image pixels in text format to stdout
+
+ */
+void vglPrintImageData(VglImage* image){
+    int ndarraySize = 1;
+    int w = image->shape[0];
+    int h = image->shape[1];
+    for(int dim = 0; dim < image->ndim; dim++)
+    {
+        ndarraySize *= image->shape[dim];
+    }
+    for(int i = 0; i < ndarraySize;)
+    {
+        if (i % w == 0)
+	{
+            printf("%d: ", i / w);
 	}
-        printf("\n");
-        printf("TEX = %d\n", image->tex);
-        printf("FBO = %d\n", image->fbo);
-        printf("Context = %d\n", image->inContext);
+        printf("%c", ((char*)image->ndarray)[i]);
+        i++;
+        if (i % w == 0)
+	{
+            printf("\n"); 
+        }
+    }
 }
 
 
@@ -1651,7 +2049,7 @@ void vglMultiOutput_model(VglImage*  src, VglImage*  dst, VglImage*  dst1){
   ERRCHECK()
 
     //glDrawBuffer(GL_COLOR_ATTACHMENT1_EXT);
-    //ERRCHECK()
+    ERRCHECK()
 
   glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 
@@ -1728,7 +2126,7 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1){
   ERRCHECK()
 
     //glDrawBuffer(GL_COLOR_ATTACHMENT1_EXT);
-    //ERRCHECK()
+    ERRCHECK()
 
   glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
 

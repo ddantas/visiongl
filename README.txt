@@ -49,15 +49,14 @@ On Windows:
 Go to the root directory of the project and run:
 cmake .
 
-Depending on what generator you have configured it'll create a solution or
-a project or a MinGW Makefile. Only tested with Microsoft Visual Studio 2010
-as generator. In this case, a solution will be built using the name "visiongl",
+Depending on the compiler you have installed, cmake will create a solution,
+a project or a MinGW Makefile. The generator works with Microsoft Visual 
+Studio 2010. In this case, a solution will be built using the name "visiongl",
 just open the solution as usual on Visual Studio, and compile it, you're done.
 
-If you're willing to use Visual Studio 2010 as generator, use the following command:
+If you want to use Visual Studio 2010, use the following command:
 
 cmake . -G "Visual Studio 10"
-
 
         Compilation using Makefile_linux
 
@@ -75,10 +74,12 @@ make -f Makefile_linux install
 To build the demos:
 make -f Makefile_linux democam
 make -f Makefile_linux demofrac
+make -f Makefile_linux demobenchmark
 
 To run the demos:
 make -f Makefile_linux rundemocam
 make -f Makefile_linux rundemofrac
+make -f Makefile_linux rundemobenchmark
 
 To build the documentation:
 build dox
@@ -90,11 +91,89 @@ make -f Makefile_linux frag_stereo
 make -f Makefile_linux frag_diffeq
 make -f Makefile_linux cuda
 
+        Compilation with GDCM
+
+Please download gdcm-2.4.2 source code or later. It is available in: 
+http://sourceforge.net/projects/gdcm/files/gdcm%202.x/GDCM%202.4.2/
+
+Set the options below as follows:
+GDCM_BUILD_SHARED_LIBS: ON
+CMAKE_INSTALL_PREFFIX: /usr/local/gdcm
+
+Optionally, set also
+GDCM_BUILD_APPLICATIONS: ON
+
+Then run:
+make
+sudo make install
+
+To compile VisionGL with support to GDCM, please set WITH_GDCM = 1 in 
+the VisionGL makefile.
+
+        Compilation with DCMTK
+
+Please download dcmtk-3.6.1_20131114 source code or later, available in:
+http://dicom.offis.de/download/dcmtk/snapshot/
+
+Set the options below as follows:
+GDCM_BUILD_SHARED_LIBS: ON
+CMAKE_INSTALL_PREFFIX: /usr/local/dcmtk
+
+Then run:
+make
+sudo make install
+
+To compile VisionGL with support to DCMTK, please set WITH_DCMTK = 1 in 
+the VisionGL makefile.
+
+        About the demos
+
+demofrac: Probably the most basic demo. Does not require any aditional 
+library besides the minimum. Use the arrows in the numpad to navigate,
+ z/x to zoom in/out, and q to quit. 
+ 
+democam: Another basic demo that does not require aditional libraries.
+Captures images from the first webcam found. The capture is done by 
+OpenCV function cvCaptureFromCAM. An OpenGL window shows four versions 
+of the captured image after a few operations.
+
+demogdcm: To run this example, please compile VisionGL with
+GDCM support. In a previous section there are instructions about how
+to compile GDCM.
+
+demodcmtk: To run this example, please compile VisionGL with
+DCMTK support. In a previous section there are instructions about how
+to compile DCMTK.
+
+demobenchmark: This demo is composed by three programs.
+ - demobenchmark_cv: The simplest one, requires OpenCV.
+ - demobenchmark_cl: To run this example, please compile VisionGL with
+                     OpenCL support.
+ - demobenchmark_cvocl: To run this example, please compile OpenCV with
+                     OpenCL support. Download OpenCV and look for the 
+                     folder modules/ocl. It may be not present in the
+                     master branch from the git repository, but it is 
+                     present in the 2.4.8 and 2.4.9 tags. Get OpenCV
+                     with git by running:
+
+                     git clone https://github.com/Itseez/opencv.git
+                     git checkout 2.4.9
+
+ - demobenchmark_cl3d: To run this example, please compile VisionGL with
+                     OpenCL support.
+                     Your device must support the extension
+                     cl_khr_3d_image_writes. This extension is available 
+                     in most AMD video cards. Please use the function 
+                     clGetDeviceInfo with the option CL_DEVICE_EXTENSIONS
+                     to check the extension availability. An alternative is 
+                     to look for the card model in compupench.org and look 
+                     for the card details.
 
 References
 
 [1] Daniel Oliveira Dantas, Junior Barrera
 Automatic generation of wrapper code for video processing functions
 Learning and Nonlinear models, Vol 9, Num 2, 2011
+https://www.academia.edu/4367451/Automatic_generation_of_wrapper_code_for_video_processing_functions
 http://www.deti.ufc.br/~lnlm/papers/vol9-no2-art5.pdf
 
