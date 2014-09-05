@@ -46,7 +46,7 @@ void vglClInit()
 {
     cl_int err;
     cl_uint num_platforms, num_devices;
-    cl_device_type device_type = CL_DEVICE_TYPE_CPU;
+    cl_device_type device_type = CL_DEVICE_TYPE_DEFAULT;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
     cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);
@@ -120,15 +120,15 @@ void vglClInit()
     printf("%s: %s: CL_DEVICE_MAX_MEM_ALLOC_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
     err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &vlong, NULL);
     printf("%s: %s: CL_DEVICE_GLOBAL_MEM_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
-    size_t img3d;
-    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_DEPTH, sizeof(size_t), &img3d, NULL);
-    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_DEPTH: %d px\n", __FILE__, __FUNCTION__, img3d);
-    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_HEIGHT, sizeof(size_t), &img3d, NULL);
-    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_HEIGHT: %d px\n", __FILE__, __FUNCTION__, img3d);
-    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_WIDTH, sizeof(size_t), &img3d, NULL);
-    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_WIDTH: %d px\n", __FILE__, __FUNCTION__, img3d);
-    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_PARAMETER_SIZE, sizeof(size_t), &img3d, NULL);
-    printf("%s: %s: CL_DEVICE_MAX_PARAMETER_SIZE: %d mb\n", __FILE__, __FUNCTION__, img3d);
+    size_t val;
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_DEPTH, sizeof(size_t), &val, NULL);
+    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_DEPTH: %ld px\n", __FILE__, __FUNCTION__, val);
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_HEIGHT, sizeof(size_t), &val, NULL);
+    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_HEIGHT: %ld px\n", __FILE__, __FUNCTION__, val);
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_WIDTH, sizeof(size_t), &val, NULL);
+    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_WIDTH: %ld px\n", __FILE__, __FUNCTION__, val);
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_PARAMETER_SIZE, sizeof(size_t), &val, NULL);
+    printf("%s: %s: CL_DEVICE_MAX_PARAMETER_SIZE: %ld mb\n", __FILE__, __FUNCTION__, val);
 
 }
 
