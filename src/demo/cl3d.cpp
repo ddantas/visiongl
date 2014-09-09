@@ -37,7 +37,7 @@ from index 0 to index n\n\
   vglInit(500,500);
   vglClInit();
   VglImage* img = vglLoad3dImage(infilename, i_0, i_n);
-  VglImage* out = vglLoad3dImage(infilename, i_0, i_n);
+  VglImage* out = vglCreateImage(img);
 
   //3x3x3 mask for convolution
   float* mask333 = (float*) malloc(sizeof(float)*27);

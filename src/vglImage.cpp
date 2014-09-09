@@ -484,7 +484,14 @@ VglImage* vglCopyCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /
  */
 VglImage* vglCreateImage(VglImage* img_in)
 {
-  return vglCreateImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
+  if (img_in->ndim == 2)
+  {
+    return vglCreateImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
+  }
+  else
+  {
+    return vglCreate3dImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->shape[VGL_LENGTH], img_in->has_mipmap);
+  }
 }
 
 
