@@ -23,6 +23,140 @@
 VglClContext cl;
 bool Interop = false;
 
+static const char *vglClErrorMessages[] = { 
+    //case 0:
+    "CL_SUCCESS",
+    //case -1:
+    "CL_DEVICE_NOT_FOUND",
+    //case -2:
+    "CL_DEVICE_NOT_AVAILABLE",
+    //case -3:
+    "CL_COMPILER_NOT_AVAILABLE",
+    //case -4:
+    "CL_MEM_OBJECT_ALLOCATION_FAILURE",
+    //case -5:
+    "CL_OUT_OF_RESOURCES",
+    //case -6:
+    "CL_OUT_OF_HOST_MEMORY",
+    //case -7:
+    "CL_PROFILING_INFO_NOT_AVAILABLE",
+    //case -8:
+    "CL_MEM_COPY_OVERLAP",
+    //case -9:
+    "CL_IMAGE_FORMAT_MISMATCH",
+    //case -10:
+    "CL_IMAGE_FORMAT_NOT_SUPPORTED",
+    //case -11:
+    "CL_BUILD_PROGRAM_FAILURE",
+    //case -12:
+    "CL_MAP_FAILURE",
+    //case -13:
+    "CL_MISALIGNED_SUB_BUFFER_OFFSET",
+    //case -14:
+    "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST",
+    //case -15:
+    "CL_COMPILE_PROGRAM_FAILURE",
+    //case -16:
+    "CL_LINKER_NOT_AVAILABLE",
+    //case -17:
+    "CL_LINK_PROGRAM_FAILURE",
+    //case -18:
+    "CL_DEVICE_PARTITION_FAILED",
+    //case -19:
+    "CL_KERNEL_ARG_INFO_NOT_AVAILABLE",
+    //case -20 to -29:
+    "UNKNOWN",
+    "UNKNOWN",
+    "UNKNOWN",
+    "UNKNOWN",
+    "UNKNOWN",
+    "UNKNOWN",
+    "UNKNOWN",
+    "UNKNOWN",
+    "UNKNOWN",
+    "UNKNOWN",
+    //case -30:
+    "CL_INVALID_VALUE",
+    //case -31:
+    "CL_INVALID_DEVICE_TYPE",
+    //case -32:
+    "CL_INVALID_PLATFORM",
+    //case -33:
+    "CL_INVALID_DEVICE",
+    //case -34:
+    "CL_INVALID_CONTEXT",
+    //case -35:
+    "CL_INVALID_QUEUE_PROPERTIES",
+    //case -36:
+    "CL_INVALID_COMMAND_QUEUE",
+    //case -37:
+    "CL_INVALID_HOST_PTR",
+    //case -38:
+    "CL_INVALID_MEM_OBJECT",
+    //case -39:
+    "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR",
+    //case -40:
+    "CL_INVALID_IMAGE_SIZE",
+    //case -41:
+    "CL_INVALID_SAMPLER",
+    //case -42:
+    "CL_INVALID_BINARY",
+    //case -43:
+    "CL_INVALID_BUILD_OPTIONS",
+    //case -44:
+    "CL_INVALID_PROGRAM",
+    //case -45:
+    "CL_INVALID_PROGRAM_EXECUTABLE",
+    //case -46:
+    "CL_INVALID_KERNEL_NAME",
+    //case -47:
+    "CL_INVALID_KERNEL_DEFINITION",
+    //case -48:
+    "CL_INVALID_KERNEL",
+    //case -49:
+    "CL_INVALID_ARG_INDEX",
+    //case -50:
+    "CL_INVALID_ARG_VALUE",
+    //case -51:
+    "CL_INVALID_ARG_SIZE",
+    //case -52:
+    "CL_INVALID_KERNEL_ARGS",
+    //case -53:
+    "CL_INVALID_WORK_DIMENSION",
+    //case -54:
+    "CL_INVALID_WORK_GROUP_SIZE",
+    //case -55:
+    "CL_INVALID_WORK_ITEM_SIZE",
+    //case -56:
+    "CL_INVALID_GLOBAL_OFFSET",
+    //case -57:
+    "CL_INVALID_EVENT_WAIT_LIST",
+    //case -58:
+    "CL_INVALID_EVENT",
+    //case -59:
+    "CL_INVALID_OPERATION",
+    //case -60:
+    "CL_INVALID_GL_OBJECT",
+    //case -61:
+    "CL_INVALID_BUFFER_SIZE",
+    //case -62:
+    "CL_INVALID_MIP_LEVEL",
+    //case -63:
+    "CL_INVALID_GLOBAL_WORK_SIZE",
+    //case -64:
+    "CL_INVALID_PROPERTY",
+    //case -65:
+    "CL_INVALID_IMAGE_DESCRIPTOR",
+    //case -66:
+    "CL_INVALID_COMPILER_OPTIONS",
+    //case -67:
+    "CL_INVALID_LINKER_OPTIONS",
+    //case -68:
+    "CL_INVALID_DEVICE_PARTITION_COUNT",
+};
+
+#define CL_MIN_ERROR CL_INVALID_DEVICE_PARTITION_COUNT
+
 void vglClPrintContext(void)
 {
     printf("cl_platform_id* platformId    = %p\n", cl.platformId);
@@ -34,11 +168,11 @@ void vglClPrintContext(void)
 
 void vglClCheckError(cl_int error, char* name)
 {
-    if (error != CL_SUCCESS)
+  if (error < CL_SUCCESS and error >= CL_MIN_ERROR)
     {
-        printf("Error %d while doing the following operation %s\n",error,name);
+        printf("Error %d (%s) while doing the following operation: %s\n", error, vglClErrorMessages[-error], name);
         //system("pause");
-	exit(1);
+	exit(error);
     }
 }
 
@@ -50,7 +184,7 @@ void vglClInit()
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
     cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);
-    err = clGetPlatformIDs(num_platforms,cl.platformId,NULL);
+    err = clGetPlatformIDs(num_platforms, cl.platformId, NULL);
     vglClCheckError(err, (char*) "clGetPlatformIDs get platforms id");	
 
     if (num_platforms == 0)
@@ -74,34 +208,53 @@ void vglClInit()
     vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
     // To add CL_KHR_gl_sharing property to context, window id is needed.
     //cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
-	const int msgLen = 2048;
+    const int msgLen = 2048;
     char msg[msgLen];
     err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
-	
-	char* search = strtok ( msg, " ");
-	bool found = false;
-	while (search != NULL && !found)
-	{
-		if (strcmp(search, "cl_khr_gl_sharing") == 0)
-		{
-			printf("FOUND INTEROPERABILITY\n");
-			Interop = true;
-		}
-		search = strtok(NULL, " ");
+    vglClCheckError(err, (char*) "clGetDeviceIDs get device info about extensions");
+
+    cl_device_type actual_device_type;
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_TYPE, sizeof(cl_device_type), &actual_device_type, NULL);
+    vglClCheckError(err, (char*) "clGetDeviceIDs get device info about type");
+
+    char* search = strtok (msg, " ");
+    bool found = false;
+    if (actual_device_type != CL_DEVICE_TYPE_CPU) // Interoperability does not work on CPU
+    {
+        while (search != NULL && !found)
+        {
+            if (strcmp(search, "cl_khr_gl_sharing") == 0)
+            {
+                printf("FOUND INTEROPERABILITY\n");
+                Interop = true;
+            }
+            search = strtok(NULL, " ");
 	}
+    }
+    
+
 	
 #ifdef __linux__
-    cl_context_properties properties[] = {
-        CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
-        CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
-        CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0], 
-    0 };
+    cl_context_properties properties1[] = {
+          CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
+          CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
+          CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0], 
+          0 };
+    cl_context_properties properties2[] = {
+          CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0], 
+          0 };
+    cl_context_properties* properties;
+    if (Interop)
+      properties = properties1;
+    else
+      properties = properties2;
+
 #elif defined WIN32
     cl_context_properties properties[] = {
         CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext(),
         CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
         CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0],
-    0 };
+        0 };
 #endif
 
     cl.context = clCreateContext(properties,1,cl.deviceId,NULL, NULL, &err );

@@ -66,12 +66,12 @@ from index 0 to index n\n\
   float erosion[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1,
                       1, 1, 1, 1, 1, 1, 1, 1, 1,
                       1, 1, 1, 1, 1, 1, 1, 1, 1};
-  //vglCl3dNot(img,img);
+  //vglCl3dNot(img, out);
   //vglCl3dConvolution(img,img,blur333,3,3,3);
   //vglCl3dBlurSq3(img,img);
   //vglCl3dThreshold(img,img,0.5);
   vglCl3dErosion(img, out, erosion, 3, 3, 3);
-  vglClDownload(img);
+  vglClDownload(out);
   vglSave3dImage(out, outfilename, i_0, i_n);
   //clReleaseMemObject(img->oclPtr);
   //clReleaseMemObject(out->oclPtr);

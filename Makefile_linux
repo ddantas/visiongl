@@ -40,7 +40,7 @@ OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_le
 
 
 WITH_CUDA = 0
-WITH_OPENCL = 0
+WITH_OPENCL = 1
 WITH_GDCM = 0
 WITH_DCMTK = 0
 
@@ -69,7 +69,6 @@ ifeq ($(WITH_OPENCL), 1)
         OPENCL_PATH        = /opt/AMDAPP
         OPENCL_INCLUDEPATH = $(OPENCL_PATH)/include/
         OPENCL_LIBPATH     = $(OPENCL_PATH)/lib/x86_64
-        #OPENCL_INCLUDEPATH = /opt/AMDAPP/include/
         #OPENCL_LIBPATH     = /usr/lib/
         OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
         OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
