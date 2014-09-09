@@ -270,7 +270,7 @@ void vglSaveColorDeconv(VglImage *imagevgl, double *mInitial, char *outFilename)
     convertRGBToBGR(newimagevgl[i]);
     char outname[1024];
     sprintf(outname, outFilename, i);
-    vglSaveImage(newimagevgl[i], outname, lStart, lEnd);
+    vglSave3dImage(newimagevgl[i], outname, lStart, lEnd);
   }  
 }
 

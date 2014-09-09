@@ -7,7 +7,7 @@
 #endif
 
 #include <stdio.h>
-
+#include <string.h>
 
 struct VglClContext
 {
@@ -18,6 +18,7 @@ struct VglClContext
 };
 
 VglClContext cl;
+bool Interop;
 
 void vglClPrintContext(void)
 {
@@ -57,50 +58,89 @@ void vglClCheckError(cl_int error, char* name)
 
 void vglClInit()
 {
-	cl_int err;
-	cl_uint num_platforms, num_devices;
-	err = clGetPlatformIDs(0, NULL, &num_platforms);
-	vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
-	cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);
-	err = clGetPlatformIDs(num_platforms,cl.platformId,NULL);
-	vglClCheckError(err, (char*) "clGetPlatformIDs get platforms id");	
+    cl_int err;
+    cl_uint num_platforms, num_devices;
+    cl_device_type device_type = CL_DEVICE_TYPE_DEFAULT;
+    err = clGetPlatformIDs(0, NULL, &num_platforms);
+    vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
+    cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);
+    err = clGetPlatformIDs(num_platforms,cl.platformId,NULL);
+    vglClCheckError(err, (char*) "clGetPlatformIDs get platforms id");	
 
-	if (num_platforms == 0)
-		printf("found no platform for opencl\n\n");
-	else if (num_platforms > 1)
-	  printf("found %p platforms for opencl\n\n", (unsigned int*) &num_platforms);
-	else
-		printf("found 1 platform for opencl\n\n");
+    if (num_platforms == 0)
+        printf("found no platform for opencl\n\n");
+    else if (num_platforms >= 1)
+        printf("found %d platform(s) for opencl\n\n", num_platforms);
 
-	err = clGetDeviceIDs(*cl.platformId,CL_DEVICE_TYPE_CPU,0,NULL,&num_devices);
-	vglClCheckError(err, (char*) "clGetDeviceIDs get number of devices");
-	cl.deviceId = (cl_device_id*)malloc(sizeof(cl_device_id)*num_devices);
-	err = clGetDeviceIDs(*cl.platformId,CL_DEVICE_TYPE_CPU,num_devices,cl.deviceId,NULL);
-	vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
-	//precisa adicionar a propriedade CL_KHR_gl_sharing no contexto e pra isso precisará do id do contexto do GL que deverá ser o parametro window
-	//cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
+    err = clGetDeviceIDs(*cl.platformId, device_type, 0, NULL, &num_devices);
+    vglClCheckError(err, (char*) "clGetDeviceIDs get number of devices");
 
+    if (num_devices == 0)
+    {
+        printf("unable to find OpenCL devices, halting the program");
+        exit(1);
+    }
+    else
+        printf("found %d device(s)\n\n",num_devices);
 
+    cl.deviceId = (cl_device_id*)malloc(sizeof(cl_device_id)*num_devices);
+    err = clGetDeviceIDs(*cl.platformId, device_type, num_devices, cl.deviceId, NULL);
+    vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
+    // To add CL_KHR_gl_sharing property to context, window id is needed.
+    //cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
+	const int msgLen = 2048;
+    char msg[msgLen];
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
+	
+	char* search = strtok ( msg, " ");
+	bool found = false;
+	while (search != NULL && !found)
+	{
+		if (strcmp(search, "cl_khr_gl_sharing") == 0)
+		{
+			printf("FOUND INTEROPERABILITY\n");
+			Interop = false;
+		}
+		search = strtok(NULL, " ");
+	}
+	
 #ifdef __linux__
-        cl_context_properties properties[] = {
-        CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
-        CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
+    cl_context_properties properties[] = {
+      //CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
+      //CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
         CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0], 
-        0 };
+    0 };
 #elif defined WIN32
-        cl_context_properties properties[] = {
+    cl_context_properties properties[] = {
         CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext(),
         CL_WGL_HDC_KHR, (cl_context_properties) wglGetCurrentDC(),
         CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0],
-        0 };
+    0 };
 #endif
-        cl.context = clCreateContext(properties,1,cl.deviceId,NULL, NULL, &err );
 
-        //cl.context = clCreateContext(NULL,1,cl.deviceId,NULL, NULL, &err );
-	vglClCheckError(err, (char*) "clCreateContext GPU");
+    cl.context = clCreateContext(properties,1,cl.deviceId,NULL, NULL, &err );
+    //cl.context = clCreateContext(NULL,1,cl.deviceId,NULL, NULL, &err );
+    vglClCheckError(err, (char*) "clCreateContext GPU");
 
-	cl.commandQueue = clCreateCommandQueue( cl.context, *cl.deviceId, 0, &err );
-	vglClCheckError( err, (char*) "clCreateCommandQueue" );
+    cl.commandQueue = clCreateCommandQueue( cl.context, *cl.deviceId, 0, &err );
+    vglClCheckError( err, (char*) "clCreateCommandQueue" );
+
+	err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
+    printf("%s: %s: CL_DEVICE_EXTENSIONS:\n%s\n", __FILE__, __FUNCTION__, msg);
+    cl_ulong vlong;
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(cl_ulong), &vlong, NULL);
+    printf("%s: %s: CL_DEVICE_MAX_MEM_ALLOC_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &vlong, NULL);
+    printf("%s: %s: CL_DEVICE_GLOBAL_MEM_SIZE: %5.2f mb\n", __FILE__, __FUNCTION__, vlong/(1024.0f*1024));
+    size_t val;
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_DEPTH, sizeof(size_t), &val, NULL);
+    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_DEPTH: %ld px\n", __FILE__, __FUNCTION__, val);
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_HEIGHT, sizeof(size_t), &val, NULL);
+    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_HEIGHT: %ld px\n", __FILE__, __FUNCTION__, val);
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_IMAGE3D_MAX_WIDTH, sizeof(size_t), &val, NULL);
+    printf("%s: %s: CL_DEVICE_IMAGE3D_MAX_WIDTH: %ld px\n", __FILE__, __FUNCTION__, val);
+    err = clGetDeviceInfo(cl.deviceId[0], CL_DEVICE_MAX_PARAMETER_SIZE, sizeof(size_t), &val, NULL);
+    printf("%s: %s: CL_DEVICE_MAX_PARAMETER_SIZE: %ld mb\n", __FILE__, __FUNCTION__, val);
 
 }
 

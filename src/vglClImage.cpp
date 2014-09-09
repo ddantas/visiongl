@@ -56,7 +56,7 @@ void vglClInit()
     if (num_platforms == 0)
         printf("found no platform for opencl\n\n");
     else if (num_platforms >= 1)
-        printf("found %d platform(s) for opencl\n\n", (unsigned int*) &num_platforms);
+        printf("found %d platform(s) for opencl\n\n", num_platforms);
 
     err = clGetDeviceIDs(*cl.platformId, device_type, 0, NULL, &num_devices);
     vglClCheckError(err, (char*) "clGetDeviceIDs get number of devices");

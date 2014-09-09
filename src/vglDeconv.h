@@ -14,4 +14,4 @@
 void vglSaveColorDeconv(VglImage *imagevgl, double *mInitial, char *outFilename);
 VglImage* vglColorDeconv(VglImage *imagevgl, double *mInitial);
 
-#endif __VGLDECONV_H__
+#endif
