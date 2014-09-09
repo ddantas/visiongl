@@ -1,0 +1,1 @@
+g++  cltest.cpp -I /usr/local/cuda/include/ -L/opt/opencl/lib -lOpenCL -lGL -o cltest

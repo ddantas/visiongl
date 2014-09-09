@@ -1,0 +1,1 @@
+gcc clinfo.c -I /usr/local/cuda/include/ -L/opt/opencl/lib -lOpenCL -lGL -o clinfo

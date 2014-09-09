@@ -55,10 +55,8 @@ void vglClInit()
 
     if (num_platforms == 0)
         printf("found no platform for opencl\n\n");
-    else if (num_platforms > 1)
-        printf("found %p platforms for opencl\n\n", (unsigned int*) &num_platforms);
-    else
-        printf("found 1 platform for opencl\n\n");
+    else if (num_platforms >= 1)
+        printf("found %d platform(s) for opencl\n\n", (unsigned int*) &num_platforms);
 
     err = clGetDeviceIDs(*cl.platformId, device_type, 0, NULL, &num_devices);
     vglClCheckError(err, (char*) "clGetDeviceIDs get number of devices");
@@ -74,7 +72,7 @@ void vglClInit()
     cl.deviceId = (cl_device_id*)malloc(sizeof(cl_device_id)*num_devices);
     err = clGetDeviceIDs(*cl.platformId, device_type, num_devices, cl.deviceId, NULL);
     vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
-    //precisa adicionar a propriedade CL_KHR_gl_sharing no contexto e pra isso precisará do id do contexto do GL que deverá ser o parametro window
+    // To add CL_KHR_gl_sharing property to context, window id is needed.
     //cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
 	const int msgLen = 2048;
     char msg[msgLen];
