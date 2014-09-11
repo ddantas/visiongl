@@ -563,7 +563,7 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
 #############################################################################
 # PrintCppFile
 #
-# Receives as input a CLL filename and generates CPP wrapper function
+# Receives as input a CL filename and generates CPP wrapper function
 #
 #
 sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $default, $uniform, $output, $cpp_read_path) {
