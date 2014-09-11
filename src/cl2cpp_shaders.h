@@ -7,11 +7,10 @@
 ***                                                                 ***
 *********************************************************************/
 #include "vglImage.h"
-
-
-void vglClNdNot(VglImage* img_input, VglImage* img_output);
-
 /** Convolution of src image by mask. Result is stored in dst image.
+    
+    In some OpenCL versions, the next directive is required
+    #pragma OPENCL EXTENSION cl_khr_3d_image_writes : enable
 
   */
 void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output);
@@ -31,6 +30,16 @@ void vglCl3dCopy(VglImage* img_input, VglImage* img_output);
   */
 void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
 
+/** Threshold of src image by float parameter. Result is stored in dst image.
+
+  */
+void vglCl3dMergeZByMax(VglImage* src, VglImage* dst, int number_of_merges);
+
+/** Threshold of src image by float parameter. Result is stored in dst image.
+
+  */
+void vglCl3dMergeZByMean(VglImage* src, VglImage* dst, int number_of_merges);
+
 /** Direct copy from src to dst.
 
   */
@@ -40,7 +49,6 @@ void vglCl3dNot(VglImage* img_input, VglImage* img_output);
 
   */
 void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh);
-void vglCl3dThresholdGray(VglImage* src, VglImage* dst, float thresh);
 
 /** Convolution of src image by mask. Result is stored in dst image.
 
@@ -66,6 +74,11 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
 
   */
 void vglClInvert(VglImage* img_input, VglImage* img_output);
+
+/** Direct copy from src to dst.
+
+  */
+void vglClNdNot(VglImage* img_input, VglImage* img_output);
 
 /** Threshold of src image by float parameter. Result is stored in dst image.
 

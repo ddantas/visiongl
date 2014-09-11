@@ -135,7 +135,7 @@ sub LineStartSemicolon { # ($line) {
 #
 # Returns the string after the semantic binding and the ":"
 # in start of $line, blank string if not found.
-# Valid semantic bindincs are IN_TEX, OUT_FBO and IN_OUT
+# Valid semantic bindincs are __read_only, __write_only and __constant
 # 
 sub LineStartSemantics { # ($line) {
   my $line = $_[0];
@@ -791,8 +791,10 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   print HEAD "void $basename(";
   for ($i = 0; $i <= $#type; $i++){
     print ">>>$type[$i]<<< becomes ";
-    if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") ){
-      $type[$i] = "VglImage*";
+    if (($semantics[$i] eq "__read_only") or ($semantics[$i] eq "__write_only") ){
+      if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") or ($type[$i] eq "char*") ){
+        $type[$i] = "VglImage*";
+      }
     }
     else{
       $type[$i] =~ s#^\s*([a-zA-Z_][a-zA-Z0-9_]*)##;
