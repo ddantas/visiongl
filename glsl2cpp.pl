@@ -3,36 +3,8 @@
 use File::Basename;
 use common qw(LineStartMultiLineComment
               LineStartSingleLineComment
+              LineStartCleanComments
               lixo);
-
-#############################################################################
-# LineStartCleanComments
-#
-# Throws away comments in begginning of $line
-# 
-sub LineStartCleanComments { # ($line) {
-  my $line = $_[0];
-
-  $multi  = "foo";
-  $single = "foo";
-
-  #print "LineStartCleanComments:\n";
-
-  while ($multi or $single){
-    ($multi, $line) = LineStartMultiLineComment($line);
-    ($single, $line) = LineStartMultiLineComment($line);
-
-    if ($single){
-      #print "Single = $single\n";
-    }
-    if ($multi){
-      #print "Multi = $multi\n";
-    }
-  }
-
-  return $line;
-}
-
 
 #############################################################################
 # LineStartCppValue

@@ -3,66 +3,8 @@
 use File::Basename;
 use common qw(LineStartMultiLineComment
               LineStartSingleLineComment
+              LineStartCleanComments
               lixo);
-
-#############################################################################
-# LineStartSingleLineComment
-#
-# Returns the string after the "//" to the first "\n" if found 
-# in start of $line, blank string if not found.
-# 
-#sub LineStartSingleLineComment { # ($line) {
-#  my $line = $_[0];
-
-#  $line =~ s#^\s*//\s*(.*)\s*\n##;
-  #$line =~ s#^\s*//(.*)##;
-#  return ($1, $line);
-#}
-
-
-
-#############################################################################
-# LineStartCleanComments
-#
-# Throws away comments in begginning of $line
-# 
-sub LineStartCleanComments { # ($line) {
-  my $line = $_[0];
-
-  $multi  = "foo";
-  $single = "foo";
-
-  #print "LineStartCleanComments:\n";
-
-  while ($multi or $single){
-    ($multi, $line) = LineStartMultiLineComment($line);
-    ($single, $line) = LineStartMultiLineComment($line);
-
-    if ($single){
-      #print "Single = $single\n";
-    }
-    if ($multi){
-      #print "Multi = $multi\n";
-    }
-  }
-
-  return $line;
-}
-
-
-#############################################################################
-# LineStartCppValue
-#
-# Returns the string from the "//" to the first "\n" if found in 
-# start of $line, 
-# 
-sub LineStartCppValue { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*//(.*)##;
-  return ($1, $line);
-}
-
 
 #############################################################################
 # LineStartHeader
@@ -91,19 +33,6 @@ sub LineStartParenthesis { # ($line) {
   my $line = $_[0];
 
   $line =~ s#^\s*\((.*)##;
-  return $1;
-}
-
-#############################################################################
-# LineStartSemicolon
-#
-# Returns the string after the ";" 
-# in start of $line, blank string if not found.
-# 
-sub LineStartSemicolon { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*;(.*)##;
   return $1;
 }
 
@@ -226,19 +155,6 @@ sub LineStartSeparator { # ($line) {
 }
 
 #############################################################################
-# LineStartUniform
-#
-# Returns the string after the first "uniform"  found
-# in start of $line, blank string if not found.
-# 
-sub LineStartUniform { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*uniform(.*)\n##;
-  return ($1, $line);
-}
-
-#############################################################################
 # LineStartMain
 #
 # Returns the string that contains the expression __kernel void.
@@ -248,97 +164,6 @@ sub LineStartMain { # ($line) {
 
   $line =~ s#^\s*((__kernel)\s*(void)\s*)##;
   return ($1, $line);
-}
-
-#############################################################################
-# LineNonEmpty
-#
-# Returns the string from the first non space character, and "" if line is blank
-# 
-sub LineNonEmpty { # ($line) {
-  my $line = $_[0];
-
-  if ($line =~ m#^\s*(\S.*)$#){
-      return ($1);
-  }
-  return "";
-}
-
-#############################################################################
-# ProcessGlslUniform
-#
-# Receives as input a line and breaks it. Are expected a datatype, a 
-# variable name, a semicolon and a single line comment.
-#
-#
-sub ProcessClUniform { # ($line, $print) {
-  my $line          = $_[0];
-  my $print         = $_[1];
-
-  my $type = "";
-  my $type_gluniform = "";
-  my $variable = "";
-  my $cpp_value = "";
-  my $aux = "";
-
-    if ($print){
-      print "Processing uniform line: $line\n";
-    }
-
-    ($type, $line) = LineStartType($line);
-    if (!$type){
-      print "Start-of-line type not found\n";
-    }
-    else{
-      #print "After eliminating type:\n$line\n";
-    }
-
-    if ($type =~ m#^(mat)#){
-      $type_gluniform .= "Matrix";
-    }
-
-    if ($type =~ m#([234])#){
-      $type_gluniform .= "$1";
-    }
-    else{
-      $type_gluniform .= "1";
-    }
-
-    if ($type =~ m#^(float|vec|mat)#){
-      $type_gluniform .= "f";
-    }
-    elsif ($type =~ m#^(int|ivec)#){
-      $type_gluniform .= "i";
-    }
-
-    if ($type =~ m#^(mat)#){
-      $type_gluniform .= "v";
-    }
-
-
-    ($variable, $line) = LineStartVariable($line);
-    if (!$variable){
-      print "Start-of-line variable not found\n";
-    }
-    else{
-      #print "After eliminating variable:\n$line\n";
-    }
-
-    $line = LineStartSemicolon($line);
-    #print "no semicolon = $line\n";
-    if (LineNonEmpty($line)){
-      ($cpp_value, $line) = LineStartCppValue($line);
-      #print "cpp value = $cpp_value\n";
-    }
-
-  if ($print){
-    print "Type:      $type -> glUniform$type_gluniform\n";
-    print "Variable:  $variable\n";
-    print "CPP value: $cpp_value\n";
-  }
-
-  return ($type, $type_gluniform, $variable, $cpp_value);
-
 }
 
 #############################################################################
