@@ -1,32 +1,9 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
-
-#############################################################################
-# LineStartMultilineComment
-#
-# Returns the string from the "/*" if found in start of $line, blank string 
-# if not found. Matches the smallest string between /* and */
-# 
-sub LineStartMultiLineComment { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*(/\*[\w\W]*?\*/)##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartSingleLineComment
-#
-# Returns the string from the "//" to the first "\n" if found in 
-# start of $line, 
-# 
-sub LineStartSingleLineComment { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*(//.*)##;
-  return ($1, $line);
-}
+use common qw(LineStartMultiLineComment
+              LineStartSingleLineComment
+              lixo);
 
 #############################################################################
 # LineStartCleanComments

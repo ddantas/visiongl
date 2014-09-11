@@ -155,7 +155,7 @@ static const char *vglClErrorMessages[] = {
     "CL_INVALID_DEVICE_PARTITION_COUNT",
 };
 
-#define CL_MIN_ERROR CL_INVALID_DEVICE_PARTITION_COUNT
+#define CL_MIN_ERROR -68
 
 void vglClPrintContext(void)
 {

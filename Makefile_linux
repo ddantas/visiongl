@@ -39,7 +39,7 @@ OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 0
+WITH_CUDA = 1
 WITH_OPENCL = 1
 WITH_GDCM = 0
 WITH_DCMTK = 0

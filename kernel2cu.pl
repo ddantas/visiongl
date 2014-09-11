@@ -1,32 +1,10 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
+use common qw(LineStartMultiLineComment
+              LineStartSingleLineComment
+              lixo);
 
-#############################################################################
-# LineStartMultilineComment
-#
-# Returns the string from the "/*" if found in start of $line, blank string 
-# if not found. Matches the smallest string between /* and */
-# 
-sub LineStartMultiLineComment { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*(/\*[\w\W]*?\*/)##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartSingleLineComment
-#
-# Returns the string from the "//" to the first "\n" if found in 
-# start of $line, 
-# 
-sub LineStartSingleLineComment { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*(//.*)##;
-  return ($1, $line);
-}
 
 #############################################################################
 # LineStartCleanComments
@@ -589,6 +567,26 @@ sub ProcessKernelCaller { # ($line) {
 # Receives as input a .kernel filename and analyses it.
 #
 #
+sub AppendFile { # ($inFilename, $outFilename) {
+  my $inFilename      = $_[0];
+  my $outFilename     = $_[1];
+
+  open(IN_FILE, $inFilename);
+  @list = <IN_FILE>;
+  $line = join("", @list);
+
+  open OUT_FILE, ">>", $outFilename;
+  print OUT_FILE $line;
+  close OUT_FILE;
+
+}
+
+#############################################################################
+# ProcessKernelFile
+#
+# Receives as input a .kernel filename and analyses it.
+#
+#
 sub ProcessKernelFile { # ($filename) {
   my $filename      = $_[0];
   
@@ -658,7 +656,7 @@ sub ProcessKernelFile { # ($filename) {
 
   
 
-  #close(IN_KERNEL);
+  close(IN_KERNEL);
   
   return  ($comment, $semantics, $type, $variable, $default, $execution, $expression, $glo_template, $glo_funcname, $glo_type, $glo_variable);
 }
@@ -695,7 +693,8 @@ sub PrintCudaFile { # ($basename, $comment, $semantics, $type, $variable, $defau
   open HEAD, ">>", "$output.h";
 
 
-  print CUDA "$comment\n";
+  #print CUDA "$comment\n";
+  print CUDA "\n";
   print HEAD "$comment\n";
 
   print CUDA "void $basename(";
@@ -784,7 +783,8 @@ sub PrintCudaFile { # ($basename, $comment, $semantics, $type, $variable, $defau
 
   print CUDA "}\n\n";
 
-  #close(CUDA);
+  close(CUDA);
+  close(HEAD);
 }
   
 #############################################################################
@@ -869,7 +869,6 @@ print CUDA "
 #include <iostream>
 
 //kernels
-#include \"$output.kernel\"
 ";
 close CUDA;
 
@@ -903,14 +902,15 @@ for ($i=$firstInputFile; $i<$nargs; $i++) {
     undef @glo_variable;
     undef @output;
 
-    system "cat $fullname >> $output.kernel";
 
+    AppendFile($ARGV[$i], "$output.cu");
 
     ($comment, $semantics, $type, $variable, $default, $execution, $expression, $glo_template, $glo_funcname, $glo_type, $glo_variable) = ProcessKernelFile($ARGV[$i]);
 
     PrintCudaFile($basename, $comment, $semantics, $type, $variable, $default, $execution, $expression, $glo_template, $glo_funcname, $glo_type, $glo_variable, $output);
 
 }
+
 
 
 

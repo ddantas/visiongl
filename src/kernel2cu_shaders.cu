@@ -14,11 +14,25 @@
 #include <iostream>
 
 //kernels
-#include "kernel2cu_shaders.kernel"
+
 /** vglCudaCopy
 
     Copy of image in cuda context.
 */
+
+// <<<input->shape[VGL_HEIGHT],384>>> (IO_PBO: VglImage* input, IO_PBO: VglImage* output)
+// (input->cudaPtr, output->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels)
+
+template<typename T> 
+__global__ void global_Copy(T* input, T* output, int w, int h, int nChannels){
+    int offset = blockIdx.x * nChannels * w;
+    T* arr_in  = input + offset;
+    T* arr_out = output + offset;
+    for (int j = threadIdx.x; j < nChannels * w; j += blockDim.x){
+      arr_out[j] = arr_in[j];
+    }
+}
+
 void vglCudaCopy(VglImage*  input, VglImage*  output){
     if (!input){
       printf("vglCudaCopy: Error: input parameter is null in file '%s' in line %i.\n",
@@ -59,10 +73,25 @@ void vglCudaCopy(VglImage*  input, VglImage*  output){
     vglSetContext(output, VGL_CUDA_CONTEXT);
 }
 
+
 /** vglCudaInvert
 
     Inverts image stored in cuda context.
 */
+
+// <<<input->shape[VGL_HEIGHT],384>>> (IN_PBO: VglImage* input, OUT_PBO: VglImage* output)
+// (input->cudaPtr, output->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels)
+
+template<typename T> 
+__global__ void global_Invert(T* input, T* output, int w, int h, int nChannels){
+    int offset = blockIdx.x * nChannels * w;
+    T* array_in  = input  + offset;
+    T* array_out = output + offset;
+    for (int j = threadIdx.x; j < nChannels * w; j += blockDim.x){
+      array_out[j] = -array_in[j];
+    }
+}
+
 void vglCudaInvert(VglImage*  input, VglImage*  output){
     if (!input){
       printf("vglCudaInvert: Error: input parameter is null in file '%s' in line %i.\n",
@@ -102,10 +131,25 @@ void vglCudaInvert(VglImage*  input, VglImage*  output){
     vglSetContext(output, VGL_CUDA_CONTEXT);
 }
 
+
+
+
 /** vglCudaInvertOnPlace
 
     Inverts image, stored in cuda context, on place.
 */
+
+// <<<input->shape[VGL_HEIGHT],384>>> (IO_PBO: VglImage* input)
+// (input->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels)
+
+  template<typename T> 
+  __global__ void global_InvertOnPlace(T* input, int w, int h, int nChannels){
+    T* array = input + blockIdx.x * nChannels * w;
+    for (int j = threadIdx.x; j < nChannels * w; j += blockDim.x){
+      array[j] = -array[j];
+    }
+  }
+
 void vglCudaInvertOnPlace(VglImage*  input){
     if (!input){
       printf("vglCudaInvertOnPlace: Error: input parameter is null in file '%s' in line %i.\n",

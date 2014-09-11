@@ -1,32 +1,9 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
-
-#############################################################################
-# LineStartMultilineComment
-#
-# Returns the string from the "/*" if found in start of $line, blank string 
-# if not found. Matches the smallest string between /* and */
-# 
-sub LineStartMultiLineComment { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*(/\*[\w\W]*?\*/)##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartSingleLineComment
-#
-# Returns the string from the "//" to the first "\n" if found in 
-# start of $line, 
-# 
-#sub LineStartSingleLineComment { # ($line) {
-#  my $line = $_[0];
-
-#  $line =~ s#^\s*(//.*)##;
-#  return ($1, $line);
-#}
+use common qw(LineStartMultiLineComment
+              LineStartSingleLineComment
+              lixo);
 
 #############################################################################
 # LineStartSingleLineComment
@@ -34,13 +11,13 @@ sub LineStartMultiLineComment { # ($line) {
 # Returns the string after the "//" to the first "\n" if found 
 # in start of $line, blank string if not found.
 # 
-sub LineStartSingleLineComment { # ($line) {
-  my $line = $_[0];
+#sub LineStartSingleLineComment { # ($line) {
+#  my $line = $_[0];
 
-  $line =~ s#^\s*//\s*(.*)\s*\n##;
+#  $line =~ s#^\s*//\s*(.*)\s*\n##;
   #$line =~ s#^\s*//(.*)##;
-  return ($1, $line);
-}
+#  return ($1, $line);
+#}
 
 
 
@@ -512,7 +489,7 @@ sub ProcessClDirective { # ($directive) {
       }
     }
 
-    my $result_isarray = 0;
+    $result_isarray = 0;
     if ($result_directive eq "ARRAY"){
       $result_isarray = 1;
     }
@@ -979,18 +956,6 @@ $nargs = $#ARGV;
 $nargs++;        
 print "Number of args = $nargs\n";
 
-$foo = '
-$lixo = "IN_TEX";
-if (!($lixo =~ m#^(IN_TEX|OUT_FBO)$#)){
-    print "combina\n";
-}
-else {
-    print "nao combina\n";
-}
-die "morreu";
-';
-
-
 
 for ($i=0; $i<$nargs; $i=$i+2) {
   if    ($ARGV[$i] eq "-o") {  
@@ -1055,6 +1020,10 @@ $i = 0;
 
 for ($i=$firstInputFile; $i<$nargs; $i++) {
     $fullname = $ARGV[$i];
+
+    #lixo();
+
+    #exit(0);
 
     print "====================\n";
     print "$ARGV[$i]\n";
