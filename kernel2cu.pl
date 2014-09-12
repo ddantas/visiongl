@@ -6,6 +6,9 @@ use common qw( LineStartMultiLineComment
                LineStartCleanComments
                LineStartParenthesis
                LineStartTypeStar
+               LineStartVariable
+               LineStartDefault
+               LineStartSeparator
              );
 
 #############################################################################
@@ -89,84 +92,6 @@ sub LineStartExpression { # ($line) {
 }
 
 #############################################################################
-# LineStartVariable
-#
-# Returns the variable name 
-# in start of $line, blank string if not found.
-# 
-sub LineStartVariable { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*([a-zA-Z_]\w*)##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartStarVariable
-#
-# Returns the "*" and variable name
-# in start of $line, blank string if not found.
-# 
-sub LineStartStarVariable { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*([\*\s*]*[a-zA-Z_]\w*)##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartDefault
-#
-# Returns the string, after the variable
-# in start of $line, that defines its default value, blank string if not found.
-# 
-sub LineStartDefault { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*(=\s*-?\s*[\.\w]*)##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartSeparator
-#
-# Returns the string after the first "," or ")" found
-# in start of $line, blank string if not found.
-# 
-sub LineStartSeparator { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*(,|\))##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartUniform
-#
-# Returns the string after the first "uniform"  found
-# in start of $line, blank string if not found.
-# 
-sub LineStartUniform { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*uniform(.*)\n##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartMain
-#
-# Returns the string that contains the main program, that is,
-# everything after void main(void) including it.
-# 
-sub LineStartMain { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*((void)\s*(main)\s*\((\s*(void)\s*)\).*)\n##;
-  return ($1, $line);
-}
-
-#############################################################################
 # LineStartExecution
 #
 # Returns the string that contains the execution configuration, that is,
@@ -177,20 +102,6 @@ sub LineStartExecution { # ($line) {
 
   $line =~ s#^\s*(<<<\s*[\w->\[\]]+\s*(,\s*[\w->\[\]]*\s*){0,2}>>>)##;
   return ($1, $line);
-}
-
-#############################################################################
-# LineNonEmpty
-#
-# Returns the string from the first non space character, and "" if line is blank
-# 
-sub LineNonEmpty { # ($line) {
-  my $line = $_[0];
-
-  if ($line =~ m#^\s*(\S.*)$#){
-      return ($1);
-  }
-  return "";
 }
 
 #############################################################################
@@ -404,8 +315,8 @@ sub ProcessKernelCaller { # ($line) {
 #############################################################################
 # ProcessKernelFile
 #
-# Receives as input a .kernel filename and analyses it.
-#
+# Receives as input a .kernel filename and appends it to the end of
+# outFilename.
 #
 sub AppendFile { # ($inFilename, $outFilename) {
   my $inFilename      = $_[0];

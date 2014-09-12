@@ -6,6 +6,9 @@ use common qw( LineStartMultiLineComment
                LineStartCleanComments
                LineStartParenthesis
                LineStartTypeStar
+               LineStartVariable
+               LineStartDefault
+               LineStartSeparator
              );
 
 #############################################################################
@@ -74,19 +77,6 @@ sub LineStartDirective { # ($line) {
 }
 
 #############################################################################
-# LineStartVariable
-#
-# Returns the string after the variable
-# in start of $line, blank string if not found.
-# 
-sub LineStartVariable { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*([a-zA-Z_]\w*)##;
-  return ($1, $line);
-}
-
-#############################################################################
 # LineStartSize
 #
 # Returns the string between [] in 
@@ -99,32 +89,6 @@ sub LineStartSize { # ($line) {
   my $result = $1;
   print "Found size >>>$result<<<\n";
   return ($result, $line);
-}
-
-#############################################################################
-# LineStartDefault
-#
-# Returns the string, after the variable
-# in start of $line, that defines its default value, blank string if not found.
-# 
-sub LineStartDefault { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*(=\s*-?\s*[\.\w]*)##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartSeparator
-#
-# Returns the string after the first "," or ")" found
-# in start of $line, blank string if not found.
-# 
-sub LineStartSeparator { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*(,|\))##;
-  return ($1, $line);
 }
 
 #############################################################################
