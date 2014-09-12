@@ -11,17 +11,17 @@
 
     Copy of image in cuda context.
 */
-void vglCudaCopy(VglImage*  input, VglImage*  output);
+void vglCudaCopy(VglImage* input, VglImage* output);
 
 /** vglCudaInvert
 
     Inverts image stored in cuda context.
 */
-void vglCudaInvert(VglImage*  input, VglImage*  output);
+void vglCudaInvert(VglImage* input, VglImage* output);
 
 /** vglCudaInvertOnPlace
 
     Inverts image, stored in cuda context, on place.
 */
-void vglCudaInvertOnPlace(VglImage*  input);
+void vglCudaInvertOnPlace(VglImage* input);
 

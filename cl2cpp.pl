@@ -1,10 +1,12 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
-use common qw(LineStartMultiLineComment
-              LineStartSingleLineComment
-              LineStartCleanComments
-              lixo);
+use common qw( LineStartMultiLineComment
+               LineStartSingleLineComment
+               LineStartCleanComments
+               LineStartParenthesis
+               LineStartTypeStar
+             );
 
 #############################################################################
 # LineStartHeader
@@ -20,20 +22,6 @@ sub LineStartHeader { # ($line) {
   $result =~ s#\s+# #g;
 
   return ($result, $line);
-}
-
-
-#############################################################################
-# LineStartParenthesis
-#
-# Returns the string after the "(" 
-# in start of $line, blank string if not found.
-# 
-sub LineStartParenthesis { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*\((.*)##;
-  return $1;
 }
 
 #############################################################################
@@ -82,21 +70,6 @@ sub LineStartDirective { # ($line) {
   else{
     $result = "";
   }
-  return ($result, $line);
-}
-
-#############################################################################
-# LineStartType
-#
-# Returns the string after the datatype and, * if present,
-# in start of $line, blank string if not found.
-# 
-sub LineStartType { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*([a-zA-Z_]\w*[\s*\**]*)##;
-  my $result = $1;
-  $result =~ s#\s##g;
   return ($result, $line);
 }
 
@@ -385,7 +358,7 @@ sub ProcessClHeader { # ($line) {
       print "After eliminating semantics:\n$line\n";
     }
 
-    ($type[$i], $line) = LineStartType($line);
+    ($type[$i], $line) = LineStartTypeStar($line);
     if (!$type[$i]){
       print "Start-of-line type not found\n";
     }

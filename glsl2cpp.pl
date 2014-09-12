@@ -1,10 +1,12 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
-use common qw(LineStartMultiLineComment
-              LineStartSingleLineComment
-              LineStartCleanComments
-              lixo);
+use common qw( LineStartMultiLineComment
+               LineStartSingleLineComment
+               LineStartCleanComments
+               LineStartParenthesis
+               LineStartTypeStar
+             );
 
 #############################################################################
 # LineStartCppValue
@@ -34,20 +36,7 @@ sub LineStartHeader { # ($line) {
 }
 
 #############################################################################
-# LineStartParenthesis
-#
-# Returns the string after the "(" 
-# in start of $line, blank string if not found.
-# 
-sub LineStartParenthesis { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*\((.*)##;
-  return $1;
-}
-
-#############################################################################
-# LineStartParenthesis
+# LineStartSemicolon
 #
 # Returns the string after the ";" 
 # in start of $line, blank string if not found.
@@ -81,19 +70,6 @@ sub LineStartSemantics { # ($line) {
     $semantics = "";
   }
   return ($semantics, $line);
-}
-
-#############################################################################
-# LineStartType
-#
-# Returns the string after the datatype and, * if present,
-# in start of $line, blank string if not found.
-# 
-sub LineStartType { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*([a-zA-Z_]\w*[\s*\**]*)##;
-  return ($1, $line);
 }
 
 #############################################################################
@@ -196,7 +172,7 @@ sub ProcessGlslUniform { # ($line, $print) {
       print "Processing uniform line: $line\n";
     }
 
-    ($type, $line) = LineStartType($line);
+    ($type, $line) = LineStartTypeStar($line);
     if (!$type){
       print "Start-of-line type not found\n";
     }
@@ -290,7 +266,7 @@ sub ProcessGlslHeader { # ($line) {
       #print "After eliminating semantics:\n$line\n";
     }
 
-    ($type[$i], $line) = LineStartType($line);
+    ($type[$i], $line) = LineStartTypeStar($line);
     if (!$type[$i]){
       print "Start-of-line type not found\n";
     }

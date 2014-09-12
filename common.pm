@@ -4,10 +4,12 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT_OK = qw(LineStartMultiLineComment
-                    LineStartSingleLineComment
-                    LineStartCleanComments
-                    lixo);
+our @EXPORT_OK = qw( LineStartMultiLineComment
+                     LineStartSingleLineComment
+                     LineStartCleanComments
+                     LineStartParenthesis
+                     LineStartTypeStar
+                   );
 
 
 #############################################################################
@@ -61,18 +63,52 @@ sub LineStartCleanComments { # ($line) {
       #print "Multi = $multi\n";
     }
   }
-
   return $line;
 }
 
+#############################################################################
+# LineStartParenthesis
+#
+# Returns the string after the "(" 
+# in start of $line, blank string if not found.
+# 
+sub LineStartParenthesis { # ($line) {
+  my $line = $_[0];
 
-
-
-
-sub lixo {
-
-    print "LIXOOOOO\n";
-
+  $line =~ s#^\s*\((.*)##;
+  return $1;
 }
+
+#############################################################################
+# LineStartType
+#
+# Returns the datatype in start of $line, blank string if not found.
+# 
+sub LineStartType { # ($line) {
+  my $line = $_[0];
+
+  $line =~ s#^\s*([a-zA-Z_]\w*)##;
+  return ($1, $line);
+}
+
+#############################################################################
+# LineStartTypeStar
+#
+# Returns the string after the datatype and, * if present,
+# in start of $line, blank string if not found.
+# 
+sub LineStartTypeStar { # ($line) {
+  my $line = $_[0];
+
+  $line =~ s#^\s*([a-zA-Z_]\w*[\s*\*]*)##;
+  my $result = $1;
+  $result =~ s#\s##g;
+  return ($result, $line);
+}
+
+
+
+
+
 
 1;

@@ -1,24 +1,12 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
-use common qw(LineStartMultiLineComment
-              LineStartSingleLineComment
-              LineStartCleanComments
-              lixo);
-
-#############################################################################
-# LineStartCppValue
-#
-# Returns the string from the "//" to the first "\n" if found in 
-# start of $line, 
-# 
-sub LineStartCppValue { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*//(.*)##;
-  return ($1, $line);
-}
-
+use common qw( LineStartMultiLineComment
+               LineStartSingleLineComment
+               LineStartCleanComments
+               LineStartParenthesis
+               LineStartTypeStar
+             );
 
 #############################################################################
 # LineStartHeader
@@ -64,32 +52,6 @@ sub LineStartGlobalHeader { # ($line) {
 }
 
 #############################################################################
-# LineStartParenthesis
-#
-# Returns the string after the "(" 
-# in start of $line, blank string if not found.
-# 
-sub LineStartParenthesis { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*\((.*)##;
-  return $1;
-}
-
-#############################################################################
-# LineStartParenthesis
-#
-# Returns the string after the ";" 
-# in start of $line, blank string if not found.
-# 
-sub LineStartSemicolon { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*;(.*)##;
-  return $1;
-}
-
-#############################################################################
 # LineStartSemantics
 #
 # Returns the string after the semantic binding and the ":"
@@ -111,31 +73,6 @@ sub LineStartSemantics { # ($line) {
     $semantics = "";
   }
   return ($semantics, $line);
-}
-
-#############################################################################
-# LineStartTypeStar
-#
-# Returns the string after the datatype and, * if present,
-# in start of $line, blank string if not found.
-# 
-sub LineStartTypeStar { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*([a-zA-Z_]\w*[\s*\*]*)##;
-  return ($1, $line);
-}
-
-#############################################################################
-# LineStartType
-#
-# Returns the datatype in start of $line, blank string if not found.
-# 
-sub LineStartType { # ($line) {
-  my $line = $_[0];
-
-  $line =~ s#^\s*([a-zA-Z_]\w*)##;
-  return ($1, $line);
 }
 
 #############################################################################
@@ -254,74 +191,6 @@ sub LineNonEmpty { # ($line) {
       return ($1);
   }
   return "";
-}
-
-#############################################################################
-# ProcessGlslUniform
-#
-# Receives as input a line and breaks it. Are expected a datatype, a 
-# variable name, a semicolon and a single line comment.
-#
-#
-sub ProcessGlslUniform { # ($line, $print) {
-  my $line          = $_[0];
-  my $print         = $_[1];
-
-  my $type = "";
-  my $type_gluniform = "";
-  my $variable = "";
-  my $cpp_value = "";
-  my $aux = "";
-
-    if ($print){
-      print "Processing uniform line: $line\n";
-    }
-
-    ($type, $line) = LineStartTypeStar($line);
-    if (!$type){
-      print "Start-of-line type not found\n";
-    }
-    else{
-      #print "After eliminating type:\n$line\n";
-    }
-
-    if ($type =~ m#([234])#){
-      $type_gluniform = "$1";
-    }
-    else{
-      $type_gluniform = "1";
-    }
-
-    if ($type =~ m#^(float|vec)#){
-      $type_gluniform .= "f";
-    }
-    elsif ($type =~ m#^(int|ivec)#){
-      $type_gluniform .= "i";
-    }
-
-    ($variable, $line) = LineStartVariable($line);
-    if (!$variable){
-      print "Start-of-line variable not found\n";
-    }
-    else{
-      #print "After eliminating variable:\n$line\n";
-    }
-
-    $line = LineStartSemicolon($line);
-    #print "no semicolon = $line\n";
-    if (LineNonEmpty($line)){
-      ($cpp_value, $line) = LineStartCppValue($line);
-      #print "cpp value = $cpp_value\n";
-    }
-
-  if ($print){
-    print "Type:      $type -> glUniform$type_gluniform\n";
-    print "Variable:  $variable\n";
-    print "CPP value: $cpp_value\n";
-  }
-
-  return ($type, $type_gluniform, $variable, $cpp_value);
-
 }
 
 #############################################################################

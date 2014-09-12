@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-void shader_15_1(VglImage*  src, VglImage*  dst){
+void shader_15_1(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -81,7 +81,7 @@ void shader_15_1(VglImage*  src, VglImage*  dst){
 /** Convert grayscale image to RGB
 
   */
-void vgl1to3Channels(VglImage*  src, VglImage*  dst){
+void vgl1to3Channels(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -149,7 +149,7 @@ void vgl1to3Channels(VglImage*  src, VglImage*  dst){
     As the wrappers are implemented currently, the shader will invert only the first layer of the 3d image.
 
   */
-void vgl3dNot(VglImage*  src, VglImage*  dst){
+void vgl3dNot(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -214,7 +214,7 @@ void vgl3dNot(VglImage*  src, VglImage*  dst){
 /** Absolute difference between two images.
 
   */
-void vglAbsDiff(VglImage*  src0, VglImage*  src1, VglImage*  dst){
+void vglAbsDiff(VglImage* src0, VglImage* src1, VglImage* dst){
 
   vglCheckContext(src0, VGL_GL_CONTEXT);
 
@@ -290,7 +290,7 @@ void vglAbsDiff(VglImage*  src0, VglImage*  src1, VglImage*  dst){
 /** Logical AND between two images
 
   */
-void vglAnd(VglImage*  src0, VglImage*  src1, VglImage*  dst){
+void vglAnd(VglImage* src0, VglImage* src1, VglImage* dst){
 
   vglCheckContext(src0, VGL_GL_CONTEXT);
 
@@ -372,7 +372,7 @@ void vglAnd(VglImage*  src0, VglImage*  src1, VglImage*  dst){
     B =                y * f(x, y) 
 
   */
-void vglBaricenterInit(VglImage*  src, VglImage*  dst){
+void vglBaricenterInit(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -440,7 +440,7 @@ void vglBaricenterInit(VglImage*  src, VglImage*  dst){
     Blur image by 3x3 square structuring element.
 
   */
-void vglBlurSq3(VglImage*  src, VglImage*  dst){
+void vglBlurSq3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -506,7 +506,7 @@ void vglBlurSq3(VglImage*  src, VglImage*  dst){
 /** Clear image with given color.
 
   */
-void vglClear2(VglImage*  src_dst, float  r, float  g, float  b, float  a){
+void vglClear2(VglImage* src_dst, float r, float g, float b, float a){
 
   vglCheckContext(src_dst, VGL_GL_CONTEXT);
 
@@ -575,7 +575,7 @@ void vglClear2(VglImage*  src_dst, float  r, float  g, float  b, float  a){
 /** Changes contrast of image by given factor.
 
   */
-void vglContrast(VglImage*  src, VglImage*  dst, float  factor){
+void vglContrast(VglImage* src, VglImage* dst, float factor){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -641,7 +641,7 @@ void vglContrast(VglImage*  src, VglImage*  dst, float  factor){
 /** Shows coordinates of pixels as colors. Red is horizontal and green is vertical. Coordinates and colors are defined by OpenGL, that is, between 0 and 1.
 
   */
-void vglCoordToColor(VglImage*  dst){
+void vglCoordToColor(VglImage* dst){
 
   GLint _viewport[4];
   glGetIntegerv(GL_VIEWPORT, _viewport);
@@ -699,7 +699,7 @@ void vglCoordToColor(VglImage*  dst){
 /** Direct copy from src to dst.
 
   */
-void vglCopy(VglImage*  src, VglImage*  dst){
+void vglCopy(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -785,7 +785,7 @@ in the neihborhood of a pixel.
         thinning algorithms, 1999
 
   */
-void vglCrossingNumber(VglImage*  src, VglImage*  dst){
+void vglCrossingNumber(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -887,7 +887,7 @@ void vglCrossingNumber(VglImage*  src, VglImage*  dst){
         thinning algorithms, 1999
 
   */
-void vglDeleteSkeletonCorners(VglImage*  src, VglImage*  dst, int  step){
+void vglDeleteSkeletonCorners(VglImage* src, VglImage* dst, int step){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -985,7 +985,7 @@ neighbor number = 3
         of handwritten chinese characters
 
   */
-void vglDeleteSkeletonWarts(VglImage*  src, VglImage*  dst){
+void vglDeleteSkeletonWarts(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1089,7 +1089,7 @@ neighbor number >=3
         of handwritten chinese characters
 
   */
-void vglDeleteSkeletonWarts2(VglImage*  src, VglImage*  dst){
+void vglDeleteSkeletonWarts2(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1155,7 +1155,7 @@ void vglDeleteSkeletonWarts2(VglImage*  src, VglImage*  dst){
 /** Image src0 minus src1.
 
   */
-void vglDiff(VglImage*  src0, VglImage*  src1, VglImage*  dst){
+void vglDiff(VglImage* src0, VglImage* src1, VglImage* dst){
 
   vglCheckContext(src0, VGL_GL_CONTEXT);
 
@@ -1231,7 +1231,7 @@ void vglDiff(VglImage*  src0, VglImage*  src1, VglImage*  dst){
 /** Dilation of image by 3x3 cross structuring element.
 
   */
-void vglDilateCross3(VglImage*  src, VglImage*  dst){
+void vglDilateCross3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1297,7 +1297,7 @@ void vglDilateCross3(VglImage*  src, VglImage*  dst){
 /** Dilation of image by 3x3 square structuring element.
 
   */
-void vglDilateSq3(VglImage*  src, VglImage*  dst){
+void vglDilateSq3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1363,7 +1363,7 @@ void vglDilateSq3(VglImage*  src, VglImage*  dst){
 /** Erosion of image by 3x3 cross structuring element.
 
   */
-void vglErodeCross3(VglImage*  src, VglImage*  dst){
+void vglErodeCross3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1429,7 +1429,7 @@ void vglErodeCross3(VglImage*  src, VglImage*  dst){
 /** Erosion of image by horizontal line with 3 pixels.
 
   */
-void vglErodeHL3(VglImage*  src, VglImage*  dst){
+void vglErodeHL3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1495,7 +1495,7 @@ void vglErodeHL3(VglImage*  src, VglImage*  dst){
 /** Erosion of image by horizontal line with 5 pixels.
 
   */
-void vglErodeHL5(VglImage*  src, VglImage*  dst){
+void vglErodeHL5(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1561,7 +1561,7 @@ void vglErodeHL5(VglImage*  src, VglImage*  dst){
 /** Erosion of image by horizontal line with 7 pixels.
 
   */
-void vglErodeHL7(VglImage*  src, VglImage*  dst){
+void vglErodeHL7(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1627,7 +1627,7 @@ void vglErodeHL7(VglImage*  src, VglImage*  dst){
 /** Erosion of image by 3x3 square structuring element.
 
   */
-void vglErodeSq3(VglImage*  src, VglImage*  dst){
+void vglErodeSq3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1693,7 +1693,7 @@ void vglErodeSq3(VglImage*  src, VglImage*  dst){
 /** Erosion of image by 3x3 square structuring element. Uses an offset array with 9 elements. Slower than vglErodeSq3.
 
   */
-void vglErodeSq3off(VglImage*  src, VglImage*  dst){
+void vglErodeSq3off(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1759,7 +1759,7 @@ void vglErodeSq3off(VglImage*  src, VglImage*  dst){
 /** Erosion of image by 5x5 square structuring element.
 
   */
-void vglErodeSq5(VglImage*  src, VglImage*  dst){
+void vglErodeSq5(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1825,7 +1825,7 @@ void vglErodeSq5(VglImage*  src, VglImage*  dst){
 /** Erosion of image by 3x3 square structuring element. Uses an offset array with 25 elements. Slower than vglErodeSq5.
 
   */
-void vglErodeSq5off(VglImage*  src, VglImage*  dst){
+void vglErodeSq5off(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1891,7 +1891,7 @@ void vglErodeSq5off(VglImage*  src, VglImage*  dst){
 /** Erosion of image by 7x7 square structuring element.
 
   */
-void vglErodeSq7(VglImage*  src, VglImage*  dst){
+void vglErodeSq7(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -1957,7 +1957,7 @@ void vglErodeSq7(VglImage*  src, VglImage*  dst){
 /** Erosion of image by square structuring element. The parameter "side" is the dimension of the square side in pixels.
 
   */
-void vglErodeSqSide(VglImage*  src, VglImage*  dst, int  side){
+void vglErodeSqSide(VglImage* src, VglImage* dst, int side){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2024,7 +2024,7 @@ void vglErodeSqSide(VglImage*  src, VglImage*  dst, int  side){
 /** Erosion of image by vertical line with 3 pixels.
 
   */
-void vglErodeVL3(VglImage*  src, VglImage*  dst){
+void vglErodeVL3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2090,7 +2090,7 @@ void vglErodeVL3(VglImage*  src, VglImage*  dst){
 /** Erosion of image by vertical line with 5 pixels.
 
   */
-void vglErodeVL5(VglImage*  src, VglImage*  dst){
+void vglErodeVL5(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2156,7 +2156,7 @@ void vglErodeVL5(VglImage*  src, VglImage*  dst){
 /** Erosion of image by vertical line with 7 pixels.
 
   */
-void vglErodeVL7(VglImage*  src, VglImage*  dst){
+void vglErodeVL7(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2255,7 +2255,7 @@ S3 = { P | Nc(P) >= 3 or Nb(P) >= 4 }
         of handwritten chinese characters
 
   */
-void vglFeaturePoints(VglImage*  src, VglImage*  dst, int  type){
+void vglFeaturePoints(VglImage* src, VglImage* dst, int type){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2322,7 +2322,7 @@ void vglFeaturePoints(VglImage*  src, VglImage*  dst, int  type){
 /** Blurs image by 3x3 square gaussian structuring element.
 
   */
-void vglGaussianBlurSq3(VglImage*  src, VglImage*  dst){
+void vglGaussianBlurSq3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2388,7 +2388,7 @@ void vglGaussianBlurSq3(VglImage*  src, VglImage*  dst){
 /** Convert image to grayscale by calculating the scalar product of (r, g, b) and (.2125, .7154, .0721).
 
   */
-void vglGray(VglImage*  src, VglImage*  dst){
+void vglGray(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2454,7 +2454,7 @@ void vglGray(VglImage*  src, VglImage*  dst){
 
     Image flip done by shader.
   */
-void vglHorizontalFlip(VglImage*  src, VglImage*  dst){
+void vglHorizontalFlip(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2521,7 +2521,7 @@ void vglHorizontalFlip(VglImage*  src, VglImage*  dst){
     Test and model for IN_OUT semantics
 
   */
-void vglInOut(VglImage*  src, VglImage*  dst){
+void vglInOut(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2605,7 +2605,7 @@ void vglInOut(VglImage*  src, VglImage*  dst){
 /** Calculate Julia set
 
   */
-void vglJulia(VglImage*  dst, float  ox, float  oy, float  half_win, float  c_real, float  c_imag){
+void vglJulia(VglImage* dst, float ox, float oy, float half_win, float c_real, float c_imag){
 
   GLint _viewport[4];
   glGetIntegerv(GL_VIEWPORT, _viewport);
@@ -2668,7 +2668,7 @@ void vglJulia(VglImage*  dst, float  ox, float  oy, float  half_win, float  c_re
 /** Laplacian of image by 3x3 square structuring element.
 
   */
-void vglLaplaceSq3(VglImage*  src, VglImage*  dst){
+void vglLaplaceSq3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2734,7 +2734,7 @@ void vglLaplaceSq3(VglImage*  src, VglImage*  dst){
 /** Calculate Mandelbrot set
 
   */
-void vglMandel(VglImage*  dst, float  ox, float  oy, float  half_win){
+void vglMandel(VglImage* dst, float ox, float oy, float half_win){
 
   GLint _viewport[4];
   glGetIntegerv(GL_VIEWPORT, _viewport);
@@ -2795,7 +2795,7 @@ void vglMandel(VglImage*  dst, float  ox, float  oy, float  half_win){
 /** Get specified level of detail.
 
   */
-void vglMipmap(VglImage*  src, VglImage*  dst, float  lod){
+void vglMipmap(VglImage* src, VglImage* dst, float lod){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2861,7 +2861,7 @@ void vglMipmap(VglImage*  src, VglImage*  dst, float  lod){
 /** Multiply image by scalar.
 
   */
-void vglMulScalar(VglImage*  src, VglImage*  dst, float  factor){
+void vglMulScalar(VglImage* src, VglImage* dst, float factor){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -2929,7 +2929,7 @@ void vglMulScalar(VglImage*  src, VglImage*  dst, float  factor){
     Sum of two images.
 
   */
-void vglMultiInput(VglImage*  src0, VglImage*  src1, VglImage*  dst, float  weight){
+void vglMultiInput(VglImage* src0, VglImage* src1, VglImage* dst, float weight){
 
   vglCheckContext(src0, VGL_GL_CONTEXT);
 
@@ -3008,7 +3008,7 @@ void vglMultiInput(VglImage*  src0, VglImage*  src1, VglImage*  dst, float  weig
     Convert image to grayscale
 
   */
-void vglMultiOutput(VglImage*  src, VglImage*  dst, VglImage*  dst1){
+void vglMultiOutput(VglImage* src, VglImage* dst, VglImage* dst1){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3092,7 +3092,7 @@ void vglMultiOutput(VglImage*  src, VglImage*  dst, VglImage*  dst1){
 /** Add gaussian noise to image
 
   */
-void vglNoise(VglImage*  src, VglImage*  dst){
+void vglNoise(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3157,7 +3157,7 @@ void vglNoise(VglImage*  src, VglImage*  dst){
 /** Inverts image.
 
   */
-void vglNot(VglImage*  src, VglImage*  dst){
+void vglNot(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3222,7 +3222,7 @@ void vglNot(VglImage*  src, VglImage*  dst){
 /** Logical OR between two images
 
   */
-void vglOr(VglImage*  src0, VglImage*  src1, VglImage*  dst){
+void vglOr(VglImage* src0, VglImage* src1, VglImage* dst){
 
   vglCheckContext(src0, VGL_GL_CONTEXT);
 
@@ -3298,7 +3298,7 @@ void vglOr(VglImage*  src0, VglImage*  src1, VglImage*  dst){
 /** Rescales corners of image to given corners
 
   */
-void vglRescale(VglImage*  src, VglImage*  dst, float  x0, float  y0, float  x1, float  y1){
+void vglRescale(VglImage* src, VglImage* dst, float x0, float y0, float x1, float y1){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3367,7 +3367,7 @@ void vglRescale(VglImage*  src, VglImage*  dst, float  x0, float  y0, float  x1,
 /** Converts image RGB to BGR color space
 
   */
-void vglRgbToBgr(VglImage*  src, VglImage*  dst){
+void vglRgbToBgr(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3432,7 +3432,7 @@ void vglRgbToBgr(VglImage*  src, VglImage*  dst){
 /** Converts image RGB to HSL color space
 
   */
-void vglRgbToHsl(VglImage*  src, VglImage*  dst){
+void vglRgbToHsl(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3497,7 +3497,7 @@ void vglRgbToHsl(VglImage*  src, VglImage*  dst){
 /** Converts image RGB to HSV color space
 
   */
-void vglRgbToHsv(VglImage*  src, VglImage*  dst){
+void vglRgbToHsv(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3562,7 +3562,7 @@ void vglRgbToHsv(VglImage*  src, VglImage*  dst){
 /** Converts image RGB to XYZ color space.
 
   */
-void vglRgbToXyz(VglImage*  src, VglImage*  dst){
+void vglRgbToXyz(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3627,7 +3627,7 @@ void vglRgbToXyz(VglImage*  src, VglImage*  dst){
 /** Roberts gradient of image
 
   */
-void vglRobertsGradient(VglImage*  src, VglImage*  dst){
+void vglRobertsGradient(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3695,7 +3695,7 @@ void vglRobertsGradient(VglImage*  src, VglImage*  dst){
     The width and height of the output image must be half of the input image.
 
   */
-void vglSelfSum22(VglImage*  src, VglImage*  dst){
+void vglSelfSum22(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3763,7 +3763,7 @@ void vglSelfSum22(VglImage*  src, VglImage*  dst){
     The height of the output image must be 1/3th of the input image.
 
   */
-void vglSelfSum3v(VglImage*  src, VglImage*  dst){
+void vglSelfSum3v(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3831,7 +3831,7 @@ void vglSelfSum3v(VglImage*  src, VglImage*  dst){
     The width of the output image must be 1/4th of the input image.
 
   */
-void vglSelfSum4h(VglImage*  src, VglImage*  dst){
+void vglSelfSum4h(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3899,7 +3899,7 @@ void vglSelfSum4h(VglImage*  src, VglImage*  dst){
     The width of the output image must be 1/5th of the input image.
 
   */
-void vglSelfSum5h(VglImage*  src, VglImage*  dst){
+void vglSelfSum5h(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -3967,7 +3967,7 @@ void vglSelfSum5h(VglImage*  src, VglImage*  dst){
     The height of the output image must be 1/5th of the input image.
 
   */
-void vglSelfSum5v(VglImage*  src, VglImage*  dst){
+void vglSelfSum5v(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -4033,7 +4033,7 @@ void vglSelfSum5v(VglImage*  src, VglImage*  dst){
 /** Sharpens image using 3x3 square window.
 
   */
-void vglSharpenSq3(VglImage*  src, VglImage*  dst){
+void vglSharpenSq3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -4099,7 +4099,7 @@ void vglSharpenSq3(VglImage*  src, VglImage*  dst){
 /** Sobel gradient of image
 
   */
-void vglSobelGradient(VglImage*  src, VglImage*  dst){
+void vglSobelGradient(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -4165,7 +4165,7 @@ void vglSobelGradient(VglImage*  src, VglImage*  dst){
 /** Sobel edge filtering in X direction.
 
   */
-void vglSobelXSq3(VglImage*  src, VglImage*  dst){
+void vglSobelXSq3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -4231,7 +4231,7 @@ void vglSobelXSq3(VglImage*  src, VglImage*  dst){
 /** Sobel edge filtering in Y direction.
 
   */
-void vglSobelYSq3(VglImage*  src, VglImage*  dst){
+void vglSobelYSq3(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -4297,7 +4297,7 @@ void vglSobelYSq3(VglImage*  src, VglImage*  dst){
 /** Sum of two images.
 
   */
-void vglSum(VglImage*  src0, VglImage*  src1, VglImage*  dst){
+void vglSum(VglImage* src0, VglImage* src1, VglImage* dst){
 
   vglCheckContext(src0, VGL_GL_CONTEXT);
 
@@ -4373,7 +4373,7 @@ void vglSum(VglImage*  src0, VglImage*  src1, VglImage*  dst){
 /** Weighted sum of two images. The first image is multiplied by weight, and the second, by 1 - weight. Default weight is 0.5.
 
   */
-void vglSumWeighted(VglImage*  src0, VglImage*  src1, VglImage*  dst, float  weight){
+void vglSumWeighted(VglImage* src0, VglImage* src1, VglImage* dst, float weight){
 
   vglCheckContext(src0, VGL_GL_CONTEXT);
 
@@ -4450,7 +4450,7 @@ void vglSumWeighted(VglImage*  src0, VglImage*  src1, VglImage*  dst, float  wei
 /** Convert image from RGB to BGR and vice versa.
 
   */
-void vglSwapRGB(VglImage*  src, VglImage*  dst){
+void vglSwapRGB(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -4515,7 +4515,7 @@ void vglSwapRGB(VglImage*  src, VglImage*  dst){
 /** Test and model for IN_OUT semantics
 
   */
-void vglTestInOut(VglImage*  src_dst, float  r, float  g, float  b, float  a){
+void vglTestInOut(VglImage* src_dst, float r, float g, float b, float a){
 
   vglCheckContext(src_dst, VGL_GL_CONTEXT);
 
@@ -4584,7 +4584,7 @@ void vglTestInOut(VglImage*  src_dst, float  r, float  g, float  b, float  a){
 /** Test and model for IN_OUT semantics, with double output.
 
   */
-void vglTestInOut2(VglImage*  src_dst, VglImage*  dst){
+void vglTestInOut2(VglImage* src_dst, VglImage* dst){
 
   vglCheckContext(src_dst, VGL_GL_CONTEXT);
 
@@ -4668,7 +4668,7 @@ void vglTestInOut2(VglImage*  src_dst, VglImage*  dst){
 /** Test and model for multiple input functions.
 
   */
-void vglTestMultiInput(VglImage*  src0, VglImage*  src1, VglImage*  dst, float  weight){
+void vglTestMultiInput(VglImage* src0, VglImage* src1, VglImage* dst, float weight){
 
   vglCheckContext(src0, VGL_GL_CONTEXT);
 
@@ -4745,7 +4745,7 @@ void vglTestMultiInput(VglImage*  src0, VglImage*  src1, VglImage*  dst, float  
 /** Test and model for multiple output functions.
 
   */
-void vglTestMultiOutput(VglImage*  src, VglImage*  dst, VglImage*  dst1){
+void vglTestMultiOutput(VglImage* src, VglImage* dst, VglImage* dst1){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -4831,7 +4831,7 @@ void vglTestMultiOutput(VglImage*  src, VglImage*  dst, VglImage*  dst1){
     Dilation of image by 3x3 square structuring element.
 
   */
-void vglTeste(VglImage*  src, VglImage*  dst){
+void vglTeste(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -4918,7 +4918,7 @@ cross structuring element.
         thinning algorithms, 1999
 
   */
-void vglThinBernardAux(VglImage*  src, VglImage*  eroded, VglImage*  dst){
+void vglThinBernardAux(VglImage* src, VglImage* eroded, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -5021,7 +5021,7 @@ void vglThinBernardAux(VglImage*  src, VglImage*  eroded, VglImage*  dst){
     R. T. Chin et al., A one-pass thinning algorithm and its parallel 
         implementation, 1987
   */
-void vglThinChinAux(VglImage*  src, VglImage*  dst){
+void vglThinChinAux(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -5088,7 +5088,7 @@ void vglThinChinAux(VglImage*  src, VglImage*  dst){
     else, output is 0. Default top value is 1.
 
   */
-void vglThresh(VglImage*  src, VglImage*  dst, float  thresh, float  top){
+void vglThresh(VglImage* src, VglImage* dst, float thresh, float top){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -5157,7 +5157,7 @@ void vglThresh(VglImage*  src, VglImage*  dst, float  thresh, float  top){
     Use after some Distance Transform to get a single distance level set.
 
   */
-void vglThreshLevelSet(VglImage*  src, VglImage*  dst, float  thresh, float  top){
+void vglThreshLevelSet(VglImage* src, VglImage* dst, float thresh, float top){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -5225,7 +5225,7 @@ void vglThreshLevelSet(VglImage*  src, VglImage*  dst, float  thresh, float  top
 
     Image flip done by shader.
   */
-void vglVerticalFlip(VglImage*  src, VglImage*  dst){
+void vglVerticalFlip(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -5290,7 +5290,7 @@ void vglVerticalFlip(VglImage*  src, VglImage*  dst){
 /** Finds edge by using a White-Rohrer mask.
 
   */
-void vglWhiteRohrerEdge(VglImage*  src, VglImage*  dst, float  radius){
+void vglWhiteRohrerEdge(VglImage* src, VglImage* dst, float radius){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -5358,7 +5358,7 @@ void vglWhiteRohrerEdge(VglImage*  src, VglImage*  dst, float  radius){
     grayscale in y and sobel edge filtering in Y direction in green channel
 
   */
-void vglXGY(VglImage*  src, VglImage*  dst){
+void vglXGY(VglImage* src, VglImage* dst){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 
@@ -5424,7 +5424,7 @@ void vglXGY(VglImage*  src, VglImage*  dst){
 /** Zoom image by factor.
 
   */
-void vglZoom(VglImage*  src, VglImage*  dst, float  factor){
+void vglZoom(VglImage* src, VglImage* dst, float factor){
 
   vglCheckContext(src, VGL_GL_CONTEXT);
 

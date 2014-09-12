@@ -33,7 +33,7 @@ __global__ void global_Copy(T* input, T* output, int w, int h, int nChannels){
     }
 }
 
-void vglCudaCopy(VglImage*  input, VglImage*  output){
+void vglCudaCopy(VglImage* input, VglImage* output){
     if (!input){
       printf("vglCudaCopy: Error: input parameter is null in file '%s' in line %i.\n",
               __FILE__, __LINE__);
@@ -61,7 +61,7 @@ void vglCudaCopy(VglImage*  input, VglImage*  output){
 
     switch (input->depth){
       case (IPL_DEPTH_8U):
-        global_Copy<<<input->shape[VGL_HEIGHT],384>>>((unsigned char* )input->cudaPtr, (unsigned char* )output->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels);
+        global_Copy<<<input->shape[VGL_HEIGHT],384>>>((unsigned char*)input->cudaPtr, (unsigned char*)output->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels);
         break;
       default:
         printf("vglCudaCopy: Error: unsupported img->depth = %d in file '%s' in line %i.\n",
@@ -92,7 +92,7 @@ __global__ void global_Invert(T* input, T* output, int w, int h, int nChannels){
     }
 }
 
-void vglCudaInvert(VglImage*  input, VglImage*  output){
+void vglCudaInvert(VglImage* input, VglImage* output){
     if (!input){
       printf("vglCudaInvert: Error: input parameter is null in file '%s' in line %i.\n",
               __FILE__, __LINE__);
@@ -120,7 +120,7 @@ void vglCudaInvert(VglImage*  input, VglImage*  output){
 
     switch (input->depth){
       case (IPL_DEPTH_8U):
-        global_Invert<<<input->shape[VGL_HEIGHT],384>>>((unsigned char* )input->cudaPtr, (unsigned char* )output->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels);
+        global_Invert<<<input->shape[VGL_HEIGHT],384>>>((unsigned char*)input->cudaPtr, (unsigned char*)output->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels);
         break;
       default:
         printf("vglCudaInvert: Error: unsupported img->depth = %d in file '%s' in line %i.\n",
@@ -150,7 +150,7 @@ void vglCudaInvert(VglImage*  input, VglImage*  output){
     }
   }
 
-void vglCudaInvertOnPlace(VglImage*  input){
+void vglCudaInvertOnPlace(VglImage* input){
     if (!input){
       printf("vglCudaInvertOnPlace: Error: input parameter is null in file '%s' in line %i.\n",
               __FILE__, __LINE__);
@@ -166,7 +166,7 @@ void vglCudaInvertOnPlace(VglImage*  input){
 
     switch (input->depth){
       case (IPL_DEPTH_8U):
-        global_InvertOnPlace<<<input->shape[VGL_HEIGHT],384>>>((unsigned char* )input->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels);
+        global_InvertOnPlace<<<input->shape[VGL_HEIGHT],384>>>((unsigned char*)input->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels);
         break;
       default:
         printf("vglCudaInvertOnPlace: Error: unsupported img->depth = %d in file '%s' in line %i.\n",
