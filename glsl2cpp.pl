@@ -295,9 +295,10 @@ sub ProcessGlslFile { # ($filename, $output, $cpp_read_path) {
   undef $variable;
   undef $uniform;
 
-  open(GLSL, $filename);
+  open GLSL, $filename;
   @list = <GLSL>;
   $line = join("", @list);
+  close GLSL;  
 
   ($comment, $line) = LineStartMultiLineComment($line);
   if (!$comment){
@@ -334,8 +335,6 @@ sub ProcessGlslFile { # ($filename, $output, $cpp_read_path) {
   }
   while ($uniform[$i-1]);
 
-  #close(GLSL);
-  
   return  ($comment, $semantics, $type, $variable, $uniform);
 }
 
@@ -654,6 +653,7 @@ print CPP "
 #include \"vglContext.h\"\n
 #include <iostream>
 ";
+close HEAD;
 close CPP;
 
 

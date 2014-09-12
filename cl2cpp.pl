@@ -406,9 +406,10 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
   print "type size = $#type\n";
   print "variable size = $#variable\n";
 
-  open(CL, $filename);
+  open CL, $filename;
   @list = <CL>;
   $line = join("", @list);
+  close CL;
 
   ($comment, $line) = LineStartMultiLineComment($line);
   if (!$comment){
@@ -492,7 +493,6 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
     print "Array?   [$i]: $is_array[$i]\n";
     print "Size     [$i]: $size[$i]\n";
   }
-
 
   return  ($comment, $semantics, $type, $variable, $is_array, $size);
 }
@@ -686,7 +686,8 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   print CPP "}\n\n";
 
 
-  #close(CPP);
+  close CPP;
+  close HEAD;
 }
   
 #############################################################################

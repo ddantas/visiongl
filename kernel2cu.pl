@@ -322,13 +322,14 @@ sub AppendFile { # ($inFilename, $outFilename) {
   my $inFilename      = $_[0];
   my $outFilename     = $_[1];
 
-  open(IN_FILE, $inFilename);
+  open IN_FILE, $inFilename;
   @list = <IN_FILE>;
   $line = join("", @list);
 
   open OUT_FILE, ">>", $outFilename;
   print OUT_FILE $line;
   close OUT_FILE;
+  close IN_FILE;
 
 }
 
@@ -360,9 +361,10 @@ sub ProcessKernelFile { # ($filename) {
   my $glo_type;
   my $glo_variable;
 
-  open(IN_KERNEL, $filename);
+  open IN_KERNEL, $filename;
   @list = <IN_KERNEL>;
   $line = join("", @list);
+  close IN_KERNEL;
 
   ($comment, $line) = LineStartMultiLineComment($line);
   if (!$comment){
@@ -403,11 +405,6 @@ sub ProcessKernelFile { # ($filename) {
     print "Writing this global function name:\n$glo_funcname\n";
   }
   ($glo_type, $glo_variable) = ProcessKernelGlobalParams($glo_paramlist);
-
-
-  
-
-  close(IN_KERNEL);
   
   return  ($comment, $semantics, $type, $variable, $default, $execution, $expression, $glo_template, $glo_funcname, $glo_type, $glo_variable);
 }
@@ -534,8 +531,8 @@ sub PrintCudaFile { # ($basename, $comment, $semantics, $type, $variable, $defau
 
   print CUDA "}\n\n";
 
-  close(CUDA);
-  close(HEAD);
+  close CUDA;
+  close HEAD;
 }
   
 #############################################################################
@@ -621,6 +618,7 @@ print CUDA "
 
 //kernels
 ";
+close HEAD;
 close CUDA;
 
 
