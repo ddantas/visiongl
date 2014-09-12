@@ -777,6 +777,9 @@ void vglReleaseImage(VglImage** p_image)
   if (image->ipl){
     cvReleaseImage(&(image->ipl));
   }
+  if (image->ndarray){
+    free(image->ndarray);
+  }
   if (image->fbo != -1){
     glDeleteFramebuffersEXT(1, &image->fbo); 
   }
