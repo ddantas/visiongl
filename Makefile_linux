@@ -211,8 +211,7 @@ LINUXAMD64_DEMO_COLORDECONV = $(CC) $(COMPILER_FLAGS) \
 
 
 
-
-GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkIo.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h $(INCLUDE_PATH)/vglDeconv.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
+GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglClImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkIo.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h $(INCLUDE_PATH)/vglDeconv.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
 
 
 all:
@@ -328,4 +327,36 @@ debug:
 bkp:
 	rm -f bkp.tgz
 	tar -cvzf bkp.tgz *
+
+
+CLOUD_DIRS   := src/cloud
+CLOUD_SOURCE := $(foreach dir, $(CLOUD_DIRS), $(wildcard $(dir)/*))
+CLOUD_BIN     = $(CLOUD_SOURCE:%.cpp=%)
+CLOUD_BASE    = $(notdir $(basename $(CLOUD_SOURCE) ) ) 
+
+
+cloud: $(CLOUD_BASE)
+
+cloud0:
+	echo $(CLOUD_SOURCE)
+	echo $(CLOUD_BIN)
+	echo $(CLOUD_BASE)
+
+%: %.cpp
+	$(CC) $*.cpp -o $* $(OUTPUT_INCLUDEDIR) $(OPENCV_INCLUDEDIR) $(OPENCL_INCLUDEDIR) $(OUTPUT_LIBDIR) $(OPENCV_LIBDIR) $(OPENCV_LIBRARIES) -lvisiongl
+
+#-L $(INSTALL_LIBPATH) -lvisiongl
+
+
+#  $(OPENCV_LIBDIR) $(OPENCV_LIBRARIES) $(OPENCL_LIBDIR) $(OPENCL_LIBRARIES) $(OUTPUT_LIBDIR) -lvisiongl
+
+
+
+lala:
+	file := $(foreach file, $(files), echo $(file))
+	export LINUXAMD64_CLOUD="$(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/cloud/$(CLOUD_NAME) \
+                         src/cloud/$(CLOUD_NAME).cpp \
+                         -lvisiongl" 
+	$(LINUXAMD64_CLOUD)
 

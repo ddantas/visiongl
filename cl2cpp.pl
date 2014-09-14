@@ -595,9 +595,8 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str(\"File not found: \");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, \"%s:%s: Error: File %s not found.\\n\", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();

@@ -37,9 +37,8 @@ void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -107,9 +106,8 @@ void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convol
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -186,9 +184,8 @@ void vglCl3dCopy(VglImage* img_input, VglImage* img_output){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -256,9 +253,8 @@ void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolutio
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -335,9 +331,8 @@ void vglCl3dMergeZByMax(VglImage* src, VglImage* dst, int number_of_merges){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -402,9 +397,8 @@ void vglCl3dMergeZByMean(VglImage* src, VglImage* dst, int number_of_merges){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -469,9 +463,8 @@ void vglCl3dNot(VglImage* img_input, VglImage* img_output){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -533,9 +526,8 @@ void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -600,9 +592,8 @@ void vglClBlurSq3(VglImage* img_input, VglImage* img_output){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -670,9 +661,8 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -746,9 +736,8 @@ void vglClCopy(VglImage* img_input, VglImage* img_output){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -816,9 +805,8 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -892,9 +880,8 @@ void vglClInvert(VglImage* img_input, VglImage* img_output){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -956,9 +943,8 @@ void vglClNdNot(VglImage* img_input, VglImage* img_output){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();
@@ -1020,9 +1006,8 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh){
     std::ifstream file(file_path);
     if(file.fail())
     {
-      std::string str("File not found: ");
-      str.append(file_path);
-      vglClCheckError(-1, (char*)str.c_str());
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
     }
     std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
     const char *source_str = prog.c_str();

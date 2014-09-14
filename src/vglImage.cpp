@@ -268,8 +268,7 @@ void vglUpload(VglImage* image, int swapRGB){
   }
 
   if (nChannels == 3){
-    printf("\t\t\tswapRGB = %d\n", swapRGB);
-    //swapRGB = (swapRGB + 1) % 2;
+        //swapRGB = (swapRGB + 1) % 2;
 	if(ndim == 3)
 	{
 		vglNdarray3To4Channels(image);
@@ -615,7 +614,8 @@ void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
         }
 }                
 
-//converts ndarray from 3 channels to 4 channels
+/** Converts ndarray from 3 channels to 4 channels
+  */
 void vglNdarray3To4Channels(VglImage* img)
 {
 
@@ -680,6 +680,8 @@ void vglNdarray3To4Channels(VglImage* img)
     img->nChannels = 4;
 }
 
+/** Converts ndarray from 4 channels to 3 channels
+  */
 void vglNdarray4To3Channels(VglImage* img)
 {
     if (img->nChannels == 3)
@@ -764,6 +766,41 @@ void vglIpl4To3Channels(VglImage* img)
     img->nChannels = 4;
 }
 
+/** Convert VglImage from 3 to 4 channels
+ */
+void vglImage3To4Channels(VglImage* img)
+{
+    if (img->ipl->nChannels != 3)
+    {
+        return;
+    }
+    if (img->ipl)
+    {
+        vglIpl3To4Channels(img);
+    }
+    if (img->ndarray)
+    {
+        vglNdarray3To4Channels(img);
+    }
+}
+
+/** Convert VglImage from 4 to 3 channels
+ */
+void vglImage4To3Channels(VglImage* img)
+{
+    if (img->ipl->nChannels != 4)
+    {
+        return;
+    }
+    if (img->ipl)
+    {
+        vglIpl4To3Channels(img);
+    }
+    if (img->ndarray)
+    {
+        vglNdarray4To3Channels(img);
+    }
+}
 
 /** Release memory occupied by image in RAM and GPU
  */
