@@ -745,8 +745,21 @@ elsif ($cpp_read_path =~ m#[^/]$#){
   $cpp_read_path = "$cpp_read_path/";
 }
 
+my @files = glob $ARGV[$i];
+my @fsize;
+my @firstInputFile;
+if (@files)
+{
+	$fsize = scalar(@files);
+	$firstInputFile = 0;
+}
+else
+{
+	$firstInputFile = $i;
+	@files = $ARGV;
+	$fsize = $nargs
+}
 
-$firstInputFile = $i;
 
 system "rm $output.cpp";
 system "rm $output.h";
@@ -778,17 +791,15 @@ extern VglClContext cl;
 ";
 close CPP;
 
-$i = 0;
-
-for ($i=$firstInputFile; $i<$nargs; $i++) {
-    $fullname = $ARGV[$i];
+for ($i=$firstInputFile; $i<$fsize; $i++) {
+    $fullname = $files[$i];
 
     #lixo();
 
     #exit(0);
 
     print "====================\n";
-    print "$ARGV[$i]\n";
+    print "$files[$i]\n";
     print "i = $i\n";
     print "nargs = $nargs\n";
     ($a, $b, $c) = fileparse($fullname, ".cl");
@@ -808,7 +819,7 @@ for ($i=$firstInputFile; $i<$nargs; $i++) {
     undef @uniform;
 
 
-    ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($ARGV[$i]);
+    ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($files[$i]);
 
     PrintCppFile($basename, $comment, $semantics, $type, $variable, $default, $is_array, $size, $output, $cpp_read_path);
 
