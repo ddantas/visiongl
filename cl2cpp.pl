@@ -760,9 +760,8 @@ else
 	$fsize = $nargs
 }
 
-
-system "rm $output.cpp";
-system "rm $output.h";
+unlink ("$output.cpp");
+unlink ("$output.h");
 
 $topMsg = "
 /*********************************************************************\
