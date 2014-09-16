@@ -1,17 +1,12 @@
 
 #define _CRT_SECURE_NO_WARNINGS
-#define __OPENCL__
-//#include "vglClImage.h"
-//#include "vglContext.h"
-//#include "cl2cpp_shaders.h"
+
+//#define __OPENCL__
 
 #include <visiongl.h>
 
-
 #include <opencv2/imgproc/types_c.h>
 #include <opencv2/highgui/highgui_c.h>
-
-
 
 #include <fstream>
 #include <string>
@@ -41,18 +36,18 @@ string* getValue(int arg_position, int argc, char* argv[])
         printf(LACKING_VALUE_FOR_ARG,argv[arg_position]);
     }
     else
-        return new string(argv[arg_position+1]);
+    return new string(argv[arg_position+1]);
 }
 
 //troca uma substring por outra substring
 string replaceinString(std::string str, std::string tofind, std::string toreplace)
 {
-        size_t position = 0;
-        for ( position = str.find(tofind); position != std::string::npos; position = str.find(tofind,position) )
-        {
-                str.replace(position ,1, toreplace);
-        }
-        return(str);
+    size_t position = 0;
+    for ( position = str.find(tofind); position != std::string::npos; position = str.find(tofind,position) )
+    {
+        str.replace(position ,1, toreplace);
+    }
+    return(str);
 }
 
 //Converte uma string contendo um array, em um array de float

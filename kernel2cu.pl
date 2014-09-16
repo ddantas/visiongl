@@ -590,9 +590,8 @@ if (!$output){
 
 $firstInputFile = $i;
 
-system "rm $output.kernel";
-system "rm $output.cu";
-system "rm $output.h";
+unlink("$output.cu");
+unlink("$output.h");
 
 $topMsg = "
 /*********************************************************************\

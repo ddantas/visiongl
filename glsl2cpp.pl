@@ -629,8 +629,8 @@ elsif ($cpp_read_path =~ m#[^/]$#){
 
 $firstInputFile = $i;
 
-system "rm $output.cpp";
-system "rm $output.h";
+unlink("$output.cpp");
+unlink("$output.h");
 
 $topMsg = "
 /*********************************************************************\
