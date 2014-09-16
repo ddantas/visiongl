@@ -1,8 +1,6 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-//#define __OPENCL__
-
 #include <visiongl.h>
 
 #include <opencv2/imgproc/types_c.h>
@@ -10,11 +8,6 @@
 
 #include <fstream>
 #include <string>
-
-/*
-    argv[1] = input_image_path
-    argv[2] = number of operations to execute
-*/
 
 #define NOT_ENOUGH_ARGS_MSG "\nNot enough arguments provided.\n"
 #define WRONG_USAGE "\nWrong usage, you must first add an argument for execution.\n"
@@ -26,7 +19,8 @@ using namespace std;
 
 string input_path;
 string output_path;
-int window_size_x = -1, window_size_y = -1;
+int window_size_x = -1;
+int window_size_y = -1;
 float* convolution_window = NULL;
 
 string* getValue(int arg_position, int argc, char* argv[])

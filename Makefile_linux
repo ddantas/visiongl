@@ -314,6 +314,9 @@ frag_diffeq:
 cl:
 	./perlModules/cl2cpp.pl -o src/cl2cpp_shaders -p CL src/CL/*.cl
 
+cloud_cl:
+	./perlModules/cl2cloud.pl -o src/cloud_CL src/CL/*.cl
+
 cl_mm:
 	./perlModules/cl2cpp.pl -o src/cl2cpp_MM -p CL src/CL_MM/*.cl
 
