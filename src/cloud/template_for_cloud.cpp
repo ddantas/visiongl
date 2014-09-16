@@ -139,8 +139,8 @@ void process_args(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    process_args(argc,argv);
-    process_args(argc,argv);
+    process_args(argc, argv);
+    process_args(argc, argv);
 
     printf("input_path: %s\n", input_path.c_str());
     printf("output_path: %s\n", output_path.c_str());

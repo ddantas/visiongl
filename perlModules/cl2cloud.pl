@@ -519,6 +519,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   my $first_framebuffer = "";
 
   print "Will write to $output/$basename.cpp\n";
+  open CPP, ">>", "$output/$basename.cpp";
 
   $topMsg = "
 /**********************************************************************
@@ -529,22 +530,36 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
 ***                                                                 ***
 **********************************************************************/
 ";
-  open CPP, ">>", "$output/$basename.cpp";
   print CPP $topMsg;
   print CPP "
-#include \"vglImage.h\"
-#include \"vglClImage.h\"
-#include \"vglContext.h\"\n
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <visiongl.h>
+
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/highgui/highgui_c.h>
 
 #include <fstream>
+#include <string>
 
-extern VglClContext cl;
+#define NOT_ENOUGH_ARGS_MSG \"Not enough arguments provided.\\n\"
+#define WRONG_USAGE \"Wrong usage, you must first add an argument for execution.\\n\"
+#define LACKING_VALUE_FOR_ARG \"Missing value for %%s argument\\n\"
+#define WRONG_TYPE_TO_ARG \"Wrong type in an argument\\n\"
+#define MISSING_SETUP_ARGS_BEFORE \"You forgot to set some arguments before calling this argument: %%s\\n\"
+
+using namespace std;
 
 ";
 
   print CPP "$comment\n";
 
-  print CPP "void $basename(";
+  print CPP "int main(int argc, char* argv[])
+{
+    process_args(argc, argv);
+    process_args(argc, argv);
+";
+
   for ($i = 0; $i <= $#type; $i++){
     print ">>>$type[$i]<<< becomes ";
     if (($semantics[$i] eq "__read_only") or ($semantics[$i] eq "__write_only") ){
