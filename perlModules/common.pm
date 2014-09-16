@@ -1,4 +1,4 @@
-package common;
+package perlModules::common;
 
 use strict;
 use warnings;

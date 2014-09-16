@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
-use common qw( LineStartMultiLineComment
+use perlModules::common qw( LineStartMultiLineComment
                LineStartSingleLineComment
                LineStartCleanComments
                LineStartParenthesis
