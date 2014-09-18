@@ -745,19 +745,16 @@ elsif ($cpp_read_path =~ m#[^/]$#){
   $cpp_read_path = "$cpp_read_path/";
 }
 
-my @files = glob $ARGV[$i];
-my @fsize;
-my @firstInputFile;
-if ($nargs <= 5)
+my @myFiles;
+$fsize = 0;
+for ($f = $i; $f < $nargs; $f++)
 {
-	$fsize = scalar(@files);
-	$firstInputFile = 0;
-}
-else
-{
-	$firstInputFile = $i;
-	$files = $ARGV;
-	$fsize = $nargs;
+	@aux = glob $ARGV[$f];
+	for($j = 0; $j < scalar(@aux); $j++)
+	{
+		$myFiles[$fsize] = $aux[$j];
+		$fsize++;
+	}
 }
 
 unlink ("$output.cpp");
@@ -772,7 +769,7 @@ $topMsg = "
 ***                                                                 ***
 \*********************************************************************/
 ";
-open HEAD, ">>", "$output.h";
+open (HEAD, ">>", "$output.h") or die "Can't write to file '$file' [$!]\n";
 print HEAD $topMsg;
 print HEAD "#include \"vglImage.h\"\n";
 close HEAD;
@@ -790,15 +787,15 @@ extern VglClContext cl;
 ";
 close CPP;
 
-for ($i=$firstInputFile; $i<$fsize; $i++) {
-    $fullname = $files[$i];
+for ($i=0; $i<$fsize; $i++) {
+    $fullname = $myFiles[$i];
 
     #lixo();
 
     #exit(0);
 
     print "====================\n";
-    print "$files[$i]\n";
+    print "$myFiles[$i]\n";
     print "i = $i\n";
     print "nargs = $nargs\n";
     ($a, $b, $c) = fileparse($fullname, ".cl");
@@ -808,7 +805,7 @@ for ($i=$firstInputFile; $i<$fsize; $i++) {
     print "Path: $b\n";
     print "Basename: $a\n";
     print "Extenssion: $c\n";
-    #print "name: ".basename($fullname)." path: ".dirname($fullname)."\n";
+    print "name: ".basename($fullname)." path: ".dirname($fullname)."\n";
     $basename = $a;
 
     undef $comment;
@@ -818,7 +815,7 @@ for ($i=$firstInputFile; $i<$fsize; $i++) {
     undef @uniform;
 
 
-    ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($files[$i]);
+    ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($myFiles[$i]);
 
     PrintCppFile($basename, $comment, $semantics, $type, $variable, $default, $is_array, $size, $output, $cpp_read_path);
 
