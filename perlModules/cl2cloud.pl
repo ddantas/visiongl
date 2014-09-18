@@ -32,17 +32,17 @@ sub LineStartHeader { # ($line) {
 #
 # Returns the string after the semantic binding and the ":"
 # in start of $line, blank string if not found.
-# Valid semantic bindincs are __read_only, __write_only and __constant
+# Valid semantic bindings are __read_only, __write_only and __constant
 # 
 sub LineStartSemantics { # ($line) {
   my $line = $_[0];
 
-  $line =~ s#^\s*(__read_only|__write_only|__constant)\s*##;
+  $line =~ s#^\s*(__read_only|__write_only|__read_write|__constant)\s*##;
   $semantics = $1;
   if ($semantics){
-    if (!($semantics =~ m#^(__read_only|__write_only|__constant)$#))
+    if (!($semantics =~ m#^(__read_only|__write_only|__read_write|__constant)$#))
     {
-      print "Semantic $semantics invalid. Valid semantics are (__read_only|__write_only|__constant)\n";
+      print "Semantic $semantics invalid. Valid semantics are (__read_only|__write_only|__read_write|__constant)\n";
     }
   }
   else{
@@ -259,6 +259,49 @@ sub ProcessClDirective { # ($directive) {
   return ($result_isarray, $result_variable, $result_size);
 
 }
+
+#############################################################################
+# IsVariableImage
+#
+# Receives as input the semantics and type. Returns true if refers to image type
+# and false otherwise.
+#
+sub IsVariableImage { # ($semantics, $type) {
+  my $semantics     = $_[0];
+  my $type          = $_[1];
+
+  if ( ($semantics eq "__read_only") or 
+       ($semantics eq "__write_only") or 
+        ($semantics eq "__read_write")   )
+    {
+    if ( ($type eq "image2d_t") or 
+         ($type eq "image3d_t") or 
+         ($type eq "char*")             )
+    {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+#############################################################################
+# IsVariableArray
+#
+# Receives as input the semantics and type. Returns true if refers to array type
+# and false otherwise.
+#
+#sub IsVariableArray { # ($semantics, $type) {
+#  my $semantics     = $_[0];
+#  my $type          = $_[1];
+
+#  if ( ($semantics eq "__constant") ){
+#    if ( ($type =~ m#\*$#) ){
+#      return 1;
+#    }
+#  }
+#  return 0;
+#}
+
 
 #############################################################################
 # ProcessClHeader
@@ -497,6 +540,67 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
   return  ($comment, $semantics, $type, $variable, $is_array, $size);
 }
 
+
+
+#############################################################################
+# PrintFunctions
+#
+# Receives as input a handle to a file and prints common functions
+#
+#
+sub PrintFunctions { # () {
+
+  $str = "
+string* getValue(int arg_position, int argc, char* argv[])
+{
+    if (arg_position+1 > argc || strcmp(string(argv[arg_position+1]).substr(0,2).c_str(),\"--\") == 0)
+    {
+        printf(LACKING_VALUE_FOR_ARG,argv[arg_position]);
+    }
+    else
+    return new string(argv[arg_position+1]);
+}
+
+//troca uma substring por outra substring
+string replaceinString(std::string str, std::string tofind, std::string toreplace)
+{
+    size_t position = 0;
+    for ( position = str.find(tofind); position != std::string::npos; position = str.find(tofind,position) )
+    {
+        str.replace(position ,1, toreplace);
+    }
+    return(str);
+}
+
+//Converte uma string contendo um array, em um array de float
+void convertStringToArray(string array,float* convolution_window,int size)
+{
+    array = array.substr(1,array.length()-2);
+    array = replaceinString(array,\" \",\"\");
+
+    char* value = strtok((char*)array.c_str(),\",\");
+    for (int i = 0; i < size; i++)
+    {
+        float f;
+        if(sscanf(value, \"%%f\", &f)  == -1 )
+        {
+            printf(WRONG_TYPE_TO_ARG);
+            printf(\"argument: window_convolution\\n\");
+            printf(\"erro reading vector position %%d\\n\",i+1);            
+            exit(1);
+        }
+        convolution_window[i] = f;
+        value = strtok(NULL,\",\");
+    }
+}
+
+";
+
+  return $str;
+
+}
+
+
 #############################################################################
 # PrintCppFile
 #
@@ -518,8 +622,11 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   my $i;
   my $first_framebuffer = "";
 
-  print "Will write to $output/$basename.cpp\n";
-  open CPP, ">>", "$output/$basename.cpp";
+  my $filename = "$output/$basename.cpp";
+
+  print "Will write to $filename\n";
+  unlink($filename);
+  open CPP, ">>", "$filename";
 
   $topMsg = "
 /**********************************************************************
@@ -552,27 +659,133 @@ using namespace std;
 
 ";
 
-  print CPP "$comment\n";
-
-  print CPP "int main(int argc, char* argv[])
-{
-    process_args(argc, argv);
-    process_args(argc, argv);
-";
-
   for ($i = 0; $i <= $#type; $i++){
-    print ">>>$type[$i]<<< becomes ";
-    if (($semantics[$i] eq "__read_only") or ($semantics[$i] eq "__write_only") ){
-      if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") or ($type[$i] eq "char*") ){
-        $type[$i] = "VglImage*";
-      }
+    #print ">>>$type[$i]<<< becomes ";
+    if ( IsVariableImage($semantics[$i], $type[$i]) )
+    {
+      print CPP "string _$variable[$i];\n";
+      print CPP "int _isset_$variable[$i];\n";
     }
     else{
-      $type[$i] =~ s#^\s*([a-zA-Z_][a-zA-Z0-9_]*)##;
-      $type[$i] = $1;
+      #$type[$i] =~ s#^\s*([a-zA-Z_][a-zA-Z0-9_]*)##;
+      #$type[$i] = $1;
+      print CPP "$type[$i] _$variable[$i];\n";
+      print CPP "int _isset_$variable[$i];\n";
     }
-    print ">>>$type[$i]<<<\n";
+    print CPP "\n";
   }
+
+  print CPP "$comment\n";
+
+  $str = PrintFunctions();
+  print CPP $str;
+
+  print CPP "
+int main(int argc, char* argv[])
+{
+  processArgs(argc, argv);
+  processArgs(argc, argv);
+
+";
+
+  ##############################
+  # Printing input values
+  print CPP "  // Printing input values\n";
+  for ($i = 0; $i <= $#type; $i++){
+    if ( IsVariableImage($semantics[$i], $type[$i]) )
+    {
+      print CPP "  printf(\"_$variable[$i]: %%s\\n\", _$variable[$i].c_str());";
+    }
+    elsif ($is_array[$i])
+    {
+      print CPP "
+  printf(\"_$variable[$i]: [\");
+  for (int i = 0; i < $size[$i]; i++)
+  {
+    if (i > 0) printf(\", \");
+    printf(\"%f\", $variable[$i]"."[i]);
+  }
+  printf(\"]\\n\");
+";    
+    }
+    else
+    {
+      print CPP "  printf(\"_$variable[$i]: %%s\\n\", _$variable[$i]);";
+    }
+    print CPP "\n";
+  }
+
+  ##############################
+  # Checking input values
+  print CPP "  // Checking input values\n";
+
+  for ($i = 0; $i <= $#type; $i++){
+    if ( IsVariableImage($semantics[$i], $type[$i]) )
+    {
+      print CPP 
+"  if (!isset_$variable[$i])
+  {
+    printf(\"Missing $variable[$i] image path, try adding two parameters as in --$variable[$i] path/image.ext\\n\");
+    exit(1);
+  }
+";
+    }
+    elsif ($is_array[$i])
+    {
+      print CPP 
+"  if (!isset_$variable[$i])
+  {
+    printf(\"Missing $variable[$i] array, try adding two parameters as in --$variable[$i] \\\"[.1, .2, .3]\\\"\\n\");
+    exit(1);
+  }
+";
+    }
+    else
+    {
+      print CPP 
+"  if (!isset_$variable[$i])
+  {
+    printf(\"Missing $variable[$i] parameter, try adding two parameters as in --$variable[$i] value\\n\");
+    exit(1);
+  }
+";
+    }
+    print CPP "\n";
+  }
+
+
+  ##############################
+  # Initializing contexts
+  print CPP "  // Initializing contexts\n";
+
+  print CPP 
+"  vglInit(30,30);
+  vglClInit();
+";
+
+  ##############################
+  # Declaring VglImage* variables
+  $some_input_image = -1;
+  print CPP "  // Declaring VglImage* variables\n";
+  for ($i = 0; $i <= $#type; $i++){
+    if ( IsVariableImage($semantics[$i], $type[$i]) )
+    {
+      if ( ($semantics[$i] eq "__read_only") or 
+           ($semantics[$i] eq "__read_write")   )
+      {
+        print CPP "  VglImage* img_$variable[$i] = vglLoadImage((char*) $variable[$i].c_str(),1);\n"
+        $some_input_immage = $i;
+      }
+      else # $semantics[$i] eq "__write_only"
+      {
+        print CPP "  VglImage* img_$variable[$i] = NULL;\n"
+      }
+    }
+  }
+
+
+
+
 
   for ($i = 0; $i <= $#type; $i++){
     my $p = "";

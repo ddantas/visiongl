@@ -348,7 +348,10 @@ cloud0:
 	echo $(CLOUD_BASE)
 
 %: %.cpp
-	$(CC) $*.cpp -o $* $(OUTPUT_INCLUDEDIR) $(OPENCV_INCLUDEDIR) $(OPENCL_INCLUDEDIR) $(OUTPUT_LIBDIR) $(OPENCV_LIBDIR) $(OPENCV_LIBRARIES) -lvisiongl
+	$(CC) $*.cpp -o $* $(OPENCL_DEF) $(OUTPUT_INCLUDEDIR) $(OPENCV_INCLUDEDIR) $(OPENCL_INCLUDEDIR) $(OUTPUT_LIBDIR) $(OPENCV_LIBDIR) $(OPENCV_LIBRARIES) -lvisiongl
+
+runcloud:
+	cd src/cloud; ./template_for_cloud --input ../../images/lena_std.tif --output /tmp/lixo.tif --window_convolution "[.2, .2, .2, .2, .2]" --window_size_x 1 --window_size_y 5
 
 #-L $(INSTALL_LIBPATH) -lvisiongl
 

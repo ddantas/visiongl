@@ -17,11 +17,20 @@
 
 using namespace std;
 
-string input_path;
-string output_path;
-int window_size_x = -1;
-int window_size_y = -1;
-float* convolution_window = NULL;
+string input;
+int isset_input = 0;
+
+string output;
+int isset_output = 0;
+
+int window_size_x;
+int isset_window_size_x = 0;
+
+int window_size_y;
+int isset_window_size_y = 0;
+
+float* convolution_window;
+int isset_convolution_window = 0;
 
 string* getValue(int arg_position, int argc, char* argv[])
 {
@@ -45,13 +54,13 @@ string replaceinString(std::string str, std::string tofind, std::string toreplac
 }
 
 //Converte uma string contendo um array, em um array de float
-void process_string_to_array(string array,float* convolution_window,int size_x, int size_y)
+void convertStringToArray(string array, float* convolution_window, int size)
 {
     array = array.substr(1,array.length()-2);
     array = replaceinString(array," ","");
 
     char* value = strtok((char*)array.c_str(),",");
-    for (int i = 0; i < size_x*size_y; i++)
+    for (int i = 0; i < size; i++)
     {
         float f;
         if(sscanf(value, "%f", &f)  == -1 )
@@ -66,7 +75,7 @@ void process_string_to_array(string array,float* convolution_window,int size_x, 
     }
 }
 
-void process_args(int argc, char* argv[])
+void processArgs(int argc, char* argv[])
 {
     if (argc > 1)
     {
@@ -85,12 +94,14 @@ void process_args(int argc, char* argv[])
                 if (strcmp(arg.c_str(),"--input") == 0)
                 {
                     string value = * getValue(i,argc,argv);
-                    input_path = value;
+                    input = value;
+                    isset_input = 1;
                 }
                 else if (strcmp(arg.c_str(),"--output") == 0)
                 {
                     string value = * getValue(i,argc,argv);
-                    output_path = value;
+                    output = value;
+                    isset_output = 1;
                 }
                 else if(strcmp(arg.c_str(),"--window_size_x") == 0)
                 {
@@ -102,6 +113,7 @@ void process_args(int argc, char* argv[])
                         exit(1);
                     }
                     window_size_x = ivalue;
+                    isset_window_size_x = 1;
                 }
                 else if(strcmp(arg.c_str(),"--window_size_y") == 0)
                 {
@@ -113,6 +125,7 @@ void process_args(int argc, char* argv[])
                         exit(1);
                     }
                     window_size_y = ivalue;
+                    isset_window_size_x = 1;
                 }
                 else if(strcmp(arg.c_str(),"--window_convolution") == 0)
                 {
@@ -124,7 +137,8 @@ void process_args(int argc, char* argv[])
 		    {
                         string value = *getValue(i,argc,argv);
                         convolution_window = (float*)malloc(sizeof(float)*window_size_x*window_size_y);
-                        process_string_to_array(value,convolution_window,window_size_x,window_size_y);
+                        convertStringToArray(value,convolution_window,window_size_x,window_size_y);
+                        isset_window_convolution = 1;
                     }
                 }
 
@@ -133,17 +147,17 @@ void process_args(int argc, char* argv[])
     }
     else
     {
-        printf(NOT_ENOUGH_ARGS_MSG);
+        fprintf(stderr, NOT_ENOUGH_ARGS_MSG);
     }
 }
 
 int main(int argc, char* argv[])
 {
-    process_args(argc, argv);
-    process_args(argc, argv);
+    processArgs(argc, argv);
+    processArgs(argc, argv);
 
-    printf("input_path: %s\n", input_path.c_str());
-    printf("output_path: %s\n", output_path.c_str());
+    printf("input: %s\n", input.c_str());
+    printf("output: %s\n", output.c_str());
     printf("window_size_x: %d\n", window_size_x);
     printf("window_size_y: %d\n", window_size_y);
 
@@ -155,18 +169,17 @@ int main(int argc, char* argv[])
     }
     printf("]\n");
     
-    if (input_path.empty())
+    if (!isset_input)
     {
         printf("Missing input image path, try using --input path/image.ext \n");
         exit(1);
     }
-    if (output_path.empty())
+    if (!isset_output)
     {
         printf("Missing output image path, try using --output path/image.ext \n");
         exit(1);
     }
-
-    if (convolution_window == NULL)
+    if (!isset_convolution_window)
     {
         printf("You forgot to set convolution_window structuring element, try using --window_convolution [1,2,3,...,n] and remember to set --window_size_x and --window_size_y before using --window_convolution");
         exit(1);
@@ -175,20 +188,20 @@ int main(int argc, char* argv[])
     vglInit(30,30);
     vglClInit();
 
-    VglImage* input = vglLoadImage((char*) input_path.c_str(),1);
-    VglImage* output = NULL;
+    VglImage* img_input = vglLoadImage((char*) input.c_str(),1);
+    VglImage* img_output = NULL;
 
-    if (input->nChannels == 3)
+    if (img_input->nChannels == 3)
     {
-        vglImage3To4Channels(input);
+        vglImage3To4Channels(img_input);
     }
 
-    output = vglCreateImage(input);
-    vglClConvolution(input, output, convolution_window, window_size_x, window_size_y);
+    img_output = vglCreateImage(img_input);
+    vglClConvolution(img_input, img_output, convolution_window, window_size_x, window_size_y);
 
 
-    vglCheckContext(output, VGL_RAM_CONTEXT);
-    cvSaveImage(output_path.c_str(), output->ipl);
+    vglCheckContext(img_output, VGL_RAM_CONTEXT);
+    cvSaveImage(output.c_str(), img_output->ipl);
 
     return 0;
 }
