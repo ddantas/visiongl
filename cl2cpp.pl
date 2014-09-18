@@ -748,16 +748,20 @@ elsif ($cpp_read_path =~ m#[^/]$#){
 my @files = glob $ARGV[$i];
 my @fsize;
 my @firstInputFile;
-if (@files)
+if (scalar(@ARGV) <= 5)
 {
 	$fsize = scalar(@files);
 	$firstInputFile = 0;
+	print ("Entrou no If \n");
+	$argvsize = scalar(@ARGV);
+	print ("Size of argv $argvsize \n");
 }
 else
 {
 	$firstInputFile = $i;
-	@files = $ARGV;
-	$fsize = $nargs
+	$files = $ARGV;
+	$fsize = $nargs;
+	print ("Entrou no Else \n");
 }
 
 unlink ("$output.cpp");
