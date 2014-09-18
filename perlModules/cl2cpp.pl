@@ -745,20 +745,20 @@ elsif ($cpp_read_path =~ m#[^/]$#){
   $cpp_read_path = "$cpp_read_path/";
 }
 
-my @myFiles;
-$fsize = 0;
-for ($f = $i; $f < $nargs; $f++)
-{
-	@aux = glob $ARGV[$f];
-	for($j = 0; $j < scalar(@aux); $j++)
-	{
-		$myFiles[$fsize] = $aux[$j];
-		$fsize++;
-	}
+
+$firstInputFile = $i;
+
+my @files = ();
+for ($i=$firstInputFile; $i<$nargs; $i=$i+1) {
+  push @files, glob $ARGV[$i];
+}
+print "Size of files = $#files\n";
+for ($i=0; $i<$#files; $i=$i+1) {
+    print $files[$i], "\n";
 }
 
-unlink ("$output.cpp");
-unlink ("$output.h");
+unlink("$output.cpp");
+unlink("$output.h");
 
 $topMsg = "
 /*********************************************************************\
@@ -769,7 +769,7 @@ $topMsg = "
 ***                                                                 ***
 \*********************************************************************/
 ";
-open (HEAD, ">>", "$output.h") or die "Can't write to file '$file' [$!]\n";
+open HEAD, ">>", "$output.h";
 print HEAD $topMsg;
 print HEAD "#include \"vglImage.h\"\n";
 close HEAD;
@@ -787,15 +787,13 @@ extern VglClContext cl;
 ";
 close CPP;
 
-for ($i=0; $i<$fsize; $i++) {
-    $fullname = $myFiles[$i];
+$i = 0;
 
-    #lixo();
-
-    #exit(0);
+for ($i=0; $i<$#files; $i++) {
+    $fullname = $files[$i];
 
     print "====================\n";
-    print "$myFiles[$i]\n";
+    print "$ARGV[$i]\n";
     print "i = $i\n";
     print "nargs = $nargs\n";
     ($a, $b, $c) = fileparse($fullname, ".cl");
@@ -805,7 +803,7 @@ for ($i=0; $i<$fsize; $i++) {
     print "Path: $b\n";
     print "Basename: $a\n";
     print "Extenssion: $c\n";
-    print "name: ".basename($fullname)." path: ".dirname($fullname)."\n";
+    #print "name: ".basename($fullname)." path: ".dirname($fullname)."\n";
     $basename = $a;
 
     undef $comment;
@@ -815,11 +813,9 @@ for ($i=0; $i<$fsize; $i++) {
     undef @uniform;
 
 
-    ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($myFiles[$i]);
+    ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($fullname[$i]);
 
     PrintCppFile($basename, $comment, $semantics, $type, $variable, $default, $is_array, $size, $output, $cpp_read_path);
 
 }
-
-
 

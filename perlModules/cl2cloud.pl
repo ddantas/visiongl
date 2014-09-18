@@ -548,7 +548,10 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
 # Receives as input a handle to a file and prints common functions
 #
 #
-sub PrintFunctions { # () {
+sub PrintFunctions { # ($filename) {
+  my $filename      = $_[0];
+
+  open CPP, ">>", "$filename";
 
   $str = "
 string* getValue(int arg_position, int argc, char* argv[])
@@ -596,7 +599,8 @@ void convertStringToArray(string array,float* convolution_window,int size)
 
 ";
 
-  return $str;
+  print CPP $str;
+  close CPP;
 
 }
 
@@ -677,8 +681,8 @@ using namespace std;
 
   print CPP "$comment\n";
 
-  $str = PrintFunctions();
-  print CPP $str;
+  PrintFunctions($filename);
+  open CPP, ">>", "$filename";
 
   print CPP "
 int main(int argc, char* argv[])
@@ -761,20 +765,21 @@ int main(int argc, char* argv[])
   print CPP 
 "  vglInit(30,30);
   vglClInit();
+
 ";
 
   ##############################
   # Declaring VglImage* variables
-  $some_input_image = -1;
   print CPP "  // Declaring VglImage* variables\n";
+  $some_input_image = -1;
   for ($i = 0; $i <= $#type; $i++){
     if ( IsVariableImage($semantics[$i], $type[$i]) )
     {
       if ( ($semantics[$i] eq "__read_only") or 
            ($semantics[$i] eq "__read_write")   )
       {
-        print CPP "  VglImage* img_$variable[$i] = vglLoadImage((char*) $variable[$i].c_str(),1);\n"
-        $some_input_immage = $i;
+        print CPP "  VglImage* img_$variable[$i] = vglLoadImage((char*) $variable[$i].c_str(),1);\n";
+        $some_input_image = $i;
       }
       else # $semantics[$i] eq "__write_only"
       {
@@ -783,149 +788,72 @@ int main(int argc, char* argv[])
     }
   }
 
-
-
-
-
   for ($i = 0; $i <= $#type; $i++){
-    my $p = "";
-    if ($is_array[$i]){
-      $p = "*";
-    }
-    print CPP "$type[$i]$p $variable[$i]";
-    if ($i < $#type){
-      print CPP ", ";
-    } 
-  }
-  print CPP "){\n";
-
-  for ($i = 0; $i <= $#type; $i++){
-    if ($semantics[$i] eq "__read_only" or $semantics[$i] eq "__write_only"){
-        print CPP "
-  vglCheckContext($variable[$i]".", VGL_CL_CONTEXT);";
-    }
-  }
-
-  print CPP "
-
-  cl_int err;
-";
-
-  for ($i = 0; $i <= $#type; $i++){
-    if ( ($type[$i] ne "VglImage*") and ($is_array[$i]) ){
-        $var = $variable[$i];
-        my $e = "&";
-        if ($is_array[$i]){
-          $e = "";
-	}
-        print CPP "
-  cl_mem mobj_$var = NULL;
-  mobj_$var = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, ($size[$i])*sizeof($type[$i]), NULL, &err);
-  vglClCheckError( err, (char*) \"clCreateBuffer $var\" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_$var, CL_TRUE, 0, ($size[$i])*sizeof($type[$i]), $e$var, 0, NULL, NULL);
-  vglClCheckError( err, (char*) \"clEnqueueWriteBuffer $var\" );
-";
-    } 
-  }  
-
-        print CPP "
-  static cl_program program = NULL;
-  if (program == NULL)
-  {
-    char* file_path = (char*) \"$cpp_read_path$basename\.cl\";
-    printf(\"Compiling %s\\n\", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    if ( IsVariableImage($semantics[$i], $type[$i]) )
     {
-      fprintf(stderr, \"%s:%s: Error: File %s not found.\\n\", __FILE__, __FUNCTION__, file_path);
-      exit(1);
-    }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
-#ifdef __DEBUG__
-    printf(\"Kernel to be compiled:\\n%s\\n\", source_str);
-#endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) \"clCreateProgramWithSource\" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
-  }
-
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+      if ( ($semantics[$i] eq "__read_only") or 
+           ($semantics[$i] eq "__read_write")   )
+      {
+      print CPP "
+  if (img_$variable[$i]->nChannels == 3)
   {
-    kernel = clCreateKernel( program, \"$basename\", &err ); 
-    vglClCheckError(err, (char*) \"clCreateKernel\" );
+    vglImage3To4Channels(img_$variable[$i]);
   }
-
 ";
-
-  for ($i = 0; $i <= $#type; $i++){
-    if ($type[$i] eq "VglImage*"){
-      $addr = "(void*) &$variable[$i]->oclPtr";
-    }
-    elsif ($is_array[$i]){
-      $addr = "($type[$i]*) &mobj_$variable[$i]";
-    }
-    else{
-      $addr = "&$variable[$i]";
-    }
-    if ( ($type[$i] eq "VglImage*") or ($is_array[$i]) ){
-      $sizeof = "cl_mem";
-    }
-    else{
-      $sizeof = "$type[$i]";
-    }
-
-
-    print CPP "
-  err = clSetKernelArg( kernel, $i, sizeof( $sizeof ), $addr );
-  vglClCheckError( err, (char*) \"clSetKernelArg $i\" );
-";
-  }
-
-  for ($i = 0; $i <= $#type; $i++){
-    if (($type[$i] eq "VglImage*") && ($semantics[$i] eq "__read_only")){
-      $var_worksize = $variable[$i];
-    }
-  }
- 
-  print CPP "
-  if ($var_worksize->ndim <= 2){
-    size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else if ($var_worksize->ndim == 3){
-    size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], $var_worksize->shape[VGL_LENGTH] };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf(\"More than 3 dimensions not yet supported\\n\");
-  }
-
-  vglClCheckError( err, (char*) \"clEnqueueNDRangeKernel\" );
-";
-
-  for ($i = 0; $i <= $#type; $i++){
-    if (($type[$i] ne "VglImage*") && ($semantics[$i] ne "__write_only") && ($is_array[$i] != 0)){
-      print CPP "
-  err = clReleaseMemObject( mobj_$variable[$i] );
-  vglClCheckError(err, (char*) \"clReleaseMemObject mobj_$variable[$i]\");
-"; 
+      }
     }
   }
 
   for ($i = 0; $i <= $#type; $i++){
-    if ($semantics[$i] eq "__write_only" or $semantics[$i] eq "__read_write"){
-      print CPP "
-  vglSetContext($variable[$i]".", VGL_CL_CONTEXT);
-";
+    if ( IsVariableImage($semantics[$i], $type[$i]) )
+    {
+      if ( ($semantics[$i] eq "__write_only") )
+      {
+      print CPP "  img_$variable[$i] = vglCreateImage(img_$variable[$some_input_image]);\n";
+      }
     }
   }
+  print CPP "\n";
 
+  ##############################
+  # Shader call
+  print CPP "  // Shader call\n";
+  print CPP "  $basename(";
+  for ($i = 0; $i <= $#type; $i++){
+    if ($i > 0)
+    { 
+      print CPP ", ";
+    }
+    if ( IsVariableImage($semantics[$i], $type[$i]) )
+    {
+      print CPP "img_$variable[$i]";
+    }
+    else
+    {
+      print CPP "$variable[$i]";
+    }
+  }
+  print CPP ");\n";
 
-  print CPP "}\n\n";
-
+  ##############################
+  # Saving result
+  print CPP "  // Saving result";
+  for ($i = 0; $i <= $#type; $i++){
+    if ( IsVariableImage($semantics[$i], $type[$i]) )
+    {
+      if ( ($semantics[$i] eq "__write_only") or
+           ($semantics[$i] eq "__read_write")    )
+      {
+        print CPP "
+  vglCheckContext(img_$variable[$i], VGL_RAM_CONTEXT);
+  cvSaveImage($variable[$i].c_str(), img_$variable[$i]->ipl);
+"
+      }
+    }
+  }
+  print CPP "\n";
+  print CPP "  return 0;\n";
+  print CPP "}\n";
 
   close CPP;
 }
