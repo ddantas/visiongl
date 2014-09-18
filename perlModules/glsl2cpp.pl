@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
-use common qw( LineStartMultiLineComment
+use perlModules::common qw( LineStartMultiLineComment
                LineStartSingleLineComment
                LineStartCleanComments
                LineStartParenthesis
@@ -629,8 +629,8 @@ elsif ($cpp_read_path =~ m#[^/]$#){
 
 $firstInputFile = $i;
 
-system "rm $output.cpp";
-system "rm $output.h";
+unlink("$output.cpp");
+unlink("$output.h");
 
 $topMsg = "
 /*********************************************************************\

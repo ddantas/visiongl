@@ -1,25 +1,13 @@
 
 #define _CRT_SECURE_NO_WARNINGS
-#define __OPENCL__
-//#include "vglClImage.h"
-//#include "vglContext.h"
-//#include "cl2cpp_shaders.h"
 
 #include <visiongl.h>
-
 
 #include <opencv2/imgproc/types_c.h>
 #include <opencv2/highgui/highgui_c.h>
 
-
-
 #include <fstream>
 #include <string>
-
-/*
-    argv[1] = input_image_path
-    argv[2] = number of operations to execute
-*/
 
 #define NOT_ENOUGH_ARGS_MSG "\nNot enough arguments provided.\n"
 #define WRONG_USAGE "\nWrong usage, you must first add an argument for execution.\n"
@@ -31,7 +19,8 @@ using namespace std;
 
 string input_path;
 string output_path;
-int window_size_x = -1, window_size_y = -1;
+int window_size_x = -1;
+int window_size_y = -1;
 float* convolution_window = NULL;
 
 string* getValue(int arg_position, int argc, char* argv[])
@@ -41,18 +30,18 @@ string* getValue(int arg_position, int argc, char* argv[])
         printf(LACKING_VALUE_FOR_ARG,argv[arg_position]);
     }
     else
-        return new string(argv[arg_position+1]);
+    return new string(argv[arg_position+1]);
 }
 
 //troca uma substring por outra substring
 string replaceinString(std::string str, std::string tofind, std::string toreplace)
 {
-        size_t position = 0;
-        for ( position = str.find(tofind); position != std::string::npos; position = str.find(tofind,position) )
-        {
-                str.replace(position ,1, toreplace);
-        }
-        return(str);
+    size_t position = 0;
+    for ( position = str.find(tofind); position != std::string::npos; position = str.find(tofind,position) )
+    {
+        str.replace(position ,1, toreplace);
+    }
+    return(str);
 }
 
 //Converte uma string contendo um array, em um array de float
@@ -150,8 +139,8 @@ void process_args(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    process_args(argc,argv);
-    process_args(argc,argv);
+    process_args(argc, argv);
+    process_args(argc, argv);
 
     printf("input_path: %s\n", input_path.c_str());
     printf("output_path: %s\n", output_path.c_str());

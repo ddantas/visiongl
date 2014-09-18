@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
-use common qw( LineStartMultiLineComment
+use perlModules::common qw( LineStartMultiLineComment
                LineStartSingleLineComment
                LineStartCleanComments
                LineStartParenthesis
@@ -590,9 +590,8 @@ if (!$output){
 
 $firstInputFile = $i;
 
-system "rm $output.kernel";
-system "rm $output.cu";
-system "rm $output.h";
+unlink("$output.cu");
+unlink("$output.h");
 
 $topMsg = "
 /*********************************************************************\

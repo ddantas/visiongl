@@ -225,6 +225,8 @@ lib:
 install: all
 	mkdir -p $(OUTPUT_INCLUDEPATH)
 	mkdir -p $(OUTPUT_LIBPATH)
+	mkdir -p $(INSTALL_INCLUDEPATH)
+	mkdir -p $(INSTALL_LIBPATH)
 	cp $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h $(INSTALL_INCLUDEPATH)
 	cp $(OUTPUT_LIBPATH)/lib$(BINARY_NAME).so $(INSTALL_LIBPATH)
 
@@ -295,25 +297,28 @@ rundemocolordeconv:
 	cd $(OUTPUT_BINPATH); ./demo_$(COLORDECONV_NAME) ../images/Emphysema_H_and_E.jpg 1 /tmp/image.%d.pgm 0.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 0.0
 
 cuda:
-	./kernel2cu.pl -o src/kernel2cu_shaders src/CUDA/*.kernel
+	./perlModules/kernel2cu.pl -o src/kernel2cu_shaders src/CUDA/*.kernel
 
 frag:
-	./glsl2cpp.pl -o src/glsl2cpp_shaders -p FS src/FS/*.frag
+	./perlModules/glsl2cpp.pl -o src/glsl2cpp_shaders -p FS src/FS/*.frag
 
 frag_bg:
-	./glsl2cpp.pl -o src/glsl2cpp_BG -p FS_BG src/FS_BG/*.frag
+	./perlModules/glsl2cpp.pl -o src/glsl2cpp_BG -p FS_BG src/FS_BG/*.frag
 
 frag_stereo:
-	./glsl2cpp.pl -o src/glsl2cpp_Stereo -p FS_Stereo src/FS_Stereo/*.frag
+	./perlModules/glsl2cpp.pl -o src/glsl2cpp_Stereo -p FS_Stereo src/FS_Stereo/*.frag
 
 frag_diffeq:
-	./glsl2cpp.pl -o src/glsl2cpp_DiffEq -p FS_DiffEq src/FS_DiffEq/*.frag
+	./perlModules/glsl2cpp.pl -o src/glsl2cpp_DiffEq -p FS_DiffEq src/FS_DiffEq/*.frag
 
 cl:
-	./cl2cpp.pl -o src/cl2cpp_shaders -p CL src/CL/*.cl
+	./perlModules/cl2cpp.pl -o src/cl2cpp_shaders -p CL src/CL/*.cl
+
+cloud_cl:
+	./perlModules/cl2cloud.pl -o src/cloud_CL src/CL/*.cl
 
 cl_mm:
-	./cl2cpp.pl -o src/cl2cpp_MM -p CL src/CL_MM/*.cl
+	./perlModules/cl2cpp.pl -o src/cl2cpp_MM -p CL src/CL_MM/*.cl
 
 run:
 	cd $(OUTPUT_BINPATH); ./$(BINARY_NAME)

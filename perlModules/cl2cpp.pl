@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use File::Basename;
-use common qw( LineStartMultiLineComment
+use perlModules::common qw( LineStartMultiLineComment
                LineStartSingleLineComment
                LineStartCleanComments
                LineStartParenthesis
@@ -748,6 +748,7 @@ elsif ($cpp_read_path =~ m#[^/]$#){
 my @files = glob $ARGV[$i];
 my @fsize;
 my @firstInputFile;
+<<<<<<< HEAD:cl2cpp.pl
 if (scalar(@ARGV) <= 5)
 {
 	$fsize = scalar(@files);
@@ -755,10 +756,17 @@ if (scalar(@ARGV) <= 5)
 	print ("Entrou no If \n");
 	$argvsize = scalar(@ARGV);
 	print ("Size of argv $argvsize \n");
+=======
+if (@files)
+{
+	$fsize = scalar(@files);
+	$firstInputFile = 0;
+>>>>>>> origin/branch3d:perlModules/cl2cpp.pl
 }
 else
 {
 	$firstInputFile = $i;
+<<<<<<< HEAD:cl2cpp.pl
 	$files = $ARGV;
 	$fsize = $nargs;
 	print ("Entrou no Else \n");
@@ -766,6 +774,14 @@ else
 
 unlink ("$output.cpp");
 unlink ("$output.h");
+=======
+	@files = @ARGV;
+	$fsize = $nargs
+}
+
+unlink("$output.cpp");
+unlink("$output.h");
+>>>>>>> origin/branch3d:perlModules/cl2cpp.pl
 
 $topMsg = "
 /*********************************************************************\
@@ -796,7 +812,11 @@ close CPP;
 
 for ($i=$firstInputFile; $i<$fsize; $i++) {
     $fullname = $files[$i];
+<<<<<<< HEAD:cl2cpp.pl
 
+=======
+ 
+>>>>>>> origin/branch3d:perlModules/cl2cpp.pl
     #lixo();
 
     #exit(0);
