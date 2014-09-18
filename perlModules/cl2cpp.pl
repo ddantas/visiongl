@@ -748,7 +748,7 @@ elsif ($cpp_read_path =~ m#[^/]$#){
 my @files = glob $ARGV[$i];
 my @fsize;
 my @firstInputFile;
-if (@files)
+if ($nargs <= 5)
 {
 	$fsize = scalar(@files);
 	$firstInputFile = 0;
@@ -756,12 +756,12 @@ if (@files)
 else
 {
 	$firstInputFile = $i;
-	@files = @ARGV;
-	$fsize = $nargs
+	$files = $ARGV;
+	$fsize = $nargs;
 }
 
-unlink("$output.cpp");
-unlink("$output.h");
+unlink ("$output.cpp");
+unlink ("$output.h");
 
 $topMsg = "
 /*********************************************************************\
@@ -792,7 +792,7 @@ close CPP;
 
 for ($i=$firstInputFile; $i<$fsize; $i++) {
     $fullname = $files[$i];
- 
+
     #lixo();
 
     #exit(0);
