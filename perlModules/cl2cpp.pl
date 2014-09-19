@@ -793,7 +793,7 @@ for ($i=0; $i<$#files; $i++) {
     $fullname = $files[$i];
 
     print "====================\n";
-    print "$ARGV[$i]\n";
+    print "$files[$i]\n";
     print "i = $i\n";
     print "nargs = $nargs\n";
     ($a, $b, $c) = fileparse($fullname, ".cl");
@@ -813,7 +813,7 @@ for ($i=0; $i<$#files; $i++) {
     undef @uniform;
 
 
-    ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($fullname[$i]);
+    ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($fullname);
 
     PrintCppFile($basename, $comment, $semantics, $type, $variable, $default, $is_array, $size, $output, $cpp_read_path);
 

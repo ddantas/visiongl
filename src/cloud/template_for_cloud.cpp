@@ -84,6 +84,7 @@ void processArgs(int argc, char* argv[])
             string arg = string(argv[i]);
             //primeira palavra após o nome do executável deve ser um
             //argumento e não um valor
+	    /*
             if (i == 1 && strcmp(arg.substr(0,2).c_str(),"--") != 0)
             {
                 printf(WRONG_USAGE);
@@ -91,6 +92,7 @@ void processArgs(int argc, char* argv[])
             }
             else
             {
+	    */
                 if (strcmp(arg.c_str(),"--input") == 0)
                 {
                     string value = * getValue(i,argc,argv);
@@ -141,8 +143,12 @@ void processArgs(int argc, char* argv[])
                         isset_window_convolution = 1;
                     }
                 }
+                else
+	        {
+                    printf(WRONG_USAGE);
+                    exit(1);
+                }
 
-            }
         }
     }
     else
