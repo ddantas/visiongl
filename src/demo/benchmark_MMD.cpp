@@ -1,13 +1,57 @@
 #include "vglImage.h"
 #include "vglClImage.h"
 #include "cl2cpp_shaders.h"
-#include "vglMMD.h"
+#include "cl2cpp_MM.h"
 #include "vglContext.h"
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgproc/imgproc_c.h>
 #include <demo/timer.h>
 #include <math.h>
 #include <fstream>
+
+
+void benchmark(VglImage* in, VglImage* out, float* mask, int size_x, int size_y, char* output_filename, int nSteps, void (*mmdPtr)(VglImage*,VglImage*,float*,int,int,float))
+{
+	const float gama = 0.2f;
+	TimerStart();
+	mmdPtr(in,out,mask,size_x,size_y,gama);
+	printf("First call to        Alg Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
+	//Total time spent on n operations FuzzyErode 3x3
+	int p = 0;
+	TimerStart();
+	while (p < nSteps)
+	{
+		p++;
+		mmdPtr(in, out,mask,size_x,size_y,gama);
+		//vglClCopy(out,img);
+	}
+	printf("Time spent on %8d Alg Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
+
+	vglCheckContext(out, VGL_RAM_CONTEXT);
+	//vglIpl4To3Channels(out);
+	cvSaveImage(output_filename, out->ipl);
+}
+
+void benchmark(VglImage* in, VglImage* out, float* mask, int size_x, int size_y, char* output_filename, int nSteps, void (*mmdPtr)(VglImage*,VglImage*,float*,int,int))
+{
+	TimerStart();
+	mmdPtr(in,out,mask,size_x,size_y);
+	printf("First call to        Alg Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
+	//Total time spent on n operations FuzzyErode 3x3
+	int p = 0;
+	TimerStart();
+	while (p < nSteps)
+	{
+		p++;
+		mmdPtr(in, out,mask,size_x,size_y);
+		//vglClCopy(out,img);
+	}
+	printf("Time spent on %8d Alg Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
+
+	vglCheckContext(out, VGL_RAM_CONTEXT);
+	//vglIpl4To3Channels(out);
+	cvSaveImage(output_filename, out->ipl);
+}
 
 int main(int argc, char* argv[])
 {
@@ -56,287 +100,21 @@ int main(int argc, char* argv[])
     }
     VglImage* out = vglCreateImage(img);
 	float erodeMask[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
-    //First call to Fuzzy Erode 3x3
-    TimerStart();
-	vglClFuzzyAlgErosion(img,out,erodeMask,3,3);
-    printf("First call to        Alg Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    int p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyAlgErosion(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Alg Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_alg_fuzzy_erode.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-	//vglIpl3To4Channels(out);
-
-	TimerStart();
-	vglClFuzzyAlgDilation(img,out,erodeMask,3,3);
-    printf("First call to        Alg Fuzzy Dilate 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyAlgDilation(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Alg Fuzzy Dilate 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_alg_fuzzy_dilate.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-	
-	TimerStart();
-	vglClFuzzyGeoDilation(img,out,erodeMask,3,3);
-    printf("First call to        Geo Fuzzy Dilate 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyGeoDilation(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Geo Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_Geo_fuzzy_dilate.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-
-	
-	TimerStart();
-	vglClFuzzyGeoErosion(img,out,erodeMask,3,3);
-    printf("First call to        Geo Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyGeoErosion(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Geo Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_Geo_fuzzy_erode.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-
-	TimerStart();
-	vglClFuzzyArithDilation(img,out,erodeMask,3,3);
-    printf("First call to        Arith Fuzzy Dilate 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyArithDilation(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Arith Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_arith_fuzzy_dilate.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-
-	
-	TimerStart();
-	vglClFuzzyArithErosion(img,out,erodeMask,3,3);
-    printf("First call to        Arith Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyArithErosion(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Arith Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_arith_fuzzy_erode.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-	
-	TimerStart();
-	vglClFuzzyBoundDilation(img,out,erodeMask,3,3);
-    printf("First call to        Bound Fuzzy Dilate 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyBoundDilation(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Bound Fuzzy Dilate 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_Bound_fuzzy_dilate.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-	
-	TimerStart();
-	vglClFuzzyBoundErosion(img,out,erodeMask,3,3);
-    printf("First call to        Bound Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyBoundErosion(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Bound Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_bound_fuzzy_erode.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-	TimerStart();
-	vglClFuzzyDrasticDilation(img,out,erodeMask,3,3);
-    printf("First call to        Drastic Fuzzy Dilate 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyDrasticDilation(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Drastic Fuzzy Dilate 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_drastic_fuzzy_dilate.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-	
-	TimerStart();
-	vglClFuzzyDrasticErosion(img,out,erodeMask,3,3);
-    printf("First call to        Drastic Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyDrasticErosion(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Drastic Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_drastic_fuzzy_erode.jpg");
-    cvSaveImage(outFilename, out->ipl);
-	
-	
-	TimerStart();
-	vglClFuzzyDaPDilation(img,out,erodeMask,3,3);
-    printf("First call to        Dubois and Prade Fuzzy Dilate 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyDaPDilation(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Dubois and Prade Fuzzy Dilate 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_DaP_fuzzy_dilate.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-	
-	TimerStart();
-	vglClFuzzyDaPErosion(img,out,erodeMask,3,3);
-    printf("First call to        Dubois and Prade Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyDaPErosion(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Dubois and Prade Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_DaP_fuzzy_erode.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-	
-	TimerStart();
-	vglClFuzzyHamacherDilation(img,out,erodeMask,3,3);
-    printf("First call to        Hamacher Fuzzy Dilate 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyHamacherDilation(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d hamacher Fuzzy Dilate 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_Hamacher_fuzzy_dilate.jpg");
-    cvSaveImage(outFilename, out->ipl);
-
-	
-	TimerStart();
-	vglClFuzzyHamacherErosion(img,out,erodeMask,3,3);
-    printf("First call to        Hamacher Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations FuzzyErode 3x3
-    p = 0;
-    TimerStart();
-    while (p < nSteps)
-    {
-        p++;
-		vglClFuzzyHamacherErosion(img, out,erodeMask,3,3);
-		//vglClCopy(out,img);
-    }
-    printf("Time spent on %8d Hamacher Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
-
-    vglCheckContext(out, VGL_RAM_CONTEXT);
-	//vglIpl4To3Channels(out);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_Hamacher_fuzzy_erode.jpg");
-    cvSaveImage(outFilename, out->ipl);
+	sprintf(outFilename, "%s%s", outPath, "/out_cl_alg_fuzzy_erode.jpg");
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgErosion);
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgDilation);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoErosion);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoDilation);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithErosion);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithDilation);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundErosion);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundDilation);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticErosion);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticDilation);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPErosion);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPDilation);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherErosion);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherDilation);
 
 	return 0;
 }

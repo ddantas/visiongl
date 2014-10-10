@@ -168,7 +168,7 @@ void vglClPrintContext(void)
 
 void vglClCheckError(cl_int error, char* name)
 {
-  if (error < CL_SUCCESS and error >= CL_MIN_ERROR)
+  if (error < CL_SUCCESS && error >= CL_MIN_ERROR)
     {
         printf("Error %d (%s) while doing the following operation: %s\n", error, vglClErrorMessages[-error], name);
         //system("pause");

@@ -35,7 +35,7 @@ void vglClFuzzyAlgDilation(VglImage* img_input, VglImage* img_output, float* con
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyAlgDilation.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyAlgDilation.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -116,7 +116,7 @@ void vglClFuzzyAlgErosion(VglImage* img_input, VglImage* img_output, float* conv
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyAlgErosion.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyAlgErosion.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -197,7 +197,7 @@ void vglClFuzzyArithDilation(VglImage* img_input, VglImage* img_output, float* c
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyArithDilation.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyArithDilation.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -278,7 +278,7 @@ void vglClFuzzyArithErosion(VglImage* img_input, VglImage* img_output, float* co
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyArithErosion.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyArithErosion.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -359,7 +359,7 @@ void vglClFuzzyBoundDilation(VglImage* img_input, VglImage* img_output, float* c
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyBoundDilation.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyBoundDilation.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -440,7 +440,7 @@ void vglClFuzzyBoundErosion(VglImage* img_input, VglImage* img_output, float* co
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyBoundErosion.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyBoundErosion.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -521,7 +521,7 @@ void vglClFuzzyDaPDilation(VglImage* img_input, VglImage* img_output, float* con
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyDaPDilation.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyDaPDilation.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -605,7 +605,7 @@ void vglClFuzzyDaPErosion(VglImage* img_input, VglImage* img_output, float* conv
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyDaPErosion.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyDaPErosion.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -689,7 +689,7 @@ void vglClFuzzyDrasticDilation(VglImage* img_input, VglImage* img_output, float*
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyDrasticDilation.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyDrasticDilation.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -770,7 +770,7 @@ void vglClFuzzyDrasticErosion(VglImage* img_input, VglImage* img_output, float* 
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyDrasticErosion.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyDrasticErosion.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -851,7 +851,7 @@ void vglClFuzzyGeoDilation(VglImage* img_input, VglImage* img_output, float* con
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyGeoDilation.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyGeoDilation.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -932,7 +932,7 @@ void vglClFuzzyGeoErosion(VglImage* img_input, VglImage* img_output, float* conv
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyGeoErosion.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyGeoErosion.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -1013,7 +1013,7 @@ void vglClFuzzyHamacherDilation(VglImage* img_input, VglImage* img_output, float
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyHamacherDilation.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyHamacherDilation.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -1097,7 +1097,7 @@ void vglClFuzzyHamacherErosion(VglImage* img_input, VglImage* img_output, float*
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClFuzzyHamacherErosion.cl";
+    char* file_path = (char*) "CL_MM/vglClFuzzyHamacherErosion.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
