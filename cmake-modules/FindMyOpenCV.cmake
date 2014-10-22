@@ -95,8 +95,9 @@ else()
 endif()
 
 if(${OPENCV_FOUND})
-
-        	
+	message("OpenCV Version before regex: ${OpenCV_VERSION}")
+	STRING(REPLACE "." "" OpenCV_VERSION ${OpenCV_VERSION})
+	message("OpenCV Version after regex: ${OpenCV_VERSION}")
 	if(WIN32)
 		set(OPENCV_LIBRARIES "${OPENCV_LIBRARY}/opencv_core${OpenCV_VERSION}.lib"
 				     "${OPENCV_LIBRARY}/opencv_highgui${OpenCV_VERSION}.lib"

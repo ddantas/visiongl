@@ -7,11 +7,11 @@ project(visiongl)
 
 
 
-if(NOT DEFINED OpenCV_VERSION)
-	message("No OpenCV_VERSION was given, if you want to set your own OpenCV Version in order to work, please type: cmake . -DOpenCV_VERSION=xxx")
-	message("default OpenCV_VERSION: 249")
-	set(OpenCV_VERSION 249 CACHE FILEPATH "Version of OpenCV without dots")
-endif()
+#if(NOT DEFINED OpenCV_VERSION)
+	#message("No OpenCV_VERSION was given, if you want to set your own OpenCV Version in order to work, please type: cmake . -DOpenCV_VERSION=xxx")
+	#message("default OpenCV_VERSION: 249")
+	#set(OpenCV_VERSION 249 CACHE FILEPATH "Version of OpenCV without dots")
+#endif()
 
 #creating target subdirectories
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin ${CMAKE_BINARY_DIR}/lib)
@@ -24,8 +24,8 @@ execute_process(COMMAND ln -s ${PROJECT_SOURCE_DIR}/src/FS bin/FS ERROR_QUIET)
 set(visiongl_src src/vglImage.cpp src/vglSimpleBGModel.cpp src/vglLoadShader.cpp src/vglContext.cpp src/glsl2cpp_Stereo.cpp src/glsl2cpp_shaders.cpp src/glsl2cpp_DiffEq.cpp src/glsl2cpp_BG.cpp)
 set(visiongl_headers src/vglTail.h src/vglSimpleBGModel.h src/vglLoadShader.h src/vglImage.h src/vglHead.h src/vglContext.h src/glsl2cpp_Stereo.h src/glsl2cpp_shaders.h src/glsl2cpp_DiffEq.h src/glsl2cpp_BG.h)
 set(visiongl_src_cuda src/vglCudaImage.cu src/kernel2cu_shaders.cu src/kernel2cu_shaders.h src/vglCudaImage.h)
-set(visiongl_src_cl src/vglClImage.cpp src/cl2cpp_shaders.cpp)
-set(visiongl_headers_cl src/vglClImage.h src/cl2cpp_shaders.h)
+set(visiongl_src_cl src/vglClImage.cpp src/cl2cpp_shaders.cpp src/cl2cpp_MM.cpp)
+set(visiongl_headers_cl src/vglClImage.h src/cl2cpp_shaders.h src/cl2cpp_MM.h)
 set(visiongl_src_GDCM src/vglGdcmIo.cpp src/vglGdcmIo.h)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake-modules")
 
@@ -70,17 +70,10 @@ if(WIN32)
 	find_package (MyGLEW REQUIRED)
 	find_package (MyFREEGLUT REQUIRED)
 	find_package (MyOpenCV REQUIRED)
-	#set(visiongl_OpenCV_libs opencv_core248d.lib
-	#opencv_highgui248d.lib
-	#opencv_imgproc248d.lib
-	#opencv_legacy248d.lib
-	#opencv_features2d248d.lib
-	#opencv_calib3d248d.lib)
-
+	
 	# Adding folders containing libs
 	#link_directories(${OPENCV_LIBRARY})
 	
-
 	# Adding folders containing header files
 	INCLUDE_DIRECTORIES( src/ ${OPENCV_INCLUDE_DIR} ${GLEW_INCLUDE_DIR} ${FREEGLUT_INCLUDE_DIR})
 	list(APPEND all_libs ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENCV_LIBRARIES})
@@ -127,10 +120,6 @@ if(WIN32)
 		add_library(visiongl ${visiongl_src} ${visiongl_headers} ${visiongl_src_cl} ${visiongl_headers_cl})
 		target_link_libraries(visiongl ${all_libs})
 
-		# Creating demobenchmarkcl object files then linking it.
-		add_executable(demobenchmarkcl src/demo/benchmark_cl.cpp src/demo/timer.h src/demo/timer.cpp)
-		SET_TARGET_PROPERTIES(demobenchmarkcl PROPERTIES PREFIX "bin/")
-		target_link_libraries(demobenchmarkcl visiongl ${all_libs})
 	else() # Creating object file without CUDA and OpenCL
 		add_library(visiongl ${visiongl_src} ${visiongl_headers})
 	endif()
@@ -142,9 +131,31 @@ if(WIN32)
 	add_executable(demo_cam src/demo/cam.cpp)
 			SET_TARGET_PROPERTIES(demo_cam PROPERTIES PREFIX "bin/")
 	 
+	# Creating demo_cv object files
+	add_executable(demo_benchmarkcv src/demo/benchmark_cv.cpp src/demo/timer.h src/demo/timer.cpp)
+			SET_TARGET_PROPERTIES(demo_benchmarkcv PROPERTIES PREFIX "bin/")
+	 
 	# Linking executables
 	target_link_libraries(demo_cam visiongl ${all_libs})
 	target_link_libraries(demo_fractal visiongl ${all_libs})
+	target_link_libraries(demo_benchmarkcv visiongl ${all_libs})
+	
+	if ( ${WITH_OPENCL} )
+		# Creating demobenchmarkcl object files then linking it.
+		add_executable(demobenchmarkcl src/demo/benchmark_cl.cpp src/demo/timer.h src/demo/timer.cpp)
+		SET_TARGET_PROPERTIES(demobenchmarkcl PROPERTIES PREFIX "bin/")
+		target_link_libraries(demobenchmarkcl visiongl ${all_libs})
+		
+		# Creating demobenchmarkcl3d object files then linking it.
+		add_executable(demobenchmarkcl3d src/demo/benchmark_cl3d.cpp src/demo/timer.h src/demo/timer.cpp)
+		SET_TARGET_PROPERTIES(demobenchmarkcl3d PROPERTIES PREFIX "bin/")
+		target_link_libraries(demobenchmarkcl3d visiongl ${all_libs})
+		
+		# Creating demobenchmarkclMMD object files then linking it.
+		add_executable(benchmarkMMD src/demo/benchmark_MMD.cpp src/demo/timer.h src/demo/timer.cpp)
+		SET_TARGET_PROPERTIES(benchmarkMMD PROPERTIES PREFIX "bin/")
+		target_link_libraries(benchmarkMMD visiongl ${all_libs})
+	endif()
 
 # Gererate Makefile for Linux
 else()
@@ -242,8 +253,30 @@ else()
 	add_executable(demo_cam src/demo/cam.cpp)
 			SET_TARGET_PROPERTIES(demo_cam PROPERTIES PREFIX "bin/")
 
+	# Creating demo_cv object files
+	add_executable(demo_benchmarkcv src/demo/benchmark_cv.cpp src/demo/timer.h src/demo/timer.cpp)
+			SET_TARGET_PROPERTIES(demo_benchmarkcv PROPERTIES PREFIX "bin/")
+	 
 	# Linking executables
-	target_link_libraries(demo_fractal visiongl ${all_libs})
 	target_link_libraries(demo_cam visiongl ${all_libs})
+	target_link_libraries(demo_fractal visiongl ${all_libs})
+	target_link_libraries(demo_benchmarkcv visiongl ${all_libs})
+	
+	if ( ${WITH_OPENCL} )
+		# Creating demobenchmarkcl object files then linking it.
+		add_executable(demobenchmarkcl src/demo/benchmark_cl.cpp src/demo/timer.h src/demo/timer.cpp)
+		SET_TARGET_PROPERTIES(demobenchmarkcl PROPERTIES PREFIX "bin/")
+		target_link_libraries(demobenchmarkcl visiongl ${all_libs})
+		
+		# Creating demobenchmarkcl3d object files then linking it.
+		add_executable(demobenchmarkcl3d src/demo/benchmark_cl3d.cpp src/demo/timer.h src/demo/timer.cpp)
+		SET_TARGET_PROPERTIES(demobenchmarkcl3d PROPERTIES PREFIX "bin/")
+		target_link_libraries(demobenchmarkcl3d visiongl ${all_libs})
+		
+		# Creating demobenchmarkclMMD object files then linking it.
+		add_executable(benchmarkMMD src/demo/benchmark_MMD.cpp src/demo/timer.h src/demo/timer.cpp)
+		SET_TARGET_PROPERTIES(benchmarkMMD PROPERTIES PREFIX "bin/")
+		target_link_libraries(benchmarkMMD visiongl ${all_libs})
+	endif()
 
 endif()
