@@ -168,7 +168,7 @@ else()
 	find_package (MyFREEGLUT REQUIRED)
 	find_package (MyOpenCV REQUIRED)
 	find_package (OpenGL REQUIRED)
-	find_package (OpenCL)
+	#find_package (OpenCL)
 
 	set(visiongl_OpenCV_libs libopencv_core.so
 				libopencv_highgui.so
@@ -189,7 +189,7 @@ else()
 	libopencv_calib3d.so)
 
 	list(APPEND all_libs ${visiongl_OpenCV_libs})
-	list(APPEND all_libs ${OPENCV_LIBRARIES} ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY})
+	list(APPEND all_libs ${OPENCV_LIBRARIES} ${FREEGLUT_LIBRARY} ${GLEW_LIBRARY} ${OPENGL_glu_LIBRARY} ${OPENGL_LIBRARIES} )
 	
 	# Adding folders containing libs
 	link_directories(${OPENCV_LIBRARY})
@@ -234,10 +234,6 @@ else()
 		add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers} ${visiongl_src_cl} ${visiongl_headers_cl} )
 		target_link_libraries(visiongl ${all_libs} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${X11_X11_LIB})
 
-		# Creating demobenchmarkcl object files then linking it.
-		add_executable(demobenchmarkcl src/demo/benchmark_cl.cpp src/demo/timer.h src/demo/timer.cpp)
-		SET_TARGET_PROPERTIES(demobenchmarkcl PROPERTIES PREFIX "bin/")
-		target_link_libraries(demobenchmarkcl visiongl ${all_libs})
 	else() # Creating object file of the library without CUDA or OpenCL
 		add_library(visiongl SHARED ${visiongl_src} ${visiongl_headers})
 		target_link_libraries(visiongl ${all_libs})
@@ -261,13 +257,12 @@ else()
 	target_link_libraries(demo_cam visiongl ${all_libs})
 	target_link_libraries(demo_fractal visiongl ${all_libs})
 	target_link_libraries(demo_benchmarkcv visiongl ${all_libs})
-	
+	message(${all_libs})
 	if ( ${WITH_OPENCL} )
 		# Creating demobenchmarkcl object files then linking it.
 		add_executable(demobenchmarkcl src/demo/benchmark_cl.cpp src/demo/timer.h src/demo/timer.cpp)
 		SET_TARGET_PROPERTIES(demobenchmarkcl PROPERTIES PREFIX "bin/")
-		target_link_libraries(demobenchmarkcl visiongl ${all_libs})
-		
+		target_link_libraries(demobenchmarkcl visiongl ${all_libs})	
 		# Creating demobenchmarkcl3d object files then linking it.
 		add_executable(demobenchmarkcl3d src/demo/benchmark_cl3d.cpp src/demo/timer.h src/demo/timer.cpp)
 		SET_TARGET_PROPERTIES(demobenchmarkcl3d PROPERTIES PREFIX "bin/")
@@ -277,6 +272,11 @@ else()
 		add_executable(benchmarkMMD src/demo/benchmark_MMD.cpp src/demo/timer.h src/demo/timer.cpp)
 		SET_TARGET_PROPERTIES(benchmarkMMD PROPERTIES PREFIX "bin/")
 		target_link_libraries(benchmarkMMD visiongl ${all_libs})
+
+		add_executable(benchmark_cvocl src/demo/benchmark_cvocl.cpp src/demo/timer.h src/demo/timer.cpp)
+		SET_TARGET_PROPERTIES(benchmark_cvocl PROPERTIES PREFIX "bin/")
+		target_link_libraries(benchmark_cvocl visiongl ${all_libs} "libopencv_ocl.so")
+		
 	endif()
 
 endif()
