@@ -64,9 +64,9 @@ int vglCreateHeaderDcmtk(VglImage* imagevgl, DcmFileFormat *fileformat)
     char* highbit = (char*)malloc(10);
     int i, dcmDepth =  convertDepthDcmtkToVgl(imagevgl->depth);
     int hbit = dcmDepth-1;
-    i = sprintf(columns, "%d", imagevgl->shape[0]); // width/columns
-    i = sprintf(rows, "%d", imagevgl->shape[1]);    // height/rows
-    i = sprintf(frames, "%d", imagevgl->shape[2]);  // number of Frames
+    i = sprintf(columns, "%d", imagevgl->shape[VGL_WIDTH]); // width/columns
+    i = sprintf(rows, "%d", imagevgl->shape[VGL_HEIGHT]);    // height/rows
+    i = sprintf(frames, "%d", imagevgl->shape[VGL_LENGTH]);  // number of Frames
     i = sprintf(depth, "%d", dcmDepth);
     i = sprintf(highbit, "%d", hbit);
 
@@ -180,9 +180,9 @@ VglImage* vglDcmtkLoadDicom(char* inFilename)
     imagevgl = vglCreate3dImage(cvSize(width,height), iplDepth, nChannels, layers);
     imagevgl->filename = filename;
 
-    int pixelsPerFrame = imagevgl->shape[0]*imagevgl->shape[1]*imagevgl->nChannels;
+    int pixelsPerFrame = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->nChannels;
     int bytesPerFrame = pixelsPerFrame*(depth/8);
-    int totalBytes = bytesPerFrame*imagevgl->shape[2];
+    int totalBytes = bytesPerFrame*imagevgl->shape[VGL_LENGTH];
 
     printf("%s:%s: dims = [%d, %d, %d], nchannels = %d, bytes/pix = %d, totalBytes = %d\n", __FILE__, __FUNCTION__, width, height, layers, nChannels, depth/8, totalBytes);
 	
@@ -201,6 +201,7 @@ VglImage* vglDcmtkLoadDicom(char* inFilename)
     // deregister JPEG decompression codecs
     DJDecoderRegistration::cleanup();
 
+    vglSetContext(imagevgl, VGL_RAM_CONTEXT);
     return imagevgl; 
 }
 
@@ -210,6 +211,12 @@ VglImage* vglDcmtkLoadDicom(char* inFilename)
 
 int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname, int compress)
 {
+    if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
+    {
+        fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+        return 1;
+    }
+
 #define OFFIS_CONSOLE_APPLICATION "dcmcjpeg"
 
     static OFLogger dcmcjpegLogger = OFLog::getLogger("dcmtk.apps." OFFIS_CONSOLE_APPLICATION);
@@ -346,9 +353,9 @@ int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname, int compress)
 
     DcmDataset *dataset = fileformat->getDataset();
     
-    int nPixels = imagevgl->shape[0]*imagevgl->shape[1]*imagevgl->nChannels;
+    int nPixels = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->nChannels;
     int dcmDepth = convertDepthVglToDcmtk(imagevgl->depth); 
-    int totalPixels = imagevgl->shape[0]*imagevgl->shape[1]*imagevgl->shape[2]*imagevgl->nChannels;
+    int totalPixels = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->shape[VGL_LENGTH]*imagevgl->nChannels;
     
     if(dcmDepth == 8)
        dataset->putAndInsertUint8Array(DCM_PixelData, (Uint8 *)imagevgl->ndarray, totalPixels);
@@ -403,9 +410,15 @@ int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname, int compress)
 
 int vglDcmtkSaveDicomUncompressed(VglImage* imagevgl, char* outfilename)
 {
-  int compressionMode = 0;
-  int r = vglDcmtkSaveDicom(imagevgl, outfilename, compressionMode);
-  return r;
+    if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
+    {
+        fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+        return 1;
+    }
+
+    int compressionMode = 0;
+    int r = vglDcmtkSaveDicom(imagevgl, outfilename, compressionMode);
+    return r;
 }
 
 
@@ -415,9 +428,14 @@ int vglDcmtkSaveDicomUncompressed(VglImage* imagevgl, char* outfilename)
 
 int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* outfilename)
 {
-  int compressionMode = 1;
-  int r = vglDcmtkSaveDicom(imagevgl, outfilename, compressionMode);
-  return r;
+    if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
+    {
+        fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+        return 1;
+    }
+    int compressionMode = 1;
+    int r = vglDcmtkSaveDicom(imagevgl, outfilename, compressionMode);
+    return r;
 }
 
 #endif

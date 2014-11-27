@@ -16,7 +16,7 @@ __kernel void vglCl3dBlurSq3(__read_only image3d_t img_input, __write_only image
     float4 result = (0,0,0,0);
     float convolution_window[27] = {1.0f/64.0f, 1.0f/32.0f, 1.0f/64.0f, 
                                     1.0f/32.0f, 1.0f/16.0f, 1.0f/32.0f, 
-                                   1.0f/64.0f, 1.0f/32.0f, 1.0f/64.0f, 
+                                    1.0f/64.0f, 1.0f/32.0f, 1.0f/64.0f, 
                                     1.0f/32.0f, 1.0f/16.0f, 1.0f/32.0f,
                                     1.0f/16.0f, 1.0f/8.0f, 1.0f/16.0f, 
                                     1.0f/32.0f, 1.0f/16.0f, 1.0f/32.0f, 

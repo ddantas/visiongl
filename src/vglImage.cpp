@@ -770,7 +770,7 @@ void vglIpl4To3Channels(VglImage* img)
  */
 void vglImage3To4Channels(VglImage* img)
 {
-    if (img->ipl->nChannels != 3)
+    if (img->nChannels != 3)
     {
         return;
     }
@@ -788,7 +788,7 @@ void vglImage3To4Channels(VglImage* img)
  */
 void vglImage4To3Channels(VglImage* img)
 {
-    if (img->ipl->nChannels != 4)
+    if (img->nChannels != 4)
     {
         return;
     }

@@ -94,9 +94,9 @@ int vglCreateHeaderGdcm(VglImage* imagevgl, gdcm::Image* img)
   img->SetPixelFormat(pixelFormat);
   
   int dim[3] = {};
-  dim[0] = imagevgl->shape[0]; // rows/height 
-  dim[1] = imagevgl->shape[1]; // columns/width
-  dim[2] = imagevgl->shape[2]; // number of frames
+  dim[0] = imagevgl->shape[VGL_WIDTH];
+  dim[1] = imagevgl->shape[VGL_HEIGHT];
+  dim[2] = imagevgl->shape[VGL_LENGTH];
   img->SetNumberOfDimensions(3);
   
   img->SetDimension(0, dim[0]); 
@@ -104,9 +104,9 @@ int vglCreateHeaderGdcm(VglImage* imagevgl, gdcm::Image* img)
   img->SetDimension(2, dim[2]);
   
   int dcmDepth = convertDepthVglToDcm(imagevgl->depth);
-  int pixelsPerFrame = imagevgl->shape[0]*imagevgl->shape[1];
+  int pixelsPerFrame = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT];
   int bytesPerFrame = pixelsPerFrame*imagevgl->nChannels;
-  int totalBytes = bytesPerFrame*imagevgl->shape[2];
+  int totalBytes = bytesPerFrame*imagevgl->shape[VGL_LENGTH];
   if(imagevgl->depth == IPL_DEPTH_16U)
     totalBytes = totalBytes*2;
 
@@ -150,7 +150,7 @@ VglImage* vglGdcmLoadDicom(char* inFilename)
     imagevgl = vglCreate3dImage(cvSize(width,height), iplDepth, nChannels, layers);
     imagevgl->filename = filename;
 
-    int ndarraySize = imagevgl->shape[0]*imagevgl->shape[1]*imagevgl->shape[2]*imagevgl->nChannels;
+    int ndarraySize = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->shape[VGL_LENGTH]*imagevgl->nChannels;
     if(pixelformat.GetBitsAllocated() == 16)
         ndarraySize = ndarraySize*2;
     else if(pixelformat.GetBitsAllocated() == 32)
@@ -162,7 +162,7 @@ VglImage* vglGdcmLoadDicom(char* inFilename)
 
     printf("%s:%s: getbitsallocated = %d\n", __FILE__, __FUNCTION__, pixelformat.GetBitsAllocated());
        
-    /*printf("\n\nColumns: %d\nRows: %d\nFrames: %d\nDepth: %d\nChannels: %d\nndim: %d\n\n", imagevgl->shape[0], imagevgl->shape[1], imagevgl->shape[2], imagevgl->depth, imagevgl->nChannels, imagevgl->ndim);*/
+    /*printf("\n\nColumns: %d\nRows: %d\nFrames: %d\nDepth: %d\nChannels: %d\nndim: %d\n\n", imagevgl->shape[VGL_WIDTH], imagevgl->shape[VGL_HEIGHT], imagevgl->shape[VGL_LENGTH], imagevgl->depth, imagevgl->nChannels, imagevgl->ndim);*/
 
     gdcm::PhotometricInterpretation PI;
     PI = image.GetPhotometricInterpretation();
@@ -181,6 +181,7 @@ VglImage* vglGdcmLoadDicom(char* inFilename)
             if(!(PI == gdcm::PhotometricInterpretation::RGB))
 	        printf("This format is not supported"); 
   
+    vglSetContext(imagevgl, VGL_RAM_CONTEXT);
     return imagevgl;
 }
   
@@ -190,6 +191,12 @@ VglImage* vglGdcmLoadDicom(char* inFilename)
 
 int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
 {
+  if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
+  {
+    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+    return 1;
+  }
+
   gdcm::ImageReader reader;
   gdcm::Image* image = &reader.GetImage();
   if(!imagevgl->filename)
@@ -203,7 +210,7 @@ int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
   }
   
 
-  int ndarraySize = imagevgl->shape[0]*imagevgl->shape[1]*imagevgl->shape[2]*imagevgl->nChannels;
+  int ndarraySize = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->shape[VGL_LENGTH]*imagevgl->nChannels;
 
   if(imagevgl->depth == IPL_DEPTH_16U)
      ndarraySize = ndarraySize*2;
@@ -279,6 +286,12 @@ int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
 
 int vglGdcmSaveDicomUncompressed(VglImage* imagevgl, char* outFilename)
 {
+  if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
+  {
+    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+    return 1;
+  }
+
   int compress = 0;
   int r = vglGdcmSaveDicom(imagevgl, outFilename, compress);
   return r;
@@ -291,6 +304,12 @@ int vglGdcmSaveDicomUncompressed(VglImage* imagevgl, char* outFilename)
 
 int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outFilename)
 {
+  if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
+  {
+    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+    return 1;
+  }
+
   int compress = 1;
   int r = vglGdcmSaveDicom(imagevgl, outFilename, compress);
   return r;
