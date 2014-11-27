@@ -1,6 +1,7 @@
 #ifdef __DCMTK__
 
 #include <vglDcmtkIo.h>
+#include <vglContext.h>
 #include "dcmtk/config/osconfig.h"    /* make sure OS specific configuration is included first */
 
 #define INCLUDE_CSTDLIB
