@@ -9,13 +9,13 @@ __kernel void vglCl3dPartialHistogram(__read_only image3d_t img_input, __global 
 	int length = get_image_depth(img_input);
 	
 	//clear buffer
-	/*for(uint y = 0; y < 256; y++)
+	for(uint y = 0; y < 256; y++)
 	{
 		for(uint z = 0; z < 3; z++)
 		{
-			hist[posx*256*3 + y*3 + z] = 0;
+			hist[(posx*256*3) + (y*3) + z] = 0;
 		}
-	}*/
+	}
 	
 	//calculate hist for given x, variating y and z
     for(int y = 0; y < height; y++)
