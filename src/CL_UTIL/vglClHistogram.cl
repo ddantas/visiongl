@@ -1,3 +1,10 @@
+/*
+*Implementation made by Helton Danilo at Universidade Federal de Sergipe
+*The implementation follow the description of the book OpenCL Programming
+*Guide, authors: Aaftab Munshi, Benedict R. Gaster, Timothy G. Mattson,
+*James Fung, Dan Ginsburg published by Addison-Wesley, Page 395.
+*/
+
 __kernel void vglCl3dPartialHistogram(__read_only image3d_t img_input, __global uint* hist)
 {
     const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates

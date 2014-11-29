@@ -7,3 +7,4 @@ int* vglClSumPartialHistogram(cl_mem partial_hist,int size);
 cl_mem vglClPartialHistogram(VglImage* img_input);
 cl_mem vglCl3dPartialHistogram(VglImage* img_input);
 int* vglClCumSum(int* arr, int size);
+void vglClHistogramEq(VglImage* input, VglImage* output);

@@ -267,3 +267,87 @@ int* vglClCumSum(int* arr, int size)
 
   return cumsum;
 }
+
+void vglClHistogramEq(VglImage* input, VglImage* output)
+{
+
+  vglCheckContext(input,VGL_CL_CONTEXT);
+  vglCheckContext(output,VGL_CL_CONTEXT);
+
+  int* hist = vglClHistogram(input);
+  int* nhist = (int*) malloc(256*sizeof(int));
+  for(int i = 0; i < 256; i++)
+  {
+       nhist[i] = hist[i*3]+hist[i*3+1]+hist[i*3+2];
+  }
+  int* cumsum = vglClCumSum(nhist,256);
+
+  //get min
+  int min = 255;
+  for(int i = 0; i < 256*3; i++)
+  {
+    if (cumsum[i] < min && cumsum[i] != 0)
+    {
+      min = cumsum[i];
+      break;
+    }
+  }
+
+  cl_int err;
+
+  cl_mem mobj_arr = NULL;
+  mobj_arr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, 256*3*sizeof(int), NULL, &err);
+  vglClCheckError(err, (char*) "clCreateBuffer mobj_arr" );
+  err = clEnqueueWriteBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, 256*3*sizeof(int), cumsum, 0, NULL, NULL);
+  vglClCheckError(err, (char*) "clEnqueueWriteBuffer mobj_arr");
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL_UTIL/vglClHistogramEq.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglCl3dHistogramEq", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &input->oclPtr);
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &output->oclPtr);
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_arr);
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
+  err = clSetKernelArg( kernel, 3, sizeof( int ), &min);
+  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+
+  size_t worksize[] = { input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->shape[VGL_LENGTH] };
+
+  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 1, NULL, worksize, 0, 0, 0, 0 );
+
+  err = clReleaseMemObject( mobj_arr );
+  vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
+
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+}
