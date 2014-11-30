@@ -22,7 +22,7 @@ int* vglClHistogram(VglImage* img_input){
     partial_hist = vglCl3dPartialHistogram(img_input);
   }
 
-  int* hist = vglClSumPartialHistogram(partial_hist,img_input->shape[VGL_WIDTH]);
+  int* hist = vglClSumPartialHistogram(partial_hist,img_input->shape[VGL_WIDTH], img_input->nChannels);
 
   cl_int err = clReleaseMemObject( partial_hist );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
@@ -30,12 +30,12 @@ int* vglClHistogram(VglImage* img_input){
   return hist;
 }
 
-int* vglClSumPartialHistogram(cl_mem partial_hist, int size)
+int* vglClSumPartialHistogram(cl_mem partial_hist, int size, int nchannels)
 {
   cl_int err;
 
   cl_mem mobj_histogram = NULL;
-  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, 3*256*sizeof(int), NULL, &err);
+  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, nchannels*256*sizeof(int), NULL, &err);
   vglClCheckError(err, (char*) "clCreateBuffer mobj_histogram" );
 
   static cl_program program = NULL;
@@ -76,12 +76,15 @@ int* vglClSumPartialHistogram(cl_mem partial_hist, int size)
   err = clSetKernelArg( kernel, 2, sizeof( unsigned int ), &size );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
+  err = clSetKernelArg( kernel, 3, sizeof( int ), &nchannels );
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
   size_t worksize[] = { 256, 1, 1 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 1, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
   
-  int* histogram = (int*) malloc(3*256*sizeof(int));
-  err = clEnqueueReadBuffer(cl.commandQueue,mobj_histogram,CL_TRUE, 0, 3*256*sizeof(int), histogram, 0, NULL, NULL);
+  int* histogram = (int*) malloc(nchannels*256*sizeof(int));
+  err = clEnqueueReadBuffer(cl.commandQueue,mobj_histogram,CL_TRUE, 0, nchannels*256*sizeof(int), histogram, 0, NULL, NULL);
   vglClCheckError(err,"ReadBuffer histogram");
 
   err = clReleaseMemObject( mobj_histogram );
@@ -98,7 +101,7 @@ cl_mem vglClPartialHistogram(VglImage* img_input)
   cl_int err;
 
   cl_mem mobj_histogram = NULL;
-  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, 3*256*img_input->shape[VGL_WIDTH]*sizeof(unsigned int), NULL, &err);
+  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img_input->nChannels*256*img_input->shape[VGL_WIDTH]*sizeof(unsigned int), NULL, &err);
   vglClCheckError( err, (char*) "clCreateBuffer histogram" );
 
   static cl_program program = NULL;
@@ -137,6 +140,9 @@ cl_mem vglClPartialHistogram(VglImage* img_input)
   err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &mobj_histogram );
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
+  err = clSetKernelArg( kernel, 2, sizeof( int ), &img_input->nChannels );
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
   if (img_input->ndim <= 2){
     size_t worksize[] = { img_input->shape[VGL_WIDTH], 1, 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 1, NULL, worksize, 0, 0, 0, 0 );
@@ -157,7 +163,7 @@ cl_mem vglCl3dPartialHistogram(VglImage* img_input)
   cl_int err;
 
   cl_mem mobj_histogram = NULL;
-  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, 3*256*img_input->shape[VGL_WIDTH]*sizeof(unsigned int), NULL, &err);
+  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img_input->nChannels*256*img_input->shape[VGL_WIDTH]*sizeof(unsigned int), NULL, &err);
   vglClCheckError( err, (char*) "clCreateBuffer histogram" );
 
   static cl_program program = NULL;
@@ -196,6 +202,9 @@ cl_mem vglCl3dPartialHistogram(VglImage* img_input)
   err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &mobj_histogram );
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
+    err = clSetKernelArg( kernel, 2, sizeof( int ), &img_input->nChannels );
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
   if (img_input->ndim == 3){
     size_t worksize[] = { img_input->shape[VGL_WIDTH], 1, 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 1, NULL, worksize, 0, 0, 0, 0 );
@@ -208,7 +217,7 @@ cl_mem vglCl3dPartialHistogram(VglImage* img_input)
   return mobj_histogram;
 }
 
-int* vglClCumSum(int* arr, int size)
+int* vglClCumulativeSum(int* arr, int size)
 {
   cl_int err;
   int nsize = floor(log10(size)/log10(2));
@@ -268,30 +277,15 @@ int* vglClCumSum(int* arr, int size)
   return cumsum;
 }
 
-void vglClHistogramEq(VglImage* input, VglImage* output)
+void vglClHistogramEq(VglImage* input, VglImage* output, int min)
 {
 
   vglCheckContext(input,VGL_CL_CONTEXT);
   vglCheckContext(output,VGL_CL_CONTEXT);
 
   int* hist = vglClHistogram(input);
-  int* nhist = (int*) malloc(256*sizeof(int));
-  for(int i = 0; i < 256; i++)
-  {
-       nhist[i] = hist[i*3]+hist[i*3+1]+hist[i*3+2];
-  }
-  int* cumsum = vglClCumSum(nhist,256);
-
-  //get min
-  int min = 255;
-  for(int i = 0; i < 256*3; i++)
-  {
-    if (cumsum[i] < min && cumsum[i] != 0)
-    {
-      min = cumsum[i];
-      break;
-    }
-  }
+  int* nhist = (int*) malloc(input->nChannels*256*sizeof(int));
+  int* cumsum = vglClCumulativeSum(nhist,input->nChannels*256);
 
   cl_int err;
 
@@ -341,6 +335,9 @@ void vglClHistogramEq(VglImage* input, VglImage* output)
 
   err = clSetKernelArg( kernel, 3, sizeof( int ), &min);
   vglClCheckError( err, (char*) "clSetKernelArg 3" );
+
+  err = clSetKernelArg( kernel, 4, sizeof( int ), &input->nChannels);
+  vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   size_t worksize[] = { input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->shape[VGL_LENGTH] };
 

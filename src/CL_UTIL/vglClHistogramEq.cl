@@ -6,6 +6,8 @@
 *page 7-11. Some otimization was made to keep the last element
 */
 
+//CumSum: Array containing the data to be Cumulative Sum
+//size: length of the cumsum
 __kernel void vglClCumSum(__global int* cumsum, int size)
 {
 	int index = get_global_id(0);
@@ -71,7 +73,10 @@ __kernel void vglClCumSum(__global int* cumsum, int size)
 	cumsum[global_size-1] = last_elem;
 }
 
-__kernel void vglCl3dHistogramEq(__read_only image3d_t img_input,__write_only  image3d_t img_output,constant int* cdf_histogram, int min)
+//img_input, img_output: the input image and output image
+//cdf_histogram: Cumulative sum of the histogram
+//min: the min value of the cdf_histogram
+__kernel void vglCl3dHistogramEq(__read_only image3d_t img_input,__write_only  image3d_t img_output,constant int* cdf_histogram, int min, int nchannels)
 {
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
                               CLK_ADDRESS_CLAMP |           //Clamp to zeros
@@ -79,8 +84,12 @@ __kernel void vglCl3dHistogramEq(__read_only image3d_t img_input,__write_only  i
 							  
 	int4 coords = (int4)(get_global_id(0), get_global_id(1), get_global_id(2), 0);
 	uint4 p = read_imageui(img_input, smp, coords);
-	float r = (cdf_histogram[p.x*3+0]-min)/((get_global_size(0)*get_global_size(1)*get_global_size(2))-min);
-	float g = (cdf_histogram[p.y*3+1]-min)/((get_global_size(0)*get_global_size(1)*get_global_size(2))-min);
-	float b = (cdf_histogram[p.z*3+2]-min)/((get_global_size(0)*get_global_size(1)*get_global_size(2))-min);
-	write_imagef(img_output,coords,(float4)(r,g,b,0));
+	float4 color = (0,0,0,0);
+	float* pcolor = &color;
+	for(int i = 0; i < nchannels; i++)
+	{
+		float c = (cdf_histogram[p.x*3+i]-min)/((get_global_size(0)*get_global_size(1)*get_global_size(2))-min);
+		pcolor[i] = c;
+	}
+	write_imagef(img_output,coords,color);
 }
