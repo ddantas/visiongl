@@ -15,7 +15,8 @@ int main(int argc, char* argv[])
 
 	if (argc < 2)
 	{
-		printf("Usage: demo_histogram file.dicom\n");
+		printf("Usage: demo_histogram file.ext\n");
+        printf("File must have 1 channel\n");
 		printf("bad arguments, read usage again\n");
 		exit(1);
 	}
@@ -24,7 +25,7 @@ int main(int argc, char* argv[])
 
 	printf("VisionCL on %s\n\n",image_path);
 
-    //load gray image
+    //load 2d gray image
     VglImage* img = vglLoadImage(image_path,0);
 	VglImage* out = vglCreateImage(img);
     //OpenCL histogram
@@ -51,12 +52,9 @@ int main(int argc, char* argv[])
     printf("Testing Histogram CPU time: %s\n", getTimeElapsedInSeconds());
     //Test if they are equal
     int t = 0;
-
-    //Take Cumulative sum to check cumulated histogram
-    int* histogram_cumsum = vglClCumulativeSum(histogram,256);
     for(int i = 0; i < 256; i++)
     {
-        printf("Histogram cumulated norm %d: %.2f\n",i,histogram_cumsum[i]/((float)img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT]));
+      t += histogram_cpu[i]-histogram[i];
     }
     printf("Total diff %d\n", t);
 
