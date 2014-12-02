@@ -123,10 +123,10 @@ __kernel void vglClHistogramEq(__read_only image2d_t img_input,__write_only imag
 		if (i == 2) aux = convert_uchar_sat(pixel.z * 255.0f);
 		if (i == 3) aux = convert_uchar_sat(pixel.w * 255.0f);
 		float c = ((float)cdf_histogram[(aux*nchannels)+i]-min)/((float)image_size-min);
-		if (i == 0) color.x = c/255.0f;
-		if (i == 1) color.y = c/255.0f;
-		if (i == 2) color.z = c/255.0f;
-		if (i == 3) color.w = c/255.0f;
+		if (i == 0) color.x = c;
+		if (i == 1) color.y = c;
+		if (i == 2) color.z = c;
+		if (i == 3) color.w = c;
 	}
 	write_imagef(img_output,coords,color);
 }
