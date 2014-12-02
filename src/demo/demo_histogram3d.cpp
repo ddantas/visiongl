@@ -23,7 +23,8 @@ int main(int argc, char* argv[])
 	printf("VisionCL on %s\n\n",image_path);
 
     VglImage* img = vglDcmtkLoadDicom(image_path);
-	vglNdarray3To4Channels(img);
+    VglImage* out = vglCreate3dImage(cvSize(img->shape[VGL_WIDTH],img->shape[VGL_HEIGHT]),img->depth,1,img->shape[VGL_LENGTH]);
+	//vglNdarray3To4Channels(img);
 	
     //OpenCL histogram
     TimerStart();
@@ -48,24 +49,26 @@ int main(int argc, char* argv[])
 
     for(int i = 0; i < img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT]*img->shape[VGL_LENGTH];i++)
     {
-      
-      histogram_cpu_r[pixels[i*3]]++;
-      histogram_cpu_g[pixels[(i*3)+1]]++;
-      histogram_cpu_b[pixels[(i*3)+2]]++;
+      histogram_cpu_r[pixels[i]]++;
     }
     printf("Testing Histogram CPU time: %s\n", getTimeElapsedInSeconds());
     //Test if they are equal
     int t = 0;
-    for(int i = 0; i < 256*3; i++)
+    for(int i = 0; i < 256; i++)
     {
-      if (i % 3 == 0)
+      /*if (i % 3 == 0)
         t += histogram_cpu_r[i/3] - histogram[i];
       if (i % 3 == 1)
         t += histogram_cpu_g[i/3] - histogram[i];
       if (i % 3 == 2)
-        t += histogram_cpu_b[i/3] - histogram[i];
+        t += histogram_cpu_b[i/3] - histogram[i];*/
     }
-
     printf("Total diff %d\n", t);
+
+    vglCl3dHistogramEq(img,out,0);
+    vglClDownload(out);
+
+    vglDcmtkSaveDicom(out,"C:/Users/H_DANILO/Dropbox/TCC/TCC_DICOM_THRESH.dcm",0);
+    
     return 0;
 }

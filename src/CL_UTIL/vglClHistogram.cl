@@ -33,13 +33,12 @@ __kernel void vglCl3dPartialHistogram(__read_only image3d_t img_input, __global 
 		for(int z = 0; z < length; z++)
 		{
 			float4 clr = read_imagef(img_input, smp, (float4)(posx, y, z, 0));
-			uchar indx_x, indx_y, indx_z;
-			indx_x = convert_uchar_sat(clr.x * 255.0f);
-			indx_y = convert_uchar_sat(clr.y * 255.0f);
-			indx_z = convert_uchar_sat(clr.z * 255.0f);
-			hist[(posx*256*nchannels) + (indx_x*nchannels) + 0]++;
-			hist[(posx*256*nchannels) + (indx_y*nchannels) + 1]++;
-			hist[(posx*256*nchannels) + (indx_z*nchannels) + 2]++;
+			float* pclr = &clr; //quick fix to access clr as array
+			for(uint ch = 0; ch < nchannels; ch++)
+			{
+				uchar c = convert_uchar_sat(pclr[ch] * 255.0f);
+				atomic_inc(&hist[(posx*256*nchannels) + (c*nchannels) + ch]);
+			}
 		}
 	}
 }
@@ -70,13 +69,12 @@ __kernel void vglCl2dPartialHistogram(__read_only image2d_t img_input, __global 
     for(uint y = 0; y < height; y++)
 	{
 		float4 clr = read_imagef(img_input, smp, (float2)(posx,y));
-		uchar indx_x, indx_y, indx_z;
-		indx_x = convert_uchar_sat(clr.x * 255.0f);
-		indx_y = convert_uchar_sat(clr.y * 255.0f);
-		indx_z = convert_uchar_sat(clr.z * 255.0f);
-		hist[(posx*256*nchannels) + (indx_x*nchannels) + 0]++;
-		hist[(posx*256*nchannels) + (indx_y*nchannels) + 1]++;
-		hist[(posx*256*nchannels) + (indx_z*nchannels) + 2]++;
+		float* pclr = &clr; //quick fix to access clr as array
+		for(uint ch = 0; ch < nchannels; ch++)
+		{
+			uchar c = convert_uchar_sat(pclr[ch] * 255.0f);
+			atomic_inc(&hist[(posx*256*nchannels) + (c*nchannels) + ch]);
+		}
 	}
 }
 //partial_hist: a matrix containing many partial_histogram

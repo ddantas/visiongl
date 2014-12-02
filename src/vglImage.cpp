@@ -375,7 +375,7 @@ void vglUpload(VglImage* image, int swapRGB){
     }
   }
   else{
-		  internalFormat = GL_RGBA; //Must be fixed, but for now, it's the fix.
+	    internalFormat = GL_RGBA; //Must be fixed, but for now, it's the fix.
   }
 
   if (ndim == 3){

@@ -1,0 +1,68 @@
+#include "vglImage.h"
+#include "vglClImage.h"
+#include "vglDcmtkIo.h"
+#include "vglClFunctions.h"
+#include "demo/timer.h"
+#include <opencv2/highgui/highgui_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
+
+
+int main(int argc, char* argv[])
+{
+
+	vglInit(50,50);
+	vglClInit();
+
+	if (argc < 2)
+	{
+		printf("Usage: demo_histogram file.dicom\n");
+		printf("bad arguments, read usage again\n");
+		exit(1);
+	}
+
+	char* image_path = argv[1];
+
+	printf("VisionCL on %s\n\n",image_path);
+
+    //load gray image
+    VglImage* img = vglLoadImage(image_path,0);
+	VglImage* out = vglCreateImage(img);
+    //OpenCL histogram
+    TimerStart();
+    vglClHistogram(img);
+    printf("First call to          clHistogram: %s\n", getTimeElapsedInSeconds());
+    TimerStart();
+    int* histogram = vglClHistogram(img);
+    printf("Testing clHistogram time: %s\n", getTimeElapsedInSeconds());
+    
+
+    //CPU histogram
+    TimerStart();
+    int* histogram_cpu = (int*) malloc(256*sizeof(int));
+
+    memset(histogram_cpu,0x0,256*sizeof(int));
+
+    unsigned char* pixels = (unsigned char*) img->ipl->imageData;
+
+    for(int i = 0; i < img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT];i++)
+    {
+      histogram_cpu[pixels[i]]++;
+    }
+    printf("Testing Histogram CPU time: %s\n", getTimeElapsedInSeconds());
+    //Test if they are equal
+    int t = 0;
+
+    //Take Cumulative sum to check cumulated histogram
+    int* histogram_cumsum = vglClCumulativeSum(histogram,256);
+    for(int i = 0; i < 256; i++)
+    {
+        printf("Histogram cumulated norm %d: %.2f\n",i,histogram_cumsum[i]/((float)img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT]));
+    }
+    printf("Total diff %d\n", t);
+
+    vglClHistogramEq(img,out,1);
+    vglClDownload(out);
+    
+    cvSaveImage("C:/Users/H_DANILO/Dropbox/TCC/teste/cl_eq2dgray.tif",out->ipl);
+    return 0;
+}
