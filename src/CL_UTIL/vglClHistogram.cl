@@ -85,16 +85,22 @@ __kernel void vglClSumPartialHistogram(__global uint* partial_hist, __global uin
 {
 	//goes from 0 to 256
 	int posx = get_global_id(0);
-	
+	int posy = get_global_id(1);
+
 	//init values
-	for(int i = 0; i < nchannels; i++)
-		hist[(posx*nchannels)+i]=0;
+    if (posy == 0)
+    {
+	  for(int i = 0; i < nchannels; i++)
+        hist[(posx*nchannels)+i]=0;
+    }
 	
-	for(int x = 0; x < size; x++)
+	//for(int x = 0; x < size; x++)
+	//{
+    //Como é que essa porra tá funcionando?
+    int x = posy;
+	for(int i = 0; i < nchannels; i++)
 	{
-		for(int i = 0; i < nchannels; i++)
-		{
-			hist[(posx*nchannels) + i] += partial_hist[(x*256*nchannels) + (posx*nchannels) + i];
-		}
+		atomic_add(&hist[(posx*nchannels) + i],partial_hist[(x*256*nchannels) + (posx*nchannels) + i]);
 	}
+	//}
 }

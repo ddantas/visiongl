@@ -1,12 +1,12 @@
-
 #include "vglImage.h"
 #include "vglClImage.h"
 #include "vglContext.h"
 #include "vglClFunctions.h"
 #include <math.h>
 
-
 #include <fstream>
+
+#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : require
 
 extern VglClContext cl;
 
@@ -17,6 +17,7 @@ int* vglClHistogram(VglImage* img_input){
   {
     partial_hist = vglClPartialHistogram(img_input);
   }
+
   else if (img_input->ndim == 3)
   {
     partial_hist = vglCl3dPartialHistogram(img_input);
@@ -37,6 +38,16 @@ int* vglClSumPartialHistogram(cl_mem partial_hist, int size, int nchannels)
   cl_mem mobj_histogram = NULL;
   mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, nchannels*256*sizeof(int), NULL, &err);
   vglClCheckError(err, (char*) "clCreateBuffer mobj_histogram" );
+
+  float l = log10(size)/log10(2);
+  int nsize;
+
+  if (l - floor(log10(size)/log10(2)) > 0)
+    nsize = l+1;
+  else
+    nsize = l;
+
+  nsize = pow(2,nsize);
 
   static cl_program program = NULL;
   if (program == NULL)
@@ -79,8 +90,8 @@ int* vglClSumPartialHistogram(cl_mem partial_hist, int size, int nchannels)
   err = clSetKernelArg( kernel, 3, sizeof( int ), &nchannels );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { 256, 1, 1 };
-  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 1, NULL, worksize, 0, 0, 0, 0 );
+  size_t worksize[] = { 256, size, 1 };
+  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
   
   int* histogram = (int*) malloc(nchannels*256*sizeof(int));
@@ -357,22 +368,24 @@ void vglCl3dHistogramEq(VglImage* input, VglImage* output, int min)
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 }
 
-
-void vglClHistogramEq(VglImage* input, VglImage* output, int min)
+void vglClGrayLevelTransform(VglImage* input, VglImage* output, int* transformation)
 {
+  
+  if (input->nChannels > 1 || output->nChannels > 1)
+  {
+     fprintf(stderr, "%s: %s: Error: image with more then 1 channel not supported. Please convert to 1 channel.\n", __FILE__, __FUNCTION__);
+     return;
+  }
 
   vglCheckContext(input,VGL_CL_CONTEXT);
   vglCheckContext(output,VGL_CL_CONTEXT);
-
-  int* hist = vglClHistogram(input);
-  int* cumsum = vglClCumulativeSum(hist,input->nChannels*256);
 
   cl_int err;
 
   cl_mem mobj_arr = NULL;
   mobj_arr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, 256*input->nChannels*sizeof(int), NULL, &err);
   vglClCheckError(err, (char*) "clCreateBuffer mobj_arr" );
-  err = clEnqueueWriteBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, 256*input->nChannels*sizeof(int), cumsum, 0, NULL, NULL);
+  err = clEnqueueWriteBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, 256*sizeof(int), transformation, 0, NULL, NULL);
   vglClCheckError(err, (char*) "clEnqueueWriteBuffer mobj_arr");
 
   static cl_program program = NULL;
@@ -400,7 +413,7 @@ void vglClHistogramEq(VglImage* input, VglImage* output, int min)
   static cl_kernel kernel = NULL;
   if (kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClHistogramEq", &err ); 
+    kernel = clCreateKernel( program, "vglClGrayLevelTransform", &err ); 
     vglClCheckError(err, (char*) "clCreateKernel" );
   }
 
@@ -413,12 +426,6 @@ void vglClHistogramEq(VglImage* input, VglImage* output, int min)
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_arr);
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &min);
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
-
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &input->nChannels);
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
-
   size_t worksize[] = { input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], 1 };
 
   err = clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
@@ -428,4 +435,13 @@ void vglClHistogramEq(VglImage* input, VglImage* output, int min)
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
 
   
+}
+
+void vglClHistogramEq(VglImage* input, VglImage* output)
+{
+  int* hist = vglClHistogram(input);
+  int* cumsum = vglClCumulativeSum(hist,input->shape[VGL_WIDTH]);
+
+  vglClGrayLevelTransform(input,output,cumsum);
+
 }

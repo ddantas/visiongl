@@ -28,13 +28,33 @@ int main(int argc, char* argv[])
     //load 2d gray image
     VglImage* img = vglLoadImage(image_path,0);
 	VglImage* out = vglCreateImage(img);
-    //OpenCL histogram
+    
+    int* eq = (int*) malloc(256*sizeof(int));
+    for(int i = 0; i < 256; i++)
+    {
+      if (i < 96)
+        eq[i] = 0;
+      else if (i < 200)
+        eq[i] = floor((i/256.0f)*img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT]);
+      else
+        eq[i] = 0;
+    }
+
     TimerStart();
     vglClHistogram(img);
     printf("First call to          clHistogram: %s\n", getTimeElapsedInSeconds());
+
+    TimerStart();
+    vglClHistogramEq(img,out);
+    printf("First call to        clHistogramEq: %s\n", getTimeElapsedInSeconds());
+
+    TimerStart();
+    vglClGrayLevelTransform(img,out,eq);
+    printf("First call to ClGrayLevelTransform: %s\n", getTimeElapsedInSeconds());
+
     TimerStart();
     int* histogram = vglClHistogram(img);
-    printf("Testing clHistogram time: %s\n", getTimeElapsedInSeconds());
+    printf("Testing clHistogram   time: %s\n", getTimeElapsedInSeconds());
     
 
     //CPU histogram
@@ -54,13 +74,28 @@ int main(int argc, char* argv[])
     int t = 0;
     for(int i = 0; i < 256; i++)
     {
+      //printf("%d: %d - %d = %d\n",i,histogram_cpu[i],histogram[i],histogram_cpu[i]-histogram[i]);
       t += histogram_cpu[i]-histogram[i];
     }
     printf("Total diff %d\n", t);
 
-    vglClHistogramEq(img,out,1);
-    vglClDownload(out);
     
-    cvSaveImage("C:/Users/H_DANILO/Dropbox/TCC/teste/cl_eq2dgray.tif",out->ipl);
+    TimerStart();
+    vglClHistogramEq(img,out);
+    printf("Testing Histogram GPU EQ time: %s\n", getTimeElapsedInSeconds());
+
+    TimerStart();
+    cvEqualizeHist(img->ipl,out->ipl);
+    printf("Testing Histogram CPU EQ time: %s\n", getTimeElapsedInSeconds());
+
+    vglClDownload(out);
+    cvSaveImage("C:/Users/H_DANILO/Dropbox/TCC/teste/cl_histeq2dgray.tif",out->ipl);
+
+    TimerStart();
+    vglClGrayLevelTransform(img,out,eq);
+    printf("Testing GrayLevelTransform time: %s\n", getTimeElapsedInSeconds());
+
+    vglClDownload(out);
+    cvSaveImage("C:/Users/H_DANILO/Dropbox/TCC/teste/cl_grayleveltransform2dgray.tif",out->ipl);
     return 0;
 }
