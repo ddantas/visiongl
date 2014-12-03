@@ -288,84 +288,22 @@ int* vglClCumulativeSum(int* arr, int size)
   return cumsum;
 }
 
-void vglCl3dHistogramEq(VglImage* input, VglImage* output, int min)
+void vglClHistogramEq(VglImage* input, VglImage* output)
 {
-
-  vglCheckContext(input,VGL_CL_CONTEXT);
-  vglCheckContext(output,VGL_CL_CONTEXT);
-
   int* hist = vglClHistogram(input);
-  if (input->nChannels > 1)
-  {
-    int* hhist = (int*) malloc(256*sizeof(int));
-    for(int i = 0; i < 256; i++)
-    {
-       hhist[i] = (hist[i*3+0] + hist[i*3+1] + hist[i*3+2]) / 3;
-    }
-    hist = hhist;
-  }
-  int* cumsum = vglClCumulativeSum(hist,input->nChannels*256);
+  int* cumsum = vglClCumulativeSum(hist,input->shape[VGL_WIDTH]);
 
-  cl_int err;
+  vglClGrayLevelTransform(input,output,cumsum);
 
-  cl_mem mobj_arr = NULL;
-  mobj_arr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, 256*input->nChannels*sizeof(int), NULL, &err);
-  vglClCheckError(err, (char*) "clCreateBuffer mobj_arr" );
-  err = clEnqueueWriteBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, 256*input->nChannels*sizeof(int), cumsum, 0, NULL, NULL);
-  vglClCheckError(err, (char*) "clEnqueueWriteBuffer mobj_arr");
+}
 
-  static cl_program program = NULL;
-  if (program == NULL)
-  {
-    char* file_path = (char*) "CL_UTIL/vglClHistogramEq.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
-    {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
-      exit(1);
-    }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
-#ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
-#endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
-  }
+void vglCl3dHistogramEq(VglImage* input, VglImage* output)
+{
+  int* hist = vglClHistogram(input);
+  int* cumsum = vglClCumulativeSum(hist,input->shape[VGL_WIDTH]);
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
-  {
-    kernel = clCreateKernel( program, "vglCl3dHistogramEq", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
-  }
+  vglCl3dGrayLevelTransform(input,output,cumsum);
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &input->oclPtr);
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
-
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &output->oclPtr);
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
-
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_arr);
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
-
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &min);
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
-
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &input->nChannels);
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
-
-  size_t worksize[] = { input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->shape[VGL_LENGTH] };
-
-  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-
-  err = clReleaseMemObject( mobj_arr );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
-
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 }
 
 void vglClGrayLevelTransform(VglImage* input, VglImage* output, int* transformation)
@@ -383,7 +321,7 @@ void vglClGrayLevelTransform(VglImage* input, VglImage* output, int* transformat
   cl_int err;
 
   cl_mem mobj_arr = NULL;
-  mobj_arr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, 256*input->nChannels*sizeof(int), NULL, &err);
+  mobj_arr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, 256*sizeof(int), NULL, &err);
   vglClCheckError(err, (char*) "clCreateBuffer mobj_arr" );
   err = clEnqueueWriteBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, 256*sizeof(int), transformation, 0, NULL, NULL);
   vglClCheckError(err, (char*) "clEnqueueWriteBuffer mobj_arr");
@@ -437,11 +375,72 @@ void vglClGrayLevelTransform(VglImage* input, VglImage* output, int* transformat
   
 }
 
-void vglClHistogramEq(VglImage* input, VglImage* output)
+void vglCl3dGrayLevelTransform(VglImage* input, VglImage* output, int* transformation)
 {
-  int* hist = vglClHistogram(input);
-  int* cumsum = vglClCumulativeSum(hist,input->shape[VGL_WIDTH]);
+  
+  if (input->nChannels > 1 || output->nChannels > 1)
+  {
+     fprintf(stderr, "%s: %s: Error: image with more then 1 channel not supported. Please convert to 1 channel.\n", __FILE__, __FUNCTION__);
+     return;
+  }
 
-  vglClGrayLevelTransform(input,output,cumsum);
+  vglCheckContext(input,VGL_CL_CONTEXT);
+  vglCheckContext(output,VGL_CL_CONTEXT);
 
+  cl_int err;
+
+  cl_mem mobj_arr = NULL;
+  mobj_arr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, 256*sizeof(int), NULL, &err);
+  vglClCheckError(err, (char*) "clCreateBuffer mobj_arr" );
+  err = clEnqueueWriteBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, 256*sizeof(int), transformation, 0, NULL, NULL);
+  vglClCheckError(err, (char*) "clEnqueueWriteBuffer mobj_arr");
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL_UTIL/vglClHistogramEq.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglCl3dGrayLevelTransform", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &input->oclPtr);
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &output->oclPtr);
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_arr);
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
+  size_t worksize[] = { input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->shape[VGL_LENGTH] };
+
+  err = clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+
+  err = clReleaseMemObject( mobj_arr );
+  vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
+
+  
 }
+

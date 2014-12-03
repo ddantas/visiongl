@@ -32,13 +32,16 @@ __kernel void vglCl3dPartialHistogram(__read_only image3d_t img_input, __global 
 	{
 		for(int z = 0; z < length; z++)
 		{
-			float4 clr = read_imagef(img_input, smp, (float4)(posx, y, z, 0));
-			float* pclr = &clr; //quick fix to access clr as array
-			for(uint ch = 0; ch < nchannels; ch++)
-			{
-				uchar c = convert_uchar_sat(pclr[ch] * 255.0f);
-				atomic_inc(&hist[(posx*256*nchannels) + (c*nchannels) + ch]);
-			}
+			float4 pixel = read_imagef(img_input, smp, (float4)(posx, y, z, 0));
+		    for(uint ch = 0; ch < nchannels; ch++)
+		    {
+                uchar c;
+		        if (ch == 0) c = convert_uchar_sat(pixel.x * 255.0f);
+		        if (ch == 1) c = convert_uchar_sat(pixel.y * 255.0f);
+		        if (ch == 2) c = convert_uchar_sat(pixel.z * 255.0f);
+		        if (ch == 3) c = convert_uchar_sat(pixel.w * 255.0f);
+			    atomic_inc(&hist[(posx*256*nchannels) + (c*nchannels) + ch]);
+		    }
 		}
 	}
 }
@@ -68,11 +71,14 @@ __kernel void vglCl2dPartialHistogram(__read_only image2d_t img_input, __global 
 	//calculate hist for given x, variating y
     for(uint y = 0; y < height; y++)
 	{
-		float4 clr = read_imagef(img_input, smp, (float2)(posx,y));
-		float* pclr = &clr; //quick fix to access clr as array
+		float4 pixel = read_imagef(img_input, smp, (float2)(posx,y));
 		for(uint ch = 0; ch < nchannels; ch++)
 		{
-			uchar c = convert_uchar_sat(pclr[ch] * 255.0f);
+            uchar c;
+		    if (ch == 0) c = convert_uchar_sat(pixel.x * 255.0f);
+		    if (ch == 1) c = convert_uchar_sat(pixel.y * 255.0f);
+		    if (ch == 2) c = convert_uchar_sat(pixel.z * 255.0f);
+		    if (ch == 3) c = convert_uchar_sat(pixel.w * 255.0f);
 			atomic_inc(&hist[(posx*256*nchannels) + (c*nchannels) + ch]);
 		}
 	}

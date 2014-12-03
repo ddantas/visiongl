@@ -26,13 +26,30 @@ int main(int argc, char* argv[])
     VglImage* img = vglDcmtkLoadDicom(image_path);
     VglImage* out = vglCreate3dImage(cvSize(img->shape[VGL_WIDTH],img->shape[VGL_HEIGHT]),img->depth,img->nChannels,img->shape[VGL_LENGTH]);
 	
+    int* eq = (int*) malloc(256*sizeof(int));
+    for(int i = 0; i < 256; i++)
+    {
+      if (i < 96)
+        eq[i] = 0;
+      else if (i < 200)
+        eq[i] = floor((i/256.0f)*img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT]);
+      else
+        eq[i] = 0;
+    }
+
     //OpenCL histogram
     TimerStart();
     vglClHistogram(img);
-    printf("First call to          clHistogram: %s\n", getTimeElapsedInSeconds());
+    printf("First call to          cl3dHistogram: %s\n", getTimeElapsedInSeconds());
+    TimerStart();
+    vglCl3dGrayLevelTransform(img,out,eq);
+    printf("First call to cl3dGrayLevelTransform: %s\n", getTimeElapsedInSeconds());
+    TimerStart();
+    vglCl3dGrayLevelTransform(img,out,eq);
+    printf("Testing cl3dGrayLevelTransform time: %s\n", getTimeElapsedInSeconds());
     TimerStart();
     int* histogram = vglClHistogram(img);
-    printf("Testing clHistogram time: %s\n", getTimeElapsedInSeconds());
+    printf("Testing cl3dHistogram time: %s\n", getTimeElapsedInSeconds());
 
     //CPU histogram
     TimerStart();
@@ -56,10 +73,17 @@ int main(int argc, char* argv[])
     }
     printf("Total diff %d\n", t);
 
-    vglCl3dHistogramEq(img,out,0);
+    vglCl3dHistogramEq(img,out);
+    
     vglClDownload(out);
+    vglDcmtkSaveDicom(out,"C:/Users/H_DANILO/Dropbox/TCC/TCC_DICOM_HISTEQ.dcm",0);
 
-    vglDcmtkSaveDicom(out,"C:/Users/H_DANILO/Dropbox/TCC/TCC_DICOM_THRESH.dcm",0);
+    
+
+    vglCl3dGrayLevelTransform(img,out,eq);
+
+    vglClDownload(out);
+    vglDcmtkSaveDicom(out,"C:/Users/H_DANILO/Dropbox/TCC/TCC_DICOM_GrayLevelTransform.dcm",0);
     
     return 0;
 }
