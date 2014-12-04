@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
       if (i < 96)
         eq[i] = 0;
       else if (i < 200)
-        eq[i] = floor((i/256.0f)*img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT]);
+        eq[i] = i;
       else
         eq[i] = 0;
     }

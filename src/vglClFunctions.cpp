@@ -242,7 +242,7 @@ int* vglClCumulativeSum(int* arr, int size)
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL_UTIL/vglClHistogramEq.cl";
+    char* file_path = (char*) "CL_UTIL/vglClMath.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -288,10 +288,73 @@ int* vglClCumulativeSum(int* arr, int size)
   return cumsum;
 }
 
+int* vglClCumulativeSumNorm(int* arr, int size, int norm_total)
+{
+  cl_int err;
+  int nsize = floor(log10(size)/log10(2));
+  nsize = pow(2,nsize+1);
+  cl_mem mobj_arr = NULL;
+  mobj_arr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, size*sizeof(int), NULL, &err);
+  vglClCheckError(err, (char*) "clCreateBuffer mobj_arr" );
+  err = clEnqueueWriteBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, size*sizeof(int), arr, 0, NULL, NULL);
+  vglClCheckError(err, (char*) "clEnqueueWriteBuffer mobj_arr");
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL_UTIL/vglClMath.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglClCumSumNorm", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &mobj_arr);
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( int ), &size);
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  err = clSetKernelArg( kernel, 2, sizeof( int ), &norm_total);
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  size_t worksize[] = { nsize/2, 1, 1 };
+  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 1, NULL, worksize, 0, 0, 0, 0 );
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  
+  int* cumsum = (int*) malloc(size*sizeof(int));
+  err = clEnqueueReadBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, size*sizeof(int), cumsum, 0, NULL, NULL);
+  vglClCheckError(err,"ReadBuffer histogram");
+
+  err = clReleaseMemObject( mobj_arr );
+  vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
+
+  return cumsum;
+}
+
 void vglClHistogramEq(VglImage* input, VglImage* output)
 {
   int* hist = vglClHistogram(input);
-  int* cumsum = vglClCumulativeSum(hist,input->shape[VGL_WIDTH]);
+  int* cumsum = vglClCumulativeSumNorm(hist,input->shape[VGL_WIDTH],input->shape[VGL_WIDTH]*input->shape[VGL_HEIGHT]);
 
   vglClGrayLevelTransform(input,output,cumsum);
 
@@ -300,10 +363,10 @@ void vglClHistogramEq(VglImage* input, VglImage* output)
 void vglCl3dHistogramEq(VglImage* input, VglImage* output)
 {
   int* hist = vglClHistogram(input);
-  int* cumsum = vglClCumulativeSum(hist,input->shape[VGL_WIDTH]);
+
+  int* cumsum = vglClCumulativeSumNorm(hist,input->shape[VGL_WIDTH],input->shape[VGL_WIDTH]*input->shape[VGL_HEIGHT]*input->shape[VGL_LENGTH]);
 
   vglCl3dGrayLevelTransform(input,output,cumsum);
-
 }
 
 void vglClGrayLevelTransform(VglImage* input, VglImage* output, int* transformation)
