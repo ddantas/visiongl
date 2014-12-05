@@ -753,7 +753,7 @@ for ($i=$firstInputFile; $i<$nargs; $i=$i+1) {
   push @files, glob $ARGV[$i];
 }
 print "Size of files = $#files\n";
-for ($i=0; $i<$#files; $i=$i+1) {
+for ($i=0; $i<=$#files; $i=$i+1) {
     print $files[$i], "\n";
 }
 
@@ -789,7 +789,7 @@ close CPP;
 
 $i = 0;
 
-for ($i=0; $i<$#files; $i++) {
+for ($i=0; $i<=$#files; $i++) {
     $fullname = $files[$i];
 
     print "====================\n";
