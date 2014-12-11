@@ -1,9 +1,10 @@
-/** Threshold of src image by float parameter. Result is stored in dst image.
-
+/** Threshold of src image by float parameter. if the pixel is below thresh,
+    the output is 0, else, the output is top. Result is stored in dst image.
   */
 __kernel void vglClThreshold(__read_only image2d_t src,
                         __write_only image2d_t dst,
-                        __constant float* thresh)
+                        float thresh,
+                        float top)
 {
 	int2 coords = (int2)(get_global_id(0), get_global_id(1));
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
@@ -11,20 +12,20 @@ __kernel void vglClThreshold(__read_only image2d_t src,
                               CLK_FILTER_NEAREST;           //Don't interpolate
 	float4 p = read_imagef(src, smp, coords);
 	
-	if( p.x < *thresh)
+	if( p.x < thresh)
 		p.x = 0.0f;
 	else
-		p.x = 1.0f;
+		p.x = top;
 
-	if( p.y < *thresh)
+	if( p.y < thresh)
 		p.y = 0.0f;
 	else
-		p.y = 1.0f;
+		p.y = top;
 
-	if( p.z < *thresh)
+	if( p.z < thresh)
 		p.z = 0.0f;
 	else
-		p.z = 1.0f;
+		p.z = top;
 
 	write_imagef(dst, coords, p);
 }

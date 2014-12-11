@@ -28,27 +28,27 @@ void vglCl3dCopy(VglImage* img_input, VglImage* img_output);
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
+void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+
+/** Erosion of src image by mask. Result is stored in dst image.
+
+  */
 void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
-
-/** Threshold of src image by float parameter. Result is stored in dst image.
-
-  */
-void vglCl3dMergeZByMax(VglImage* src, VglImage* dst, int number_of_merges);
-
-/** Threshold of src image by float parameter. Result is stored in dst image.
-
-  */
-void vglCl3dMergeZByMean(VglImage* src, VglImage* dst, int number_of_merges);
 
 /** Direct copy from src to dst.
 
   */
 void vglCl3dNot(VglImage* img_input, VglImage* img_output);
 
-/** Threshold of src image by float parameter. Result is stored in dst image.
+/** Direct copy from src to dst.
 
   */
-void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh);
+void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Threshold of src image by float parameter. if the pixel is below thresh,
+    the output is 0, else, the output is top. Result is stored in dst image.
+  */
+void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top);
 
 /** Convolution of src image by mask. Result is stored in dst image.
 
@@ -68,6 +68,11 @@ void vglClCopy(VglImage* img_input, VglImage* img_output);
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
+void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+
+/** Erosion of src image by mask. Result is stored in dst image.
+
+  */
 void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Negative of src image. Result is stored in dst image.
@@ -80,8 +85,13 @@ void vglClInvert(VglImage* img_input, VglImage* img_output);
   */
 void vglClNdNot(VglImage* img_input, VglImage* img_output);
 
-/** Threshold of src image by float parameter. Result is stored in dst image.
+/** Direct copy from src to dst.
 
   */
-void vglClThreshold(VglImage* src, VglImage* dst, float thresh);
+void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Threshold of src image by float parameter. if the pixel is below thresh,
+    the output is 0, else, the output is top. Result is stored in dst image.
+  */
+void vglClThreshold(VglImage* src, VglImage* dst, float thresh, float top);
 

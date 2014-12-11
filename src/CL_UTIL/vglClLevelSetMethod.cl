@@ -1,5 +1,7 @@
 /*
 *Implementation made by Helton Danilo at Universidade Federal de Sergipe
+*Adapted from Erik Smistad, implementation can be found here: 
+*https://github.com/smistad/OpenCL-Level-Set-Segmentation/blob/master/kernels.cl
 */
 //img_input, img_output: the input image and output image
 //transform: array containing the transformatin data, the sum(transform) must be same as width*height

@@ -53,7 +53,7 @@ void vglBlurSq3(VglImage* src, VglImage* dst);
 /** Clear image with given color.
 
   */
-void vglClear2(VglImage* src_dst, float r, float g, float b, float a= 0.0);
+void vglClear2(VglImage* src_dst, float r, float g, float b, float a);
 
 /** Changes contrast of image by given factor.
 
@@ -360,7 +360,7 @@ void vglInOut(VglImage* src, VglImage* dst);
 /** Calculate Julia set
 
   */
-void vglJulia(VglImage* dst, float ox= 0.0, float oy= 0.0, float half_win= 1.0, float c_real= -1.36, float c_imag= .11);
+void vglJulia(VglImage* dst, float ox, float oy, float half_win, float c_real, float c_imag);
 
 /** Laplacian of image by 3x3 square structuring element.
 
@@ -370,7 +370,7 @@ void vglLaplaceSq3(VglImage* src, VglImage* dst);
 /** Calculate Mandelbrot set
 
   */
-void vglMandel(VglImage* dst, float ox= 0.0, float oy= 0.0, float half_win= 1.0);
+void vglMandel(VglImage* dst, float ox, float oy, float half_win);
 
 /** Get specified level of detail.
 
@@ -387,7 +387,7 @@ void vglMulScalar(VglImage* src, VglImage* dst, float factor);
     Sum of two images.
 
   */
-void vglMultiInput(VglImage* src0, VglImage* src1, VglImage* dst, float weight= .5);
+void vglMultiInput(VglImage* src0, VglImage* src1, VglImage* dst, float weight);
 
 /** vglGray
 
@@ -504,7 +504,7 @@ void vglSum(VglImage* src0, VglImage* src1, VglImage* dst);
 /** Weighted sum of two images. The first image is multiplied by weight, and the second, by 1 - weight. Default weight is 0.5.
 
   */
-void vglSumWeighted(VglImage* src0, VglImage* src1, VglImage* dst, float weight= .5);
+void vglSumWeighted(VglImage* src0, VglImage* src1, VglImage* dst, float weight);
 
 /** Convert image from RGB to BGR and vice versa.
 
@@ -514,7 +514,7 @@ void vglSwapRGB(VglImage* src, VglImage* dst);
 /** Test and model for IN_OUT semantics
 
   */
-void vglTestInOut(VglImage* src_dst, float r, float g, float b, float a= 0.0);
+void vglTestInOut(VglImage* src_dst, float r, float g, float b, float a);
 
 /** Test and model for IN_OUT semantics, with double output.
 
@@ -524,7 +524,7 @@ void vglTestInOut2(VglImage* src_dst, VglImage* dst);
 /** Test and model for multiple input functions.
 
   */
-void vglTestMultiInput(VglImage* src0, VglImage* src1, VglImage* dst, float weight= .5);
+void vglTestMultiInput(VglImage* src0, VglImage* src1, VglImage* dst, float weight);
 
 /** Test and model for multiple output functions.
 
@@ -599,14 +599,14 @@ void vglThinChinAux(VglImage* src, VglImage* dst);
     else, output is 0. Default top value is 1.
 
   */
-void vglThresh(VglImage* src, VglImage* dst, float thresh, float top= 1.0);
+void vglThresh(VglImage* src, VglImage* dst, float thresh, float top);
 
 /** Threshold of image. If value is equal to level, output is top,
     else, output is 0. Default top value is 1.  
     Use after some Distance Transform to get a single distance level set.
 
   */
-void vglThreshLevelSet(VglImage* src, VglImage* dst, float thresh, float top= 1.0);
+void vglThreshLevelSet(VglImage* src, VglImage* dst, float thresh, float top);
 
 /** Flip image vertically i.e. top becomes bottom.
 

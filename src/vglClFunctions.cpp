@@ -2,6 +2,7 @@
 #include "vglClImage.h"
 #include "vglContext.h"
 #include "vglClFunctions.h"
+#include "cl2cpp_shaders.h"
 #include <math.h>
 
 #include <fstream>
@@ -90,7 +91,7 @@ int* vglClSumPartialHistogram(cl_mem partial_hist, int size, int nchannels)
   err = clSetKernelArg( kernel, 3, sizeof( int ), &nchannels );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { 256, size, 1 };
+  size_t worksize[] = { 256, size, nchannels };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
   
@@ -505,5 +506,155 @@ void vglCl3dGrayLevelTransform(VglImage* input, VglImage* output, int* transform
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
 
   
+}
+
+void vglCl3dErosion(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int window_size_z, int times)
+{
+
+  if(input->ndim < 3)
+  {
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+
+  vglCl3dErosion(input,buff,mask,window_size_x,window_size_y,window_size_z);
+  
+  for(int i = 1; i < times; i++)
+  {
+    if (i % 2 == 0)
+      vglCl3dErosion(output,buff,mask,window_size_x,window_size_y,window_size_z);
+    else
+      vglCl3dErosion(buff,output,mask,window_size_x,window_size_y,window_size_z);
+  }
+
+  if (times % 2 == 1)
+    output = buff;
+
+}
+
+void vglClErosion(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int times)
+{
+
+  if(input->ndim > 2)
+  {
+    fprintf(stderr, "%s: %s: Error: image with more then 2 dimensions not supported. Use vglCl3dDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  vglClErosion(input,buff,mask,window_size_x,window_size_y);
+  
+  for(int i = 1; i < times; i++)
+  {
+    if (i % 2 == 0)
+      vglClErosion(output,buff,mask,window_size_x,window_size_y);
+    else
+      vglClErosion(buff,output,mask,window_size_x,window_size_y);
+  }
+  
+  if (times % 2 == 1)
+    output = buff;
+}
+
+void vglCl3dDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y,int window_size_z, int times)
+{
+
+  if(input->ndim < 3)
+  {
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  vglCl3dDilate(input,buff,mask,window_size_x,window_size_y,window_size_z);
+  
+  for(int i = 1; i < times; i++)
+  {
+    if (i % 2 == 0)
+      vglCl3dDilate(output,buff,mask,window_size_x,window_size_y,window_size_z);
+    else
+      vglCl3dDilate(buff,output,mask,window_size_x,window_size_y,window_size_z);
+  }
+
+  if (times % 2 == 1)
+    output = buff;
+}
+
+void vglClDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int times)
+{
+
+  if(input->ndim > 2)
+  {
+    fprintf(stderr, "%s: %s: Error: image with more then 2 dimensions not supported. Use vglCl3dDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  vglClDilate(input,buff,mask,window_size_x,window_size_y);
+  
+  for(int i = 1; i < times; i++)
+  {
+    if (i % 2 == 0)
+      vglClDilate(output,buff,mask,window_size_x,window_size_y);
+    else
+      vglClDilate(buff,output,mask,window_size_x,window_size_y);
+  }
+
+  if (times % 2 == 1)
+    output = buff;
+}
+
+void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, int times){
+
+  if(src->ndim < 3)
+  {
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  vglCl3dThreshold(src, buf, 0.0, 1.0f/256.0f);
+  vglCl3dCopy(buf, dst);
+  float square_mask[27] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+  float cross_mask[27] = {0,0,0,
+                          0,1,0,
+                          0,0,0,
+                          0,1,0,
+                          1,1,1,
+                          0,1,0,
+                          0,0,0,
+                          0,1,0,
+                          0,0,0};
+  for(int i = 0; i < times; i++){
+    if (i % 2 == 0){
+      vglCl3dErosion(buf, buf2,square_mask,3,3,3);
+      vglCl3dSum(buf2, dst, dst);
+    }
+    else{
+      vglCl3dErosion(buf2, buf,cross_mask,3,3,3);
+      vglCl3dSum(buf, dst, dst);
+    }
+  }
+}
+
+void vglClDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, int times){
+  
+  if(src->ndim > 2)
+  {
+    fprintf(stderr, "%s: %s: Error: image with more then 2 dimensions not supported. Use vglCl3dDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+  
+  vglClThreshold(src, buf, 0.0, 1.0f/256.0);
+  vglClCopy(buf, dst);
+  float square_mask[9] = {1,1,1,1,1,1,1,1,1};
+  float cross_mask[9] = {0,1,0,1,1,1,0,1,0};
+  for(int i = 0; i < times; i++){
+    if (i % 2 == 0){
+      vglClErosion(buf, buf2,square_mask,3,3);
+      vglClSum(buf2, dst, dst);
+    }
+    else{
+      vglClErosion(buf2, buf,cross_mask,3,3);
+      vglClSum(buf, dst, dst);
+    }
+  }
 }
 

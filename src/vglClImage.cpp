@@ -170,9 +170,9 @@ void vglClCheckError(cl_int error, char* name)
 {
   if (error < CL_SUCCESS && error >= CL_MIN_ERROR)
     {
-        printf("Error %d (%s) while doing the following operation: %s\n", error, vglClErrorMessages[-error], name);
-        //system("pause");
-	exit(error);
+      printf("Error %d (%s) while doing the following operation: %s\n", error, vglClErrorMessages[-error], name);
+      //system("pause");
+	  exit(error);
     }
 }
 
@@ -320,7 +320,7 @@ void vglClBuildDebug(cl_int err, cl_program program)
  */
 void vglClUpload(VglImage* img)
 {
-	if (Interop)
+  if (Interop && img->nChannels > 1)
 	{
 		vglClUploadInterop(img);
 	}
@@ -586,7 +586,7 @@ void vglClToGl(VglImage* img)
 
 void vglClDownload(VglImage* img)
 {
-	if (Interop)
+  if (Interop && img->nChannels > 1)
 	{
 		vglClDownloadInterop(img);
 	}
