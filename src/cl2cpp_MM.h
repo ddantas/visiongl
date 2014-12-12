@@ -10,70 +10,70 @@
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyAlgDilation(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyAlgErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyAlgErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyArithDilation(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyArithDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyArithErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyArithErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyBoundDilation(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyBoundDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyBoundErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyBoundErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyDaPDilation(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, float gama);
+void vglClFuzzyDaPDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, float gama);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyDaPErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, float gama);
+void vglClFuzzyDaPErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, float gama);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyDrasticDilation(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyDrasticDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyDrasticErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyDrasticErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyGeoDilation(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyGeoDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyGeoErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClFuzzyGeoErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyHamacherDilation(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, float gama);
+void vglClFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, float gama);
 
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClFuzzyHamacherErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, float gama);
+void vglClFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, float gama);
 

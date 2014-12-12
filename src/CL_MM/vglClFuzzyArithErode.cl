@@ -6,7 +6,7 @@
 // SCALAR window_size_x
 // SCALAR window_size_y
 
-__kernel void vglClFuzzyDrasticErosion(__read_only image2d_t img_input,
+__kernel void vglClFuzzyArithErode(__read_only image2d_t img_input,
                                 __write_only image2d_t img_output,
                                 __constant float* convolution_window, 
                                 int window_size_x, 
@@ -27,31 +27,7 @@ __kernel void vglClFuzzyDrasticErosion(__read_only image2d_t img_input,
 		{
 			float4 a = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
 			int b = 1 - convolution_window[conv_controller]; //complement of mask
-			float4 S;
-			if (b == 0)
-				S = a;
-			else 
-			{
-				if (a.x == 0)
-					S.x = b;
-				else
-					S.x = 1;
-
-				if (a.y == 0)
-					S.y = b;
-				else
-					S.y = 1;
-
-				if (a.z == 0)
-					S.z = b;
-				else
-					S.z = 1;
-
-				if (a.w == 0)
-					S.w = b;
-				else
-					S.w = 1;
-			}
+			float4 S = 1 - sqrt(min(1-a,1-b)*(((1-a)+(1-b))/2));
 			pmin = min(pmin,S);
 			conv_controller++;
 		}

@@ -6,7 +6,7 @@
 // SCALAR window_size_x
 // SCALAR window_size_y
 
-__kernel void vglClFuzzyGeoDilation(__read_only image2d_t img_input,
+__kernel void vglClFuzzyDrasticDilate(__read_only image2d_t img_input,
                                 __write_only image2d_t img_output,
                                 __constant float* convolution_window, 
                                 int window_size_x, 
@@ -27,7 +27,32 @@ __kernel void vglClFuzzyGeoDilation(__read_only image2d_t img_input,
 		{
 			float4 a = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
 			int b = convolution_window[conv_controller];
-			float4 S = sqrt(a*b);
+			float4 S;
+			if (b == 1)
+				S = a;
+			else 
+			{
+				if (a.x == 1)
+					S.x = b;
+				else
+					S.x = 0;
+
+				if (a.y == 1)
+					S.y = b;
+				else
+					S.y = 0;
+
+				if (a.z == 1)
+					S.z = b;
+				else
+					S.z = 0;
+
+				if (a.w == 1)
+					S.w = b;
+				else
+					S.w = 0;
+			}
+
 			pmax = max(pmax,S);
 			conv_controller++;
 		}

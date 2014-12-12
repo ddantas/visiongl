@@ -13,7 +13,7 @@ __kernel void vglCl3dDilate(__read_only image3d_t img_input,
                           int window_size_y,
 						  int window_size_z)
 {
-	int2 coords = (int4)(get_global_id(0), get_global_id(1),get_global_id(2), 0);
+	int4 coords = (int4)(get_global_id(0), get_global_id(1),get_global_id(2), 0);
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
                               CLK_ADDRESS_CLAMP_TO_EDGE |   //Clamp to next edge
                               CLK_FILTER_NEAREST;           //Don't interpolate

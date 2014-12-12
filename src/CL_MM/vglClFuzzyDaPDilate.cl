@@ -6,11 +6,12 @@
 // SCALAR window_size_x
 // SCALAR window_size_y
 
-__kernel void vglClFuzzyAlgDilation(__read_only image2d_t img_input,
+__kernel void vglClFuzzyDaPDilate(__read_only image2d_t img_input,
                                 __write_only image2d_t img_output,
                                 __constant float* convolution_window, 
                                 int window_size_x, 
-                                int window_size_y)
+                                int window_size_y,
+								float gama)
 {
 	int2 coords = (int2)(get_global_id(0), get_global_id(1));
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
@@ -27,7 +28,7 @@ __kernel void vglClFuzzyAlgDilation(__read_only image2d_t img_input,
 		{
 			float4 a = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
 			int b = convolution_window[conv_controller];
-			float4 S = a*b;
+			float4 S = (a*b)/(max(max(a,b),gama));
 			pmax = max(pmax,S);
 			conv_controller++;
 		}

@@ -12,20 +12,20 @@ __kernel void vglClThreshold(__read_only image2d_t src,
                               CLK_FILTER_NEAREST;           //Don't interpolate
 	float4 p = read_imagef(src, smp, coords);
 	
-	if( p.x < thresh)
-		p.x = 0.0f;
-	else
+	if( p.x > thresh)
 		p.x = top;
-
-	if( p.y < thresh)
-		p.y = 0.0f;
 	else
+		p.x = 0.0f;
+
+	if( p.y > thresh)
 		p.y = top;
-
-	if( p.z < thresh)
-		p.z = 0.0f;
 	else
+		p.y = 0.0f;
+
+	if( p.z > thresh)
 		p.z = top;
+	else
+		p.z = 0.0f;
 
 	write_imagef(dst, coords, p);
 }

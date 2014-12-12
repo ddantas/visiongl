@@ -33,12 +33,17 @@ void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
 
 /** Direct copy from src to dst.
 
   */
 void vglCl3dNot(VglImage* img_input, VglImage* img_output);
+
+/** Direct copy from src to dst.
+
+  */
+void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 
 /** Direct copy from src to dst.
 
@@ -73,7 +78,7 @@ void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_w
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Negative of src image. Result is stored in dst image.
 

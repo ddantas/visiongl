@@ -316,7 +316,7 @@ void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z){
+void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z){
 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -332,7 +332,7 @@ void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolutio
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dErosion.cl";
+    char* file_path = (char*) "CL/vglCl3dErode.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -354,7 +354,7 @@ void vglCl3dErosion(VglImage* img_input, VglImage* img_output, float* convolutio
   static cl_kernel kernel = NULL;
   if (kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dErosion", &err ); 
+    kernel = clCreateKernel( program, "vglCl3dErode", &err ); 
     vglClCheckError(err, (char*) "clCreateKernel" );
   }
 
@@ -449,6 +449,73 @@ void vglCl3dNot(VglImage* img_input, VglImage* img_output){
   }
   else if (img_input->ndim == 3){
     size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
+  }
+  else{
+    printf("More than 3 dimensions not yet supported\n");
+  }
+
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+/** Direct copy from src to dst.
+
+  */
+void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
+
+  vglCheckContext(img_input1, VGL_CL_CONTEXT);
+  vglCheckContext(img_input2, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int err;
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL/vglCl3dSub.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglCl3dSub", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
+  if (img_input2->ndim <= 2){
+    size_t worksize[] = { img_input2->shape[VGL_WIDTH], img_input2->shape[VGL_HEIGHT], 1 };
+    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  }
+  else if (img_input2->ndim == 3){
+    size_t worksize[] = { img_input2->shape[VGL_WIDTH], img_input2->shape[VGL_HEIGHT], img_input2->shape[VGL_LENGTH] };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -887,7 +954,7 @@ void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_w
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y){
+void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y){
 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -903,7 +970,7 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
   static cl_program program = NULL;
   if (program == NULL)
   {
-    char* file_path = (char*) "CL/vglClErosion.cl";
+    char* file_path = (char*) "CL/vglClErode.cl";
     printf("Compiling %s\n", file_path);
     std::ifstream file(file_path);
     if(file.fail())
@@ -925,7 +992,7 @@ void vglClErosion(VglImage* img_input, VglImage* img_output, float* convolution_
   static cl_kernel kernel = NULL;
   if (kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClErosion", &err ); 
+    kernel = clCreateKernel( program, "vglClErode", &err ); 
     vglClCheckError(err, (char*) "clCreateKernel" );
   }
 

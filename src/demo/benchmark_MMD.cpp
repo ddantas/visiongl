@@ -101,20 +101,20 @@ int main(int argc, char* argv[])
     VglImage* out = vglCreateImage(img);
 	float erodeMask[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
 	sprintf(outFilename, "%s%s", outPath, "/out_cl_alg_fuzzy_erode.jpg");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgErosion);
-    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgDilation);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoErosion);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoDilation);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithErosion);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithDilation);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundErosion);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundDilation);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticErosion);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticDilation);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPErosion);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPDilation);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherErosion);
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherDilation);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgErode);
+        benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgDilate);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoErode);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoDilate);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithErode);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithDilate);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundErode);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundDilate);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticErode);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticDilate);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPErode);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPDilate);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherErode);
+	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherDilate);
 
 	return 0;
 }

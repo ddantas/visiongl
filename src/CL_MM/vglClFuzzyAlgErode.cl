@@ -6,7 +6,7 @@
 // SCALAR window_size_x
 // SCALAR window_size_y
 
-__kernel void vglClFuzzyBoundDilation(__read_only image2d_t img_input,
+__kernel void vglClFuzzyAlgErode(__read_only image2d_t img_input,
                                 __write_only image2d_t img_output,
                                 __constant float* convolution_window, 
                                 int window_size_x, 
@@ -20,17 +20,17 @@ __kernel void vglClFuzzyBoundDilation(__read_only image2d_t img_input,
 	int factorx = floor((float)window_size_x / 2.0f);
 	int factory = floor((float)window_size_y / 2.0f);
 	int conv_controller = 0;
-	float4 pmax = (0,0,0,0);
+	float4 pmin = (1.0,1.0,1.0,1.0);
 	for(int i = -factorx; i <= factorx; i++)
 	{
 		for(int j = -factory; j <= factory; j++)
 		{
 			float4 a = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
-			int b = convolution_window[conv_controller];
-			float4 S = max(0,a+b-1);
-			pmax = max(pmax,S);
+			int b = 1 - convolution_window[conv_controller];
+			float4 S = a+b-(a*b);
+			pmin = min(pmin,S);
 			conv_controller++;
 		}
 	}
-	write_imagef(img_output,coords,pmax);
+	write_imagef(img_output,coords,pmin);
 }

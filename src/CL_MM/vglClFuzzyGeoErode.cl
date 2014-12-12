@@ -6,12 +6,11 @@
 // SCALAR window_size_x
 // SCALAR window_size_y
 
-__kernel void vglClFuzzyHamacherErosion(__read_only image2d_t img_input,
+__kernel void vglClFuzzyGeoErode(__read_only image2d_t img_input,
                                 __write_only image2d_t img_output,
                                 __constant float* convolution_window, 
                                 int window_size_x, 
-                                int window_size_y,
-								float gama)
+                                int window_size_y)
 {
 	int2 coords = (int2)(get_global_id(0), get_global_id(1));
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
@@ -27,8 +26,8 @@ __kernel void vglClFuzzyHamacherErosion(__read_only image2d_t img_input,
 		for(int j = -factory; j <= factory; j++)
 		{
 			float4 a = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
-			int b = 1 - convolution_window[conv_controller]; //complement of mask
-			float4 S = (a+b+((gama-2)*a*b))/(1+((gama-1)*a*b));
+			int b = 1 - convolution_window[conv_controller];
+			float4 S = 1 - sqrt((1-a)*(1-b));
 			pmin = min(pmin,S);
 			conv_controller++;
 		}
