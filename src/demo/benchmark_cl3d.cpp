@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
                           1, 1, 1, 1, 1, 1, 1, 1, 1,
                           1, 1, 1, 1, 1, 1, 1, 1, 1};
     TimerStart();
-    vglCl3dErosion(img, out, erodeMask, 3, 3, 3);
+    vglCl3dErode(img, out, erodeMask, 3, 3, 3);
     printf("First call to          Erode 3x3x3:             %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Erode 3x3x3
     p = 0;
@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglCl3dErosion(img, out, erodeMask, 3, 3, 3);
+        vglCl3dErode(img, out, erodeMask, 3, 3, 3);
     }
     printf("Time spent on %8d Erode 3x3x3:             %s\n", nSteps, getTimeElapsedInSeconds());
 

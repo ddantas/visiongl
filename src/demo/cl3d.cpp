@@ -74,7 +74,7 @@ from index 0 to index n\n\
   //vglCl3dConvolution(img, out, blur333,3,3,3);
   vglCl3dBlurSq3(img, out);
   //vglCl3dThreshold(img, out, 0.5);
-  //vglCl3dErosion(img, out, erosion, 3, 3, 3);
+  //vglCl3dErode(img, out, erosion, 3, 3, 3);
   vglClDownload(out);
 
   vglNdarray4To3Channels(out);
