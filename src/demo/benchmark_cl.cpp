@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
     //First call to Erode 3x3
     float erodeMask[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
     TimerStart();
-    vglClErosion(img, out, erodeMask, 3, 3);
+    vglClErode(img, out, erodeMask, 3, 3);
     printf("First call to          Erode 3x3:               %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Erode 3x3
     p = 0;
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClErosion(img, out, erodeMask, 3, 3);
+        vglClErode(img, out, erodeMask, 3, 3);
     }
     printf("Time spent on %8d Erode 3x3:               %s\n", nSteps, getTimeElapsedInSeconds());
 

@@ -513,7 +513,7 @@ void vglCl3dErode(VglImage* input, VglImage* output, VglImage* buff, float* mask
 
   if(input->ndim < 3)
   {
-    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClDilate instead.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClErode instead.\n", __FILE__, __FUNCTION__);
     return;
   }
 
@@ -538,7 +538,7 @@ void vglClErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, 
 
   if(input->ndim > 2)
   {
-    fprintf(stderr, "%s: %s: Error: image with more then 2 dimensions not supported. Use vglCl3dDilate instead.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: image with more then 2 dimensions not supported. Use vglCl3dErode instead.\n", __FILE__, __FUNCTION__);
     return;
   }
 
@@ -606,7 +606,7 @@ void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage
 
   if(src->ndim < 3)
   {
-    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClDilate instead.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClDistTransform instead.\n", __FILE__, __FUNCTION__);
     return;
   }
 
@@ -640,7 +640,7 @@ void vglClDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage* 
   
   if(src->ndim > 2)
   {
-    fprintf(stderr, "%s: %s: Error: image with more then 2 dimensions not supported. Use vglCl3dDilate instead.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: image with more then 2 dimensions not supported. Use vglCl3dDistTransform instead.\n", __FILE__, __FUNCTION__);
     return;
   }
   

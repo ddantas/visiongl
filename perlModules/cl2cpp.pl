@@ -32,17 +32,18 @@ sub LineStartHeader { # ($line) {
 #
 # Returns the string after the semantic binding and the ":"
 # in start of $line, blank string if not found.
-# Valid semantic bindincs are __read_only, __write_only and __constant
+# Valid semantic bindings are __read_only, __write_only, __read_write,
+# __constant and __global.
 # 
 sub LineStartSemantics { # ($line) {
   my $line = $_[0];
 
-  $line =~ s#^\s*(__read_only|__write_only|__constant)\s*##;
+  $line =~ s#^\s*(__read_only|__write_only|__read_write|__constant|__global)\s*##;
   $semantics = $1;
   if ($semantics){
-    if (!($semantics =~ m#^(__read_only|__write_only|__constant)$#))
+    if (!($semantics =~ m#^(__read_only|__write_only|__read_write|__constant|__global)$#))
     {
-      print "Semantic $semantics invalid. Valid semantics are (__read_only|__write_only|__constant)\n";
+      print "Semantic $semantics invalid. Valid semantics are (__read_only|__write_only|__read_write|__constant|__global)\n";
     }
   }
   else{
@@ -530,8 +531,8 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   print HEAD "void $basename(";
   for ($i = 0; $i <= $#type; $i++){
     print ">>>$type[$i]<<< becomes ";
-    if (($semantics[$i] eq "__read_only") or ($semantics[$i] eq "__write_only") ){
-      if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") or ($type[$i] eq "char*") ){
+    if ( ($semantics[$i] eq "__read_only") or ($semantics[$i] eq "__write_only") or ($semantics[$i] eq "__global") ){
+      if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") or ($type[$i] eq "char*") or ($type[$i] eq "int*") ){
         $type[$i] = "VglImage*";
       }
     }
@@ -674,7 +675,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   }
 
   for ($i = 0; $i <= $#type; $i++){
-    if ($semantics[$i] eq "__write_only" or $semantics[$i] eq "__read_write"){
+    if ($semantics[$i] eq "__write_only" or $semantics[$i] eq "__read_write" or $semantics[$i] eq "__global"){
       print CPP "
   vglSetContext($variable[$i]".", VGL_CL_CONTEXT);
 ";
