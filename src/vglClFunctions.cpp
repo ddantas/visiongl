@@ -508,7 +508,7 @@ void vglCl3dGrayLevelTransform(VglImage* input, VglImage* output, int* transform
   
 }
 
-void vglCl3dErosion(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int window_size_z, int times)
+void vglCl3dErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int window_size_z, int times)
 {
 
   if(input->ndim < 3)
@@ -518,14 +518,14 @@ void vglCl3dErosion(VglImage* input, VglImage* output, VglImage* buff, float* ma
   }
 
 
-  vglCl3dErosion(input,buff,mask,window_size_x,window_size_y,window_size_z);
+  vglCl3dErode(input,buff,mask,window_size_x,window_size_y,window_size_z);
   
   for(int i = 1; i < times; i++)
   {
     if (i % 2 == 0)
-      vglCl3dErosion(output,buff,mask,window_size_x,window_size_y,window_size_z);
+      vglCl3dErode(output,buff,mask,window_size_x,window_size_y,window_size_z);
     else
-      vglCl3dErosion(buff,output,mask,window_size_x,window_size_y,window_size_z);
+      vglCl3dErode(buff,output,mask,window_size_x,window_size_y,window_size_z);
   }
 
   if (times % 2 == 1)
@@ -533,7 +533,7 @@ void vglCl3dErosion(VglImage* input, VglImage* output, VglImage* buff, float* ma
 
 }
 
-void vglClErosion(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int times)
+void vglClErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int times)
 {
 
   if(input->ndim > 2)
@@ -542,14 +542,14 @@ void vglClErosion(VglImage* input, VglImage* output, VglImage* buff, float* mask
     return;
   }
 
-  vglClErosion(input,buff,mask,window_size_x,window_size_y);
+  vglClErode(input,buff,mask,window_size_x,window_size_y);
   
   for(int i = 1; i < times; i++)
   {
     if (i % 2 == 0)
-      vglClErosion(output,buff,mask,window_size_x,window_size_y);
+      vglClErode(output,buff,mask,window_size_x,window_size_y);
     else
-      vglClErosion(buff,output,mask,window_size_x,window_size_y);
+      vglClErode(buff,output,mask,window_size_x,window_size_y);
   }
   
   if (times % 2 == 1)
@@ -622,13 +622,15 @@ void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage
                           0,0,0,
                           0,1,0,
                           0,0,0};
+  float mask_2d[27] = { 0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0 };
+  float mask_2d2[27] = { 0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0 };
   for(int i = 0; i < times; i++){
     if (i % 2 == 0){
-      vglCl3dErosion(buf, buf2,square_mask,3,3,3);
+      vglCl3dErode(buf, buf2,square_mask,3,3,3);
       vglCl3dSum(buf2, dst, dst);
     }
     else{
-      vglCl3dErosion(buf2, buf,cross_mask,3,3,3);
+      vglCl3dErode(buf2, buf,cross_mask,3,3,3);
       vglCl3dSum(buf, dst, dst);
     }
   }
@@ -648,13 +650,32 @@ void vglClDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage* 
   float cross_mask[9] = {0,1,0,1,1,1,0,1,0};
   for(int i = 0; i < times; i++){
     if (i % 2 == 0){
-      vglClErosion(buf, buf2,square_mask,3,3);
+      vglClErode(buf, buf2,square_mask,3,3);
       vglClSum(buf2, dst, dst);
     }
     else{
-      vglClErosion(buf2, buf,cross_mask,3,3);
+      vglClErode(buf2, buf,cross_mask,3,3);
       vglClSum(buf, dst, dst);
     }
   }
+}
+
+void vglClTopHat(VglImage* src, VglImage* dst, VglImage* buf, float* window, int window_size_x, int window_size_y, int times)
+{
+
+  vglClErode(src,dst,buf,window,window_size_x,window_size_y,times);
+  vglClDilate(src,dst,buf,window,window_size_x,window_size_y,times);
+
+  //must implement vglClSub
+  //vglClSub(src,dst,dst);
+}
+
+void vglCl3dTopHat(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, float* window, int window_size_x, int window_size_y, int window_size_z, int times)
+{
+
+  vglCl3dErode(src,dst,buf,window,window_size_x,window_size_y,window_size_z,times);
+  vglCl3dDilate(dst,buf,buf2,window,window_size_x,window_size_y,window_size_z,times);
+
+  vglCl3dSub(src,buf,dst);
 }
 
