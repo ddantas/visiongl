@@ -69,27 +69,65 @@ class VglImage{
   GLuint    tex;
   void*     cudaPtr;
   GLuint    cudaPbo;
-
-  size_t getTotalSizeInBytes()
-  {
-		int bytesPerPixel = this->depth / 8;
-		if (bytesPerPixel < 1)
-			bytesPerPixel = 1;
-
-		size_t totalSize = 1;
-		for(int i = 0; i < this->ndim; i++)
-		{
-			totalSize *= this->shape[i];
-		}
-		totalSize *= this->nChannels * bytesPerPixel;
-		return totalSize;
-  }
-
 #ifdef __OPENCL__
   cl_mem    oclPtr;
 #endif
   int       inContext;
   char*     filename;
+
+  size_t getBytesPerPixel()
+  {
+    size_t bytesPerPixel = this->depth & 255;
+    bytesPerPixel /= 8;
+    if (bytesPerPixel < 1)
+      bytesPerPixel = 1;
+    return bytesPerPixel;    
+  }
+
+  size_t getTotalSizeInPixels()
+  {
+    size_t totalSize = 1;
+    for(int i = 0; i < this->ndim; i++)
+    {
+      totalSize *= this->shape[i];
+    }
+    totalSize *= this->nChannels;
+
+    // 1D images may be stored as 2d images.
+    if ( (this->ndim == 1) and (this->shape[VGL_HEIGHT] > 1) )
+    {
+      totalSize *= this->shape[VGL_HEIGHT];
+    }
+    return totalSize;
+  }
+
+  size_t getTotalSizeInBytes()
+  {
+    size_t bytesPerPixel = this->getBytesPerPixel();
+
+    size_t totalSize = this->getTotalSizeInPixels() * bytesPerPixel;
+
+    return totalSize;
+  }
+
+  char* getImageData()
+  {
+    if (this->ndarray)
+    {
+      return (char*) this->ndarray;
+    }
+    else if (this->ipl)
+    {
+      return (char*) this->ipl->imageData;
+    }
+    else
+    {
+      fprintf(stderr, "%s: %s: Error: no pointer to raster image data available.\n", __FILE__, __FUNCTION__);
+      return NULL;
+    }     
+  }
+
+
 };
 
 ////////// VglNamedWindow
@@ -152,7 +190,7 @@ void vglDownloadFBO(VglImage* image);
 void vglDownloadFaster(VglImage* image/*, VglImage* buf*/);
 VglImage* vglLoadImage(char* filename, int iscolor = 1, int has_mipmap = 0);
 VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
-void vglPrintImageData(VglImage* image);
+void vglPrintImageData(VglImage* image, char* msg = NULL);
 void vglPrintImageInfo(VglImage* image, char* msg = NULL);
 void iplPrintImageInfo(IplImage* ipl, char* msg = NULL);
 void vglCopyImageTex(VglImage* src, VglImage* dst);
@@ -199,6 +237,7 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1);
 
 #define CHECK_FRAMEBUFFER_STATUS() \
 { \
+ /*printf("CHECK_FRAMENBUFFER_STATUS\n");*/ \
  GLenum status; \
  status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); \
  switch(status) { \
@@ -237,7 +276,7 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1);
    printf("framebuffer STATUS_ERROR\n"); \
    break; \
  default: \
-   /* programming error; will fail on all hardware */ \
+   printf("programming error; will fail on all hardware\n"); \
    assert(0); \
  } \
 } \

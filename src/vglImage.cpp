@@ -358,7 +358,7 @@ void vglUpload(VglImage* image, int swapRGB){
           case IPL_DEPTH_32F: glType = GL_FLOAT; break; 
           case IPL_DEPTH_8S:  glType = GL_BYTE; exit(1);  break; 
           case IPL_DEPTH_16S: glType = GL_SHORT; exit(1); break; 
-          case IPL_DEPTH_32S: glType = GL_INT; exit(1); break; 
+          case IPL_DEPTH_32S: glType = GL_INT; break; 
           case IPL_DEPTH_1U:
           default: 
             fprintf(stderr, "vglUpload: Error: uploading unsupported image depth\n");
@@ -375,7 +375,7 @@ void vglUpload(VglImage* image, int swapRGB){
     }
   }
   else{
-	    internalFormat = GL_RGBA; //Must be fixed, but for now, it's the fix.
+        internalFormat = GL_RED; //Must be fixed, but for now, it's the fix.
   }
 
   if (ndim == 3){
@@ -513,6 +513,10 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
     free(vglImage);
     return 0;
   }
+  for (int i = 0; i < VGL_MAX_DIM; i++)
+  {
+    vglImage->shape[i] = 0;
+  }
   
   vglImage->ipl = ipl;
   vglImage->ndarray = NULL;
@@ -542,12 +546,12 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
 VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, int has_mipmap /*=0*/)
 {
   VglImage* vglImage = new VglImage;
-  IplImage* ipl = NULL;//cvCreateImage(size, depth, nChannels);
-  /*if (!ipl){
-    fprintf(stderr, "vglCreateImage: Error creating vglImage->ipl field\n");
-    free(vglImage);
-    return 0;
-  }*/
+  IplImage* ipl = NULL;
+
+  for (int i = 0; i < VGL_MAX_DIM; i++)
+  {
+    vglImage->shape[i] = 0;
+  }
   
   vglImage->ipl = ipl;
   vglImage->ndarray = NULL;
@@ -1241,35 +1245,36 @@ void iplPrintImageInfo(IplImage* ipl, char* msg){
 
  */
 void vglPrintImageInfo(VglImage* image, char* msg){
-        IplImage* ipl = image->ipl;
-        if (msg){
-            printf("====== %s:\n", msg);
-	}
-	else
-	{
-            printf("====== vglPrintImageInfo:\n");
-	}
-        printf("Image @ %p: w x h x l = %d x %d x %d\n", 
-	       image, image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH]);
-        printf("Ipl @ %p\n", ipl); 
-        printf("ndim = %d\n", image->ndim);
-        printf("nChannels = %d\n", image->nChannels);
-        printf("depth = ");
-        switch (image->depth){
-          case IPL_DEPTH_1U:  printf("IPL_DEPTH_1U");  break; 
-          case IPL_DEPTH_8U:  printf("IPL_DEPTH_8U");  break; 
-          case IPL_DEPTH_16U: printf("IPL_DEPTH_16U"); break; 
-          case IPL_DEPTH_32F: printf("IPL_DEPTH_32F"); break; 
-          case IPL_DEPTH_8S:  printf("IPL_DEPTH_8S");  break; 
-          case IPL_DEPTH_16S: printf("IPL_DEPTH_16S"); break; 
-          case IPL_DEPTH_32S: printf("IPL_DEPTH_32S"); break; 
-          default: printf("unknown");
+    //IplImage* ipl = image->ipl;
+    if (msg){
+        printf("====== %s:\n", msg);
+    }
+    else
+    {
+        printf("====== vglPrintImageInfo:\n");
+    }
+    printf("Image @ %p: w x h x l = %d x %d x %d\n", 
+    image, image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH]);
+    printf("Ipl @ %p\n", image->ipl);
+    printf("ndarray @ %p\n", image->ndarray); 
+    printf("ndim = %d\n", image->ndim);
+    printf("nChannels = %d\n", image->nChannels);
+    printf("depth = ");
+    switch (image->depth){
+        case IPL_DEPTH_1U:  printf("IPL_DEPTH_1U");  break; 
+        case IPL_DEPTH_8U:  printf("IPL_DEPTH_8U");  break; 
+        case IPL_DEPTH_16U: printf("IPL_DEPTH_16U"); break; 
+        case IPL_DEPTH_32F: printf("IPL_DEPTH_32F"); break; 
+        case IPL_DEPTH_8S:  printf("IPL_DEPTH_8S");  break; 
+        case IPL_DEPTH_16S: printf("IPL_DEPTH_16S"); break; 
+        case IPL_DEPTH_32S: printf("IPL_DEPTH_32S"); break; 
+        default: printf("unknown");
     }
     printf("\n");
     printf("TEX = %d\n", image->tex);
     printf("FBO = %d\n", image->fbo);
 #ifdef __OPENCL__
-    printf("FBO @ %p\n", image->oclPtr);
+    printf("OCL @ %p\n", image->oclPtr);
 #endif
     printf("Context = %d\n", image->inContext);
 }
@@ -1277,21 +1282,26 @@ void vglPrintImageInfo(VglImage* image, char* msg){
 /** Print image pixels in text format to stdout
 
  */
-void vglPrintImageData(VglImage* image){
-    int ndarraySize = 1;
-    int w = image->shape[0];
-    int h = image->shape[1];
-    for(int dim = 0; dim < image->ndim; dim++)
-    {
-        ndarraySize *= image->shape[dim];
+void vglPrintImageData(VglImage* image, char* msg){
+    if (msg){
+        printf("====== %s:\n", msg);
     }
+    else
+    {
+        printf("====== vglPrintImageData:\n");
+    }
+    int w = image->shape[0] * image->nChannels * image->getBytesPerPixel();
+    int h = image->shape[1];
+    int ndarraySize = image->getTotalSizeInBytes();
+    char* ptr = image->getImageData();
+
     for(int i = 0; i < ndarraySize;)
     {
         if (i % w == 0)
 	{
             printf("%d: ", i / w);
 	}
-        printf("%c", ((char*)image->ndarray)[i]);
+        printf("%c", ((char*)ptr)[i]);
         i++;
         if (i % w == 0)
 	{
