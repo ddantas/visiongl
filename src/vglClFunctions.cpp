@@ -517,19 +517,22 @@ void vglCl3dErode(VglImage* input, VglImage* output, VglImage* buff, float* mask
     return;
   }
 
-
-  vglCl3dErode(input,buff,mask,window_size_x,window_size_y,window_size_z);
-  
-  for(int i = 1; i < times; i++)
+  if (times > 0)
   {
-    if (i % 2 == 0)
-      vglCl3dErode(output,buff,mask,window_size_x,window_size_y,window_size_z);
-    else
-      vglCl3dErode(buff,output,mask,window_size_x,window_size_y,window_size_z);
-  }
 
-  if (times % 2 == 1)
-    output = buff;
+    vglCl3dErode(input,buff,mask,window_size_x,window_size_y,window_size_z);
+  
+    for(int i = 1; i < times; i++)
+    {
+      if (i % 2 == 0)
+        vglCl3dErode(output,buff,mask,window_size_x,window_size_y,window_size_z);
+      else
+        vglCl3dErode(buff,output,mask,window_size_x,window_size_y,window_size_z);
+    }
+
+    if (times % 2 == 1)
+      vglCl3dCopy(buff,output);
+  }
 
 }
 
@@ -542,18 +545,21 @@ void vglClErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, 
     return;
   }
 
-  vglClErode(input,buff,mask,window_size_x,window_size_y);
-  
-  for(int i = 1; i < times; i++)
+  if (times > 0)
   {
-    if (i % 2 == 0)
-      vglClErode(output,buff,mask,window_size_x,window_size_y);
-    else
-      vglClErode(buff,output,mask,window_size_x,window_size_y);
-  }
+    vglClErode(input,buff,mask,window_size_x,window_size_y);
   
-  if (times % 2 == 1)
-    output = buff;
+    for(int i = 1; i < times; i++)
+    {
+      if (i % 2 == 0)
+        vglClErode(output,buff,mask,window_size_x,window_size_y);
+      else
+        vglClErode(buff,output,mask,window_size_x,window_size_y);
+    }
+  
+    if (times % 2 == 1)
+      output = buff;
+  }
 }
 
 void vglCl3dDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y,int window_size_z, int times)
@@ -565,18 +571,22 @@ void vglCl3dDilate(VglImage* input, VglImage* output, VglImage* buff, float* mas
     return;
   }
 
-  vglCl3dDilate(input,buff,mask,window_size_x,window_size_y,window_size_z);
-  
-  for(int i = 1; i < times; i++)
+  if (times > 0)
   {
-    if (i % 2 == 0)
-      vglCl3dDilate(output,buff,mask,window_size_x,window_size_y,window_size_z);
-    else
-      vglCl3dDilate(buff,output,mask,window_size_x,window_size_y,window_size_z);
-  }
+  
+    vglCl3dDilate(input,buff,mask,window_size_x,window_size_y,window_size_z);
+  
+    for(int i = 1; i < times; i++)
+    {
+      if (i % 2 == 0)
+        vglCl3dDilate(output,buff,mask,window_size_x,window_size_y,window_size_z);
+      else
+        vglCl3dDilate(buff,output,mask,window_size_x,window_size_y,window_size_z);
+    }
 
-  if (times % 2 == 1)
-    output = buff;
+    if (times % 2 == 1)
+      output = buff;
+  }
 }
 
 void vglClDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int times)
@@ -588,18 +598,22 @@ void vglClDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask,
     return;
   }
 
-  vglClDilate(input,buff,mask,window_size_x,window_size_y);
-  
-  for(int i = 1; i < times; i++)
+  if (times > 0)
   {
-    if (i % 2 == 0)
-      vglClDilate(output,buff,mask,window_size_x,window_size_y);
-    else
-      vglClDilate(buff,output,mask,window_size_x,window_size_y);
-  }
 
-  if (times % 2 == 1)
-    output = buff;
+    vglClDilate(input,buff,mask,window_size_x,window_size_y);
+  
+    for(int i = 1; i < times; i++)
+    {
+      if (i % 2 == 0)
+        vglClDilate(output,buff,mask,window_size_x,window_size_y);
+      else
+        vglClDilate(buff,output,mask,window_size_x,window_size_y);
+    }
+
+    if (times % 2 == 1)
+      output = buff;
+  }
 }
 
 void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, int times){
@@ -679,3 +693,194 @@ void vglCl3dTopHat(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, 
   vglCl3dSub(src,buf,dst);
 }
 
+bool vglCl3dEqual(VglImage* input1, VglImage* input2)
+{
+  if(input1->ndim < 3)
+  {
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClEqual instead.\n", __FILE__, __FUNCTION__);
+    return false;
+  }
+
+  vglCheckContext(input1,VGL_CL_CONTEXT);
+  vglCheckContext(input2,VGL_CL_CONTEXT);
+
+  cl_int err;
+
+  cl_mem mobj_equal = NULL;
+  mobj_equal = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, sizeof(char), NULL, &err);
+  vglClCheckError( err, (char*) "clCreateBuffer histogram" );
+  char e = 200;
+  err = clEnqueueWriteBuffer(cl.commandQueue,mobj_equal,CL_TRUE,0,sizeof(char),&e,0,NULL,NULL);
+  vglClCheckError(err, (char*) "clEnqueueWriteBuffer mobj_arr");
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL_UTIL/vglClEqual.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglCl3dEqual", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &input1->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &input2->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_equal );
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
+  size_t worksize[] = { input1->shape[VGL_WIDTH], input1->shape[VGL_HEIGHT], input1->shape[VGL_LENGTH] };
+  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  
+  char newe;
+  err = clEnqueueReadBuffer(cl.commandQueue,mobj_equal,CL_TRUE,0,sizeof(bool),&newe,0,NULL,NULL);
+  vglClCheckError( err, (char*) "clEnqueueReadBuffer" );
+  
+  return newe != 1;
+}
+
+bool vglClEqual(VglImage* input1, VglImage* input2)
+{
+  if(input1->ndim > 2)
+  {
+    fprintf(stderr, "%s: %s: Error: image with more then 2 dimensions not supported. Use vglCl3dEqual instead.\n", __FILE__, __FUNCTION__);
+    return false;
+  }
+
+  vglCheckContext(input1,VGL_CL_CONTEXT);
+  vglCheckContext(input2,VGL_CL_CONTEXT);
+
+  cl_int err;
+
+  cl_mem mobj_equal = NULL;
+  mobj_equal = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, sizeof(char), NULL, &err);
+  vglClCheckError( err, (char*) "clCreateBuffer histogram" );
+  char e = 200;
+  err = clEnqueueWriteBuffer(cl.commandQueue,mobj_equal,CL_TRUE,0,sizeof(char),&e,0,NULL,NULL);
+  vglClCheckError(err, (char*) "clEnqueueWriteBuffer mobj_arr");
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL_UTIL/vglClEqual.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglCl3dEqual", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &input1->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &input2->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_equal );
+  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+
+  size_t worksize[] = { input1->shape[VGL_WIDTH], input1->shape[VGL_HEIGHT], 0 };
+  clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  
+  err = clEnqueueReadBuffer(cl.commandQueue,mobj_equal,CL_TRUE,0,sizeof(char),&e,0,NULL,NULL);
+  vglClCheckError( err, (char*) "clEnqueueReadBuffer" );
+
+  return e != 1;
+}
+
+
+void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* buff, float* mask, int window_size_x, int window_size_y, int window_size_z)
+{
+
+  if(src->ndim < 3)
+  {
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClConditionalDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  vglCl3dDilate(dst,buff,mask,window_size_x,window_size_y,window_size_z);
+  vglCl3dMin(dst,src,dst);
+  
+}
+
+void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* buff, float* mask, int window_size_x, int window_size_y)
+{
+
+  if(src->ndim > 2)
+  {
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglCl3dConditionalDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  vglClDilate(dst,buff,mask,window_size_x,window_size_y);
+  vglClMin(dst,src,dst);
+}
+
+void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* buff, float* mask, int window_size_x, int window_size_y, int window_size_z)
+{
+
+  if(src->ndim < 3)
+  {
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClConditionalErode instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  vglCl3dErode(dst,buff,mask,window_size_x,window_size_y,window_size_z);
+  vglCl3dMax(dst,src,dst);
+  
+}
+
+void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* buff, float* mask, int window_size_x, int window_size_y)
+{
+
+  if(src->ndim > 2)
+  {
+    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglCl3dConditionalErode instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  vglClErode(dst,buff,mask,window_size_x,window_size_y);
+  vglClMax(dst,src,dst);
+}

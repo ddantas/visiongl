@@ -94,7 +94,7 @@ class VglImage{
     totalSize *= this->nChannels;
 
     // 1D images may be stored as 2d images.
-    if ( (this->ndim == 1) and (this->shape[VGL_HEIGHT] > 1) )
+    if ( (this->ndim == 1) && (this->shape[VGL_HEIGHT] > 1) )
     {
       totalSize *= this->shape[VGL_HEIGHT];
     }

@@ -180,7 +180,7 @@ void vglClInit()
 {
     cl_int err;
     cl_uint num_platforms, num_devices;
-    cl_device_type device_type = CL_DEVICE_TYPE_CPU;
+    cl_device_type device_type = CL_DEVICE_TYPE_DEFAULT;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
     cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);
@@ -442,7 +442,7 @@ void vglClUpload(VglImage* img)
                 exit(1);
             }
    
-            if ( (img->ndim == 2) or (img->ndim == 3) )
+            if ( (img->ndim == 2) || (img->ndim == 3) )
             {
                 size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
                 err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, (char*)imageData, 0, NULL, NULL );

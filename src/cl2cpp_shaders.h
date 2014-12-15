@@ -38,6 +38,16 @@ void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_
 /** Direct copy from src to dst.
 
   */
+void vglCl3dMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Direct copy from src to dst.
+
+  */
+void vglCl3dMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Direct copy from src to dst.
+
+  */
 void vglCl3dNot(VglImage* img_input, VglImage* img_output);
 
 /** Direct copy from src to dst.
@@ -84,6 +94,16 @@ void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_wi
 
   */
 void vglClInvert(VglImage* img_input, VglImage* img_output);
+
+/** Direct copy from src to dst.
+
+  */
+void vglClMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Direct copy from src to dst.
+
+  */
+void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 
 /** Direct copy from src to dst.
 
