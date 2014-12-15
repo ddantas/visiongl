@@ -451,8 +451,9 @@ void vglClUpload(VglImage* img)
             }
             else
             {
-                printf("Writing BUFFER %d bytes\n", img->getTotalSizeInBytes());
-                err = clEnqueueWriteBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), NULL, NULL, NULL, NULL);
+                err = clEnqueueWriteBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), imageData, NULL, NULL, NULL);
+                vglClCheckError( err, (char*) "clEnqueueWriteBuffer" );
+                clFinish(cl.commandQueue);
             }
         }
         vglAddContext(img, VGL_CL_CONTEXT);
@@ -575,58 +576,136 @@ void vglClToGl(VglImage* img)
 
 void vglClDownload(VglImage* img)
 {
-  if (Interop && img->nChannels > 1)
-	{
-		vglClDownloadInterop(img);
+    if (Interop && img->nChannels > 1)
+    {
+        vglClDownloadInterop(img);
+    }
+    else
+    {
+        if (img->nChannels == 3)
+        {
+            fprintf(stderr, "%s: %s: Error: ipl image field with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
+            exit(1);
+        }
+
+        if (!vglIsInContext(img, VGL_CL_CONTEXT))
+        {
+            fprintf(stderr, "vglClDownload: Error: image context = %d not in VGL_CL_CONTEXT\n", img->inContext);
+            return;
+        }
+
+        size_t Origin[3] = { 0, 0, 0};
+
+        if(img->ndim == 2)
+        {
+            size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
+            cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ipl->imageData, 0, NULL, NULL );
+            vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
+            //cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
+        }
+        else if(img->ndim == 3)
+        {
+            size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
+            cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0,(char*) img->ndarray, 0, NULL, NULL );
+            vglClCheckError( err_cl, (char*) "clEnqueueReadImage3D" );
+        }
+        else
+        {
+            void* imageData = img->getImageData();
+            if (!imageData)
+            {
+                fprintf(stderr, "%s: %s: Error: both ipl and ndarray are NULL.\n", __FILE__, __FUNCTION__);
+                exit(1);
+            }
+            cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), imageData, NULL, NULL, NULL);
+            vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
 	}
-	else
-	{
-		if (img->nChannels == 3)
-		{
-			fprintf(stderr, "%s: %s: Error: ipl image field with 3 channels not supported. Please convert to 4 channels.\n", __FILE__, __FUNCTION__);
-			exit(1);
-		}
+        vglAddContext(img, VGL_RAM_CONTEXT);
+    }
+}
 
-		if (!vglIsInContext(img, VGL_CL_CONTEXT))
-		{
-		  fprintf(stderr, "vglClDownload: Error: image context = %d not in VGL_CL_CONTEXT\n", img->inContext);
-		  return;
-		}
 
-		size_t Origin[3] = { 0, 0, 0};
+/** Calculate sum a = a + b and save carry
 
-		if(img->ndim == 2)
-		{
-			size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
-			cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ipl->imageData, 0, NULL, NULL );
-			vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
+  */
+int vglClMpIsZero(VglImage* num_a){
 
-			//cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
-		}
-		else if(img->ndim == 3)
-		{
-			size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
-			cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0,(char*) img->ndarray, 0, NULL, NULL );
-			vglClCheckError( err_cl, (char*) "clEnqueueReadImage3D" );
-		}
-		else
-		{
-                        void* ptr;
-                        if (img->ipl)
-			{
-                          ptr = img->ipl->imageData;
-                        }
-                        else
-			{
-                          ptr = img->ndarray;
-			}
-                        printf("Reading BUFFER %d bytes\n", img->getTotalSizeInBytes());
-			cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), ptr, NULL, NULL, NULL);
-			vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
-		}
+  int isZero = 200;
+  cl_mem isZero_oclPtr = NULL;
 
-		vglAddContext(img, VGL_RAM_CONTEXT);
-	}
+  vglCheckContext(num_a, VGL_CL_CONTEXT);
+
+  cl_int err;
+
+  printf("000 isZero = %d\n", isZero);
+  isZero_oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, sizeof(isZero), NULL, &err);
+  vglClCheckError( err, (char*) "clCreateNDImage" );
+
+  err = clEnqueueWriteBuffer(cl.commandQueue, isZero_oclPtr, CL_TRUE, 0, sizeof(isZero), &isZero, NULL, NULL, NULL);
+  vglClCheckError( err, (char*) "clEnqueueWriteBuffer" );
+  clFinish(cl.commandQueue);
+
+
+  static cl_program program = NULL;
+  if (program == NULL)
+  {
+    char* file_path = (char*) "CL_MP/vglClMpIsZero.cl";
+    printf("Compiling %s\n", file_path);
+    std::ifstream file(file_path);
+    if(file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      exit(1);
+    }
+    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
+    const char *source_str = prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", source_str);
+#endif
+    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
+    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
+    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
+    vglClBuildDebug(err, program);
+  }
+
+  static cl_kernel kernel = NULL;
+  if (kernel == NULL)
+  {
+    kernel = clCreateKernel( program, "vglClMpIsZero", &err ); 
+    vglClCheckError(err, (char*) "clCreateKernel" );
+  }
+
+
+  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &num_a->oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+
+  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &isZero_oclPtr );
+  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+
+  if (num_a->ndim <= 2){
+    size_t worksize[] = { num_a->shape[VGL_WIDTH], num_a->shape[VGL_HEIGHT], 1 };
+    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  }
+  else if (num_a->ndim == 3){
+    size_t worksize[] = { num_a->shape[VGL_WIDTH], num_a->shape[VGL_HEIGHT], num_a->shape[VGL_LENGTH] };
+    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
+  }
+  else{
+    printf("More than 3 dimensions not yet supported\n");
+  }
+
+  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+
+  printf("800 isZero = %d\n", isZero);
+  err = clEnqueueReadBuffer(cl.commandQueue, isZero_oclPtr, CL_TRUE, 0, sizeof(isZero), &isZero, NULL, NULL, NULL);
+  vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
+  printf("900 isZero = %d\n", isZero);
+
+
+  vglSetContext(num_a, VGL_CL_CONTEXT);
+
+  return isZero;
+
 }
 
 

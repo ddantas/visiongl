@@ -103,9 +103,19 @@ sub LineStartType { # ($line) {
 sub LineStartTypeStar { # ($line) {
   my $line = $_[0];
 
-  $line =~ s#^\s*([a-zA-Z_]\w*[\s*\*]*)##;
-  my $result = $1;
-  $result =~ s#\s##g;
+  $line =~ s#^\s*(unsigned)?(\s*[a-zA-Z_]\w*[\s*\*]*)##;
+  my $result1 = $1;
+  my $result2 = $2;
+  $result2 =~ s#\s##g;
+  my $result;
+  if ($result1 eq ""){
+    $result = $result2;
+  }
+  else
+  {
+    $result = "$result1 $result2";
+  }
+
   return ($result, $line);
 }
 

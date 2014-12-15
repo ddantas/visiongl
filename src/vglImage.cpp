@@ -1282,7 +1282,7 @@ void vglPrintImageInfo(VglImage* image, char* msg){
 /** Print image pixels in text format to stdout
 
  */
-void vglPrintImageData(VglImage* image, char* msg){
+void vglPrintImageData(VglImage* image, char* msg /*= NULL*/, char* format /*= "%c"*/){
     if (msg){
         printf("====== %s:\n", msg);
     }
@@ -1301,11 +1301,15 @@ void vglPrintImageData(VglImage* image, char* msg){
 	{
             printf("%d: ", i / w);
 	}
-        printf("%c", ((char*)ptr)[i]);
+        printf(format, ((unsigned char*)ptr)[i]);
         i++;
         if (i % w == 0)
 	{
             printf("\n"); 
+        }
+        else if (i % 8 == 0)
+	{
+            printf(" "); 
         }
     }
 }

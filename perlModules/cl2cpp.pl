@@ -532,7 +532,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   for ($i = 0; $i <= $#type; $i++){
     print ">>>$type[$i]<<< becomes ";
     if ( ($semantics[$i] eq "__read_only") or ($semantics[$i] eq "__write_only") or ($semantics[$i] eq "__global") ){
-      if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") or ($type[$i] eq "char*") or ($type[$i] eq "int*") ){
+      if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") or ($type[$i] eq "char*") or ($type[$i] eq "int*") or ($type[$i] eq "unsigned char*") or ($type[$i] eq "unsigned int*") ){
         $type[$i] = "VglImage*";
       }
     }
@@ -559,7 +559,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   print HEAD ");\n\n";
 
   for ($i = 0; $i <= $#type; $i++){
-    if ($semantics[$i] eq "__read_only" or $semantics[$i] eq "__write_only"){
+    if ($semantics[$i] eq "__read_only" or $semantics[$i] eq "__write_only" or $semantics[$i] eq "__read_write" or $semantics[$i] eq "__global"){
         print CPP "
   vglCheckContext($variable[$i]".", VGL_CL_CONTEXT);";
     }
@@ -644,8 +644,9 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   }
 
   for ($i = 0; $i <= $#type; $i++){
-    if (($type[$i] eq "VglImage*") && ($semantics[$i] eq "__read_only")){
+    if ($type[$i] eq "VglImage*"){
       $var_worksize = $variable[$i];
+      last;
     }
   }
  
