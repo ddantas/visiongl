@@ -622,6 +622,8 @@ void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage
                           0,0,0,
                           0,1,0,
                           0,0,0};
+  float mask_2d[27] = { 0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0 };
+  float mask_2d2[27] = { 0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0 };
   for(int i = 0; i < times; i++){
     if (i % 2 == 0){
       vglCl3dErode(buf, buf2,square_mask,3,3,3);
@@ -656,5 +658,24 @@ void vglClDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage* 
       vglClSum(buf, dst, dst);
     }
   }
+}
+
+void vglClTopHat(VglImage* src, VglImage* dst, VglImage* buf, float* window, int window_size_x, int window_size_y, int times)
+{
+
+  vglClErode(src,dst,buf,window,window_size_x,window_size_y,times);
+  vglClDilate(src,dst,buf,window,window_size_x,window_size_y,times);
+
+  //must implement vglClSub
+  //vglClSub(src,dst,dst);
+}
+
+void vglCl3dTopHat(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, float* window, int window_size_x, int window_size_y, int window_size_z, int times)
+{
+
+  vglCl3dErode(src,dst,buf,window,window_size_x,window_size_y,window_size_z,times);
+  vglCl3dDilate(dst,buf,buf2,window,window_size_x,window_size_y,window_size_z,times);
+
+  vglCl3dSub(src,buf,dst);
 }
 
