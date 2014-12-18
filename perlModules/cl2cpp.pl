@@ -12,6 +12,19 @@ use perlModules::common qw( LineStartMultiLineComment
              );
 
 #############################################################################
+# LineStartCommentedDefault
+#
+# Returns the string, between /* and */, after the variable
+# in start of $line, that defines its default value, blank string if not found.
+# 
+sub LineStartCommentedDefault { # ($line) {
+  my $line = $_[0];
+
+  $line =~ s#^\s*/\*\s*(=\s*[\.\w]*)\s*\*/##;
+  return ($1, $line);
+}
+
+#############################################################################
 # LineStartHeader
 #
 # Returns the header of the program, that is, the 
@@ -339,7 +352,7 @@ sub ProcessClHeader { # ($line) {
       #print "After eliminating variable:\n$line\n";
     }
 
-    ($default[$i], $line) = LineStartDefault($line);
+    ($default[$i], $line) = LineStartCommentedDefault($line);
     if (!$default[$i]){
       #print "Start-of-line default not found\n";
     }
@@ -549,7 +562,10 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
       $p = "*";
     }
     print CPP "$type[$i]$p $variable[$i]";
-    print HEAD "$type[$i]$p $variable[$i]" . ($default[$i] or "");
+    print HEAD "$type[$i]$p $variable[$i]";
+    if ($default[$i]){
+      print HEAD " $default[$i]";
+    }
     if ($i < $#type){
       print CPP ", ";
       print HEAD ", ";

@@ -17,6 +17,8 @@ BENCHMARK_CV_NAME    = benchmark_cv
 BENCHMARK_CVOCL_NAME = benchmark_cvocl
 BENCHMARK_CL_NAME    = benchmark_cl
 BENCHMARK_CL3D_NAME  = benchmark_cl3d
+BENCHMARK_MM_NAME    = benchmark_MM
+BENCHMARK_MP_NAME    = benchmark_MP
 COLORDECONV_NAME     = colordeconv
 
 ROOTPATH           = .
@@ -39,7 +41,7 @@ OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 1
+WITH_CUDA = 0
 WITH_OPENCL = 1
 WITH_GDCM = 0
 WITH_DCMTK = 0
@@ -188,6 +190,12 @@ ifeq ($(WITH_OPENCL), 1)
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS) \
 
+        LINUXAMD64_DEMO_BENCHMARK_MM = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_MM_NAME) \
+                         src/demo/$(BENCHMARK_MM_NAME).cpp src/demo/timer.cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS) \
+
 endif
 
 LINUXAMD64_DEMO_BENCHMARK_CV = $(CC) $(COMPILER_FLAGS) \
@@ -254,6 +262,7 @@ demobenchmark:
 	#$(LINUXAMD64_DEMO_BENCHMARK_CVOCL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CL3D)
+	$(LINUXAMD64_DEMO_BENCHMARK_MM)
 
 democolordeconv:
 	$(LINUXAMD64_DEMO_COLORDECONV)
@@ -268,7 +277,7 @@ rundemofrac:
 	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)
 
 rundemocam:
-	cd $(OUTPUT_BINPATH); ./demo_$(CAM_NAME)
+	cd $(OUTPUT_BINPATH); ddd ./demo_$(CAM_NAME)
 
 rundemogdcm:
 	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm  
@@ -292,6 +301,7 @@ rundemobenchmark:
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 10 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 10 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/lena_std.tif 10 /tmp
 
 rundemocolordeconv:
 	cd $(OUTPUT_BINPATH); ./demo_$(COLORDECONV_NAME) ../images/Emphysema_H_and_E.jpg 1 /tmp/image.%d.pgm 0.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 0.0
@@ -318,7 +328,7 @@ cloud_cl:
 	./perlModules/cl2cloud.pl -o src/cloud_CL src/CL/*.cl
 
 cl_mm:
-	./perlModules/cl2cpp.pl -o src/cl2cpp_MM -p CL src/CL_MM/*.cl
+	./perlModules/cl2cpp.pl -o src/cl2cpp_MM -p CL_MM src/CL_MM/*.cl
 
 run:
 	cd $(OUTPUT_BINPATH); ./$(BINARY_NAME)

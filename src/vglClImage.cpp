@@ -180,7 +180,7 @@ void vglClInit()
 {
     cl_int err;
     cl_uint num_platforms, num_devices;
-    cl_device_type device_type = CL_DEVICE_TYPE_CPU;
+    cl_device_type device_type = CL_DEVICE_TYPE_DEFAULT;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
     cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);
@@ -637,7 +637,6 @@ int vglClMpIsZero(VglImage* num_a){
 
   cl_int err;
 
-  printf("000 isZero = %d\n", isZero);
   isZero_oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, sizeof(isZero), NULL, &err);
   vglClCheckError( err, (char*) "clCreateNDImage" );
 
@@ -696,16 +695,12 @@ int vglClMpIsZero(VglImage* num_a){
 
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 
-  printf("800 isZero = %d\n", isZero);
   err = clEnqueueReadBuffer(cl.commandQueue, isZero_oclPtr, CL_TRUE, 0, sizeof(isZero), &isZero, NULL, NULL, NULL);
   vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
-  printf("900 isZero = %d\n", isZero);
-
 
   vglSetContext(num_a, VGL_CL_CONTEXT);
 
   return isZero;
-
 }
 
 

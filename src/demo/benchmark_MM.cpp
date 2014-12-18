@@ -73,23 +73,12 @@ int main(int argc, char* argv[])
 
     printf("VisionGL-OpenCL on %s, %d operations\n\n", inFilename, nSteps);
 	
-    printf("CREATING IMAGE\n");
     VglImage* img = vglLoadImage(inFilename, 1, 0);
+    vglPrintImageInfo(img);
 
-    printf("CHECKING NCHANNELS\n");
     if (img->nChannels == 3)
     {
-        printf("NCHANNELS = 3\n");
-        if (img->ndarray)
-        {
-            printf("NDARRAY not null\n");
-            vglNdarray3To4Channels(img);
-        }
-        else
-        {
-            printf("NDARRAY IS null\n");
-            //vglIpl3To4Channels(img);
-        }
+        vglImage3To4Channels(img);
     }
 
     if (img == NULL)

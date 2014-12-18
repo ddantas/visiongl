@@ -510,12 +510,12 @@ void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  if (img_input2->ndim <= 2){
-    size_t worksize[] = { img_input2->shape[VGL_WIDTH], img_input2->shape[VGL_HEIGHT], 1 };
+  if (img_input1->ndim <= 2){
+    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
-  else if (img_input2->ndim == 3){
-    size_t worksize[] = { img_input2->shape[VGL_WIDTH], img_input2->shape[VGL_HEIGHT], img_input2->shape[VGL_LENGTH] };
+  else if (img_input1->ndim == 3){
+    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -577,12 +577,12 @@ void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  if (img_input2->ndim <= 2){
-    size_t worksize[] = { img_input2->shape[VGL_WIDTH], img_input2->shape[VGL_HEIGHT], 1 };
+  if (img_input1->ndim <= 2){
+    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
-  else if (img_input2->ndim == 3){
-    size_t worksize[] = { img_input2->shape[VGL_WIDTH], img_input2->shape[VGL_HEIGHT], img_input2->shape[VGL_LENGTH] };
+  else if (img_input1->ndim == 3){
+    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1208,12 +1208,12 @@ void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  if (img_input2->ndim <= 2){
-    size_t worksize[] = { img_input2->shape[VGL_WIDTH], img_input2->shape[VGL_HEIGHT], 1 };
+  if (img_input1->ndim <= 2){
+    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
-  else if (img_input2->ndim == 3){
-    size_t worksize[] = { img_input2->shape[VGL_WIDTH], img_input2->shape[VGL_HEIGHT], img_input2->shape[VGL_LENGTH] };
+  else if (img_input1->ndim == 3){
+    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{

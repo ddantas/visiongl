@@ -4,7 +4,7 @@
 __kernel void vglClThreshold(__read_only image2d_t src,
                         __write_only image2d_t dst,
                         float thresh,
-                        float top)
+                        float top /*= 1.0*/)
 {
 	int2 coords = (int2)(get_global_id(0), get_global_id(1));
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates

@@ -53,7 +53,7 @@ void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
 /** Threshold of src image by float parameter. if the pixel is below thresh,
     the output is 0, else, the output is top. Result is stored in dst image.
   */
-void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top);
+void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top = 1.0);
 
 /** Convolution of src image by mask. Result is stored in dst image.
 
@@ -98,5 +98,5 @@ void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 /** Threshold of src image by float parameter. if the pixel is below thresh,
     the output is 0, else, the output is top. Result is stored in dst image.
   */
-void vglClThreshold(VglImage* src, VglImage* dst, float thresh, float top);
+void vglClThreshold(VglImage* src, VglImage* dst, float thresh, float top = 1.0);
 

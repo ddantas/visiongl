@@ -188,7 +188,7 @@ void vglDownload(VglImage* image);
 void vglDownloadPPM(VglImage* image);
 void vglDownloadFBO(VglImage* image);
 void vglDownloadFaster(VglImage* image/*, VglImage* buf*/);
-VglImage* vglLoadImage(char* filename, int iscolor = 1, int has_mipmap = 0);
+VglImage* vglLoadImage(char* filename, int iscolor = -1, int has_mipmap = 0); // -1 = CV_LOAD_IMAGE_UNCHANGED
 VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
 void vglPrintImageData(VglImage* image, char* msg = NULL, char* format = "%c");
 void vglPrintImageInfo(VglImage* image, char* msg = NULL);
