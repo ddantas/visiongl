@@ -442,7 +442,7 @@ void vglClUpload(VglImage* img)
                 exit(1);
             }
    
-            if ( (img->ndim == 2) or (img->ndim == 3) )
+            if ( (img->ndim == 2) || (img->ndim == 3) )
             {
                 size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
                 err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, (char*)imageData, 0, NULL, NULL );
