@@ -15,6 +15,7 @@ void benchmark(VglImage* in, VglImage* out, float* mask, int size_x, int size_y,
 	const float gama = 0.2f;
 	TimerStart();
 	mmdPtr(in,out,mask,size_x,size_y,gama);
+        vglClFlush();
 	printf("First call to        Alg Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
 	//Total time spent on n operations FuzzyErode 3x3
 	int p = 0;
@@ -25,6 +26,7 @@ void benchmark(VglImage* in, VglImage* out, float* mask, int size_x, int size_y,
 		mmdPtr(in, out,mask,size_x,size_y,gama);
 		//vglClCopy(out,img);
 	}
+        vglClFlush();
 	printf("Time spent on %8d Alg Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
 
 	vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -36,6 +38,7 @@ void benchmark(VglImage* in, VglImage* out, float* mask, int size_x, int size_y,
 {
 	TimerStart();
 	mmdPtr(in,out,mask,size_x,size_y);
+        vglClFlush();
 	printf("First call to        Alg Fuzzy Erode 3x3:                %s\n", getTimeElapsedInSeconds());
 	//Total time spent on n operations FuzzyErode 3x3
 	int p = 0;
@@ -46,6 +49,7 @@ void benchmark(VglImage* in, VglImage* out, float* mask, int size_x, int size_y,
 		mmdPtr(in, out,mask,size_x,size_y);
 		//vglClCopy(out,img);
 	}
+        vglClFlush();
 	printf("Time spent on %8d Alg Fuzzy Erode 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
 
 	vglCheckContext(out, VGL_RAM_CONTEXT);

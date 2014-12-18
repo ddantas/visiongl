@@ -65,6 +65,7 @@ int main(int argc, char* argv[])
     //First call to Blur 3x3
     TimerStart();
     vglClBlurSq3(img, out);
+    vglClFlush();
     printf("First call to          Blur 3x3:                %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Blur 3x3
     int p = 0;
@@ -74,6 +75,7 @@ int main(int argc, char* argv[])
         p++;
         vglClBlurSq3(img, out);
     }
+    vglClFlush();
     printf("Time spent on %8d Blur 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -94,6 +96,7 @@ int main(int argc, char* argv[])
     //First call to Convolution 3x3
     TimerStart();
     vglClConvolution(img, out, (float*) kernel33, 3, 3);
+    vglClFlush();
     printf("First call to          Convolution 3x3:         %s\n", getTimeElapsedInSeconds());
 
     //Total time spent on n operations Convolution 3x3
@@ -104,6 +107,7 @@ int main(int argc, char* argv[])
         p++;
         vglClConvolution(img, out, (float*) kernel33, 3, 3);
     }
+    vglClFlush();
     printf("Time spent on %8d Convolution 3x3:         %s \n", nSteps, getTimeElapsedInSeconds());
 
 
@@ -119,6 +123,7 @@ int main(int argc, char* argv[])
         p++;
         vglClConvolution(img, out, (float*) kernel55, 5, 5);
     }
+    vglClFlush();
     printf("Time spent on %8d Convolution 5x5:         %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -129,6 +134,7 @@ int main(int argc, char* argv[])
     float erodeMask[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
     TimerStart();
     vglClErode(img, out, erodeMask, 3, 3);
+    vglClFlush();
     printf("First call to          Erode 3x3:               %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Erode 3x3
     p = 0;
@@ -138,6 +144,7 @@ int main(int argc, char* argv[])
         p++;
         vglClErode(img, out, erodeMask, 3, 3);
     }
+    vglClFlush();
     printf("Time spent on %8d Erode 3x3:               %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -147,6 +154,7 @@ int main(int argc, char* argv[])
     //First call to Invert
     TimerStart();
     vglClInvert(img,out);
+    vglClFlush();
     printf("Fisrt call to          Invert:                  %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Invert
     p = 0;
@@ -156,6 +164,7 @@ int main(int argc, char* argv[])
         p++;
         vglClInvert(img, out);
     }
+    vglClFlush();
     printf("Time spent on %8d Invert:                  %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -165,6 +174,7 @@ int main(int argc, char* argv[])
     //First call to Copy GPU->GPU
     TimerStart();
     vglClCopy(img,out);
+    vglClFlush();
     printf("First call to          Copy GPU->GPU:           %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Copy GPU->GPU
     p = 0;
@@ -174,6 +184,7 @@ int main(int argc, char* argv[])
         p++;
         vglClCopy(img, out);
     }
+    vglClFlush();
     printf("Time spent on %8d copy GPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
@@ -185,6 +196,7 @@ int main(int argc, char* argv[])
     //First call to Convert BGR->Gray
     TimerStart();
     cvCvtColor(img->ipl, gray->ipl, CV_BGR2GRAY);
+    vglClFlush();
     printf("First call to          Convert BGR->Gray (CPU): %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Convert BGR->Gray
     p = 0;
@@ -194,6 +206,7 @@ int main(int argc, char* argv[])
         p++;
         cvCvtColor(img->ipl, gray->ipl, CV_BGR2GRAY);
     }
+    vglClFlush();
     printf("Time spent on %8d Convert BGR->Gray (CPU): %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(gray, VGL_RAM_CONTEXT);
@@ -207,6 +220,7 @@ int main(int argc, char* argv[])
 
     TimerStart();
     cvCvtColor(iplBGR, iplRGBA, CV_BGR2RGBA);
+    vglClFlush();
     printf("First call to          Convert BGR->RGBA (CPU): %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Convert BGR->RGBA
     p = 0;
@@ -216,6 +230,7 @@ int main(int argc, char* argv[])
         p++;
         cvCvtColor(iplBGR, iplRGBA, CV_BGR2RGBA);
     }
+    vglClFlush();
     printf("Time spent on %8d Convert BGR->RGBA (CPU): %s\n", nSteps, getTimeElapsedInSeconds());
 
 
@@ -225,6 +240,7 @@ int main(int argc, char* argv[])
     //First call to Copy CPU->GPU
     TimerStart();
     vglClUpload(img);
+    vglClFlush();
     printf("First call to          Copy CPU->GPU:           %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Copy CPU->GPU
     p = 0;
@@ -234,6 +250,7 @@ int main(int argc, char* argv[])
         p++;
         vglClUpload(img);
     }
+    vglClFlush();
     printf("Time spent on %8d copy CPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(img, VGL_RAM_CONTEXT);
@@ -243,6 +260,7 @@ int main(int argc, char* argv[])
     //First call to Copy GPU->CPU
     TimerStart();
     vglClDownload(img);
+    vglClFlush();
     printf("First call to          Copy GPU->CPU:           %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Copy GPU->CPU
     p = 0;
@@ -252,6 +270,7 @@ int main(int argc, char* argv[])
         p++;
         vglClDownload(img);
     }
+    vglClFlush();
     printf("Time spent on %8d copy GPU->CPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(img, VGL_RAM_CONTEXT);
