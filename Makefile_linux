@@ -13,6 +13,7 @@ CAM_NAME             = cam
 GDCM_NAME            = gdcm
 DCMTK_NAME           = dcmtk
 CL3D_NAME            = cl3d
+TIFF_NAME            = tiff
 BENCHMARK_CV_NAME    = benchmark_cv
 BENCHMARK_CVOCL_NAME = benchmark_cvocl
 BENCHMARK_CL_NAME    = benchmark_cl
@@ -45,6 +46,7 @@ WITH_CUDA = 0
 WITH_OPENCL = 1
 WITH_GDCM = 0
 WITH_DCMTK = 0
+WITH_TIFF = 0
 
 ifeq ($(WITH_OPENCL), 1)
 	OPENCL_DEF        = -D__OPENCL__
@@ -99,8 +101,13 @@ ifeq ($(WITH_DCMTK), 1)
         #-ltiff -lpng
 endif
 
+ifeq ($(WITH_TIFF), 1)
+	TIFF_DEF        = -D__TIFF__
+endif
 
-VGL_FILES = src/glsl2cpp_shaders.cpp src/vglContext.cpp src/vglSimpleBGModel.cpp src/glsl2cpp_BG.cpp src/glsl2cpp_Stereo.cpp src/vglImage.cpp src/vglLoadShader.cpp src/vglGdcmIo.cpp src/vglDcmtkIo.cpp src/vglDeconv.cpp
+
+
+VGL_FILES = src/glsl2cpp_shaders.cpp src/vglContext.cpp src/vglSimpleBGModel.cpp src/glsl2cpp_BG.cpp src/glsl2cpp_Stereo.cpp src/vglImage.cpp src/vglLoadShader.cpp src/vglGdcmIo.cpp src/vglDcmtkIo.cpp src/vglTiffIo.cpp src/vglDeconv.cpp
 
 
 INSTALL_PATH        = $(HOME)/script
@@ -139,6 +146,7 @@ LINUXAMD64_DIRS_LIBS =  $(INCLUDE_DIR) \
                         $(DCMTK_INCLUDEDIR) \
 			$(DCMTK_LIBDIR) \
                         $(DCMTK_LIBRARIES) \
+			$(TIFF_DEF) \
 
 
 LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
@@ -176,6 +184,13 @@ LINUXAMD64_DEMO_DCMTK = $(CC) $(COMPILER_FLAGS) -D__DCMTK__ \
                           src/demo/$(DCMTK_NAME).cpp \
                          -lvisiongl \
                           $(LINUXAMD64_DIRS_LIBS) \
+
+LINUXAMD64_DEMO_TIFF = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(TIFF_NAME) \
+                         src/demo/$(TIFF_NAME).cpp \
+                         -lvisiongl -ltiff \
+                         $(LINUXAMD64_DIRS_LIBS)
+
 
 ifeq ($(WITH_OPENCL), 1)
         LINUXAMD64_DEMO_BENCHMARK_CL = $(CC) $(COMPILER_FLAGS) \
@@ -219,7 +234,7 @@ LINUXAMD64_DEMO_COLORDECONV = $(CC) $(COMPILER_FLAGS) \
 
 
 
-GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglClImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkIo.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h $(INCLUDE_PATH)/vglDeconv.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
+GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglClImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkIo.h $(INCLUDE_PATH)/vglTiffIo.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h $(INCLUDE_PATH)/vglDeconv.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
 
 
 all:
@@ -253,6 +268,9 @@ demogdcm:
 
 demodcmtk:
 	$(LINUXAMD64_DEMO_DCMTK)
+
+demotiff:
+	$(LINUXAMD64_DEMO_TIFF)
 
 democl3d:
 	$(LINUXAMD64_DEMO_CL3D)
@@ -295,6 +313,9 @@ rundemodcmtk:
 	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm.%d.PGM /tmp/outputdcmtkheader.dcm 0 3 -c
 	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/I_000003.dcm.%d.PGM /tmp/outputdcmtkheadercor.dcm 0 3 -c
 	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) /home/davy/Desktop/imageTest/16bits/E1154S7I.dcm /tmp/outputdcmtk16.dcm -c
+
+rundemotiff:
+	cd $(OUTPUT_BINPATH); ./demo_$(TIFF_NAME) /media/20C4-AFD3/t007.tif /tmp/outt007test.dcm
 
 rundemobenchmark:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 10 /tmp

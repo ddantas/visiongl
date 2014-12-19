@@ -193,7 +193,7 @@ int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
 {
   if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
   {
-    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__, imagevgl->nChannels);
     return 1;
   }
 
@@ -288,7 +288,7 @@ int vglGdcmSaveDicomUncompressed(VglImage* imagevgl, char* outFilename)
 {
   if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
   {
-    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__, imagevgl->nChannels);
     return 1;
   }
 
@@ -306,7 +306,7 @@ int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outFilename)
 {
   if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
   {
-    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__, imagevgl->nChannels);
     return 1;
   }
 

@@ -11,7 +11,7 @@
 
 #include <vglImage.h>
 
-void vglSaveColorDeconv(VglImage *imagevgl, double *mInitial, char *outFilename);
-VglImage* vglColorDeconv(VglImage *imagevgl, double *mInitial);
+void vglSaveColorDeconv(VglImage *imagevgl, double *mInitial, char *outFilename, int find3rdColor = 0);
+VglImage* vglColorDeconv(VglImage *imagevgl, double *mInitial, int find3rdColor = 0);
 
 #endif

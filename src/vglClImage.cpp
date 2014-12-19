@@ -451,7 +451,7 @@ void vglClUpload(VglImage* img)
             }
             else
             {
-                err = clEnqueueWriteBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), imageData, NULL, NULL, NULL);
+                err = clEnqueueWriteBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), imageData, 0, NULL, NULL);
                 vglClCheckError( err, (char*) "clEnqueueWriteBuffer" );
                 clFinish(cl.commandQueue);
             }
@@ -617,7 +617,7 @@ void vglClDownload(VglImage* img)
                 fprintf(stderr, "%s: %s: Error: both ipl and ndarray are NULL.\n", __FILE__, __FUNCTION__);
                 exit(1);
             }
-            cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), imageData, NULL, NULL, NULL);
+            cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), imageData, 0, NULL, NULL);
             vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
 	}
         vglAddContext(img, VGL_RAM_CONTEXT);
@@ -640,7 +640,7 @@ int vglClMpIsZero(VglImage* num_a){
   isZero_oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, sizeof(isZero), NULL, &err);
   vglClCheckError( err, (char*) "clCreateNDImage" );
 
-  err = clEnqueueWriteBuffer(cl.commandQueue, isZero_oclPtr, CL_TRUE, 0, sizeof(isZero), &isZero, NULL, NULL, NULL);
+  err = clEnqueueWriteBuffer(cl.commandQueue, isZero_oclPtr, CL_TRUE, 0, sizeof(isZero), &isZero, 0, NULL, NULL);
   vglClCheckError( err, (char*) "clEnqueueWriteBuffer" );
   clFinish(cl.commandQueue);
 
@@ -695,7 +695,7 @@ int vglClMpIsZero(VglImage* num_a){
 
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clEnqueueReadBuffer(cl.commandQueue, isZero_oclPtr, CL_TRUE, 0, sizeof(isZero), &isZero, NULL, NULL, NULL);
+  err = clEnqueueReadBuffer(cl.commandQueue, isZero_oclPtr, CL_TRUE, 0, sizeof(isZero), &isZero, 0, NULL, NULL);
   vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
 
   vglSetContext(num_a, VGL_CL_CONTEXT);

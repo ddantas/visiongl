@@ -3,7 +3,7 @@
 int main(int argc, char *argv[])
 {
   char* usage = (char*) "\n\
-Usage: matriz <input file> option <output file> [values]\n\
+Usage: demo_colordeconv <input file> option <output file> [values]\n\
 \n\
 Where:\n\
   <input file>: image to be deconvoluted\n\
@@ -304,7 +304,7 @@ Where:\n\
   imgvgldeconv = vglColorDeconv(imgvgl, mInitial);
   char outname[strlen(outFilename)+10];
   sprintf(outname, outFilename, 4);
-  vglSaveImage(imgvgldeconv, outname, imgIFirst, imgILast);
+  vglSave3dImage(imgvgldeconv, outname, imgIFirst, imgILast);
   
   vglSaveColorDeconv(imgvgldeconv, mInitial, outFilename);
 

@@ -139,6 +139,96 @@ int invertMatrix3x3(double *mNorm, double *mInv)
   return 0;
 }
 
+/* Function to invert matrix 2x3 using Right Inverse
+ */
+
+int rightInverseMatrix2x3(double *mNorm, double *mInv)
+{
+  
+  double mNormal[3][3], mInverse[3][3], mNormalT[3][3], mAux[3][3];
+  double value[3];
+  double detmNormal, detmAux;
+  
+  // Composition of the Normal Matrix
+  int i = 0;
+  for(int row = 0; row < 3; row++)
+    for(int col = 0; col < 3; col++)
+    {
+      mNormal[col][row] = mNorm[i];
+      i++;
+    }
+
+  // Composition of the Normal Transposed Matrix
+  for(int row = 0; row < 3; row++)
+    for(int col = 0; col < 3; col++)
+      	mNormalT[row][col] = mNormal[col][row];
+
+  // Composition of Aux Matrix by Matrix Multiplication
+  for(int row = 0; row < 3; row++)
+  {
+    for(int col = 0; col < 3; col++)
+    {
+      double soma1 = mNormal[row][0] * mNormalT[0][col];
+      double soma2 = mNormal[row][1] * mNormalT[1][col];
+      double soma3 = mNormal[row][2] * mNormalT[2][col];
+      double totalSoma = soma1 + soma2 + soma3;
+      mAux[row][col] = totalSoma;
+    }
+  }
+
+  //Calculation of determinant matrix 2x2
+  detmAux = mAux[0][0] * mAux[1][1] - (mAux[0][1] * mAux[1][0]);
+  printf("\nDeterminant matrix 2x2= %f\n", detmAux);
+
+  if(detmAux == 0)
+  {
+    printf("\nMatrix not invertible\n");
+    return 1;
+  }
+
+  // Composition of the Adjunct Matrix 2x2
+  double mAdjAux[2][2];
+  mAdjAux[0][0] = mAux[1][1];
+  mAdjAux[1][1] = mAux[0][0];
+  mAdjAux[0][1] = (-1) * mAux[0][1];
+  mAdjAux[1][0] = (-1) * mAux[0][1];
+  
+  // Composition of the Inverse Aux Matrix 2x2
+  double mAuxInv[2][2];
+  for(int row = 0; row < 2; row++)
+    for(int col = 0; col <2; col++)
+       mAuxInv[row][col] = (1/detmAux)*mAdjAux[row][col];
+
+  // Composition of Right Inverse Matrix by Matrix Multiplication
+  double mRightInv[3][2];
+  for(int row = 0; row < 3; row++)
+  {
+    for(int col = 0; col < 2; col++)
+    {
+      double soma1 = mNormalT[row][0] * mAuxInv[0][col];
+      double soma2 = mNormalT[row][1] * mAuxInv[1][col];
+      double soma3 = mNormalT[row][2] * mAuxInv[2][col];
+      double totalSoma = soma1 + soma2 + soma3;
+      mRightInv[row][col] = totalSoma;
+    }
+  }  
+  
+  // Initialize mInv Matrix
+  for(int i = 0; i < 9; i++)
+    mInv[i] = 0.0;
+
+  //Composition of mInv Matrix
+  i = 0;
+  for(int row = 0; row < 2; row++)
+    for(int col = 0; col < 3; col++)
+    {
+      mInv[i] = mRightInv[col][row];
+      i++;
+    }
+  
+  printf("\n");
+  return 0;
+}
 
 /** Function to normalize matrix 3x3
  */
@@ -236,13 +326,76 @@ int normalizeMatrix3x3(double *mIni, double *mNorm)
   return 0;
 }
 
+/* Function to normalize matrix
+ */
+
+int normalizeMatrix(double *mIni, double *mNorm)
+{ 
+  double mInitial[3][3], mNormal[3][3];
+  double norm;
+
+  int i = 0;
+  for(int row = 0; row < 3; row++)
+    for(int col = 0; col < 3; col++)
+    {
+      mInitial[row][col] = mIni[i];
+      mNormal[row][col] = 0.0;
+      i++;
+    }
+
+  // Composition of the Normalized Matrix
+  for(int col = 0; col < 3; col++)
+  {
+    norm = 0;
+    for(int row = 0; row < 3; row++)
+      norm += pow(mInitial[row][col], 2.0);
+    if(norm != 0.0)
+      for(int row = 0; row < 3; row++)
+	if(mInitial[row][col] != 0.0)
+	  mNormal[row][col] = mInitial[row][col]/sqrt(norm);
+        else
+	  mNormal[row][col] = 0.0;
+  }    
+
+  i = 0;
+  for(int row = 0; row < 3; row++)
+    for(int col = 0; col <3; col++)
+    {
+      mNorm[i] = mNormal[row][col];
+      i++;
+    }
+
+  // Show Initial Matrix
+  printf("\nInitial Matrix:\n");
+  for(int i = 0; i < 9; i++)
+  {  
+    printf("%f ", mIni[i]);
+    if((i != 0) & (((i+1) % 3) == 0))
+      printf("\n");
+  }
+
+  // Show Normalized Matrix
+  printf("\nNormalized Matrix:\n");
+  for(int i = 0; i < 9; i++)
+  {  
+    printf("m[%d] = %f ", i, mNorm[i]);
+    if((i != 0) & (((i+1) % 3) == 0))
+      printf("\n");
+  }
+
+  return 0;
+}
 
 /** Function to save three RGB images, one for each deconvolved color
  */
-void vglSaveColorDeconv(VglImage *imagevgl, double *mInitial, char *outFilename)
+void vglSaveColorDeconv(VglImage *imagevgl, double *mInitial, char *outFilename, int find3rdColor /*=0*/)
 {
   double *mNormal = (double *) malloc(9*sizeof(double));
-  normalizeMatrix3x3(mInitial, mNormal);
+  
+  if(find3rdColor != 0)
+    normalizeMatrix3x3(mInitial, mNormal);
+  else
+    normalizeMatrix(mInitial, mNormal);
 
   convertBGRToRGB(imagevgl);
   
@@ -277,15 +430,22 @@ void vglSaveColorDeconv(VglImage *imagevgl, double *mInitial, char *outFilename)
 /** Function to deconvolve image colors
  */
 
-VglImage* vglColorDeconv(VglImage *imagevgl, double *mInitial)
+VglImage* vglColorDeconv(VglImage *imagevgl, double *mInitial, int find3rdColor /*=0*/)
 {
   
   double *mNormal = (double *) malloc(9*sizeof(double));
   double *mInverse = (double *) malloc(9*sizeof(double));
   double log255 = log(255.0);
   
-  normalizeMatrix3x3(mInitial, mNormal);
-  invertMatrix3x3(mNormal, mInverse);
+  if(find3rdColor != 0)
+  {
+    normalizeMatrix3x3(mInitial, mNormal);
+    invertMatrix3x3(mNormal, mInverse);
+  } else
+    {
+      normalizeMatrix(mInitial, mNormal);
+      rightInverseMatrix2x3(mNormal, mInverse);
+    }
   convertBGRToRGB(imagevgl);
 
   //vglPrintImageInfo(imagevgl);
