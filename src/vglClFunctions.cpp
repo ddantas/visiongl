@@ -642,8 +642,7 @@ void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage
   float mask2[3] = {1,1,0};
   for(int i = 0; i < times; i++){
     if (i % 6 == 0){
-      vglCl3dErode(buf, buf2,mask1,3,1,1);
-      
+      vglCl3dErode(buf, buf2,mask1,3,1,1);      
       vglCl3dSum(buf2, dst, dst);
     }
     else if (i % 6 == 1){
@@ -651,16 +650,16 @@ void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage
       vglCl3dSum(buf, dst, dst);
     }
     else if (i % 6 == 2){
-      vglCl3dErode(buf2, buf,mask1,1,3,1);
-      vglCl3dSum(buf, dst, dst);
+      vglCl3dErode(buf, buf2,mask1,1,3,1);
+      vglCl3dSum(buf2, dst, dst);
     }
     else if (i % 6 == 3){
       vglCl3dErode(buf2, buf,mask2,1,3,1);
       vglCl3dSum(buf, dst, dst);
     }
     else if (i % 6 == 4){
-      vglCl3dErode(buf2, buf,mask1,1,1,3);
-      vglCl3dSum(buf, dst, dst);
+      vglCl3dErode(buf, buf2,mask1,1,1,3);
+      vglCl3dSum(buf2, dst, dst);
     }
     else{
       vglCl3dErode(buf2, buf,mask2,1,1,3);
