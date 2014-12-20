@@ -1111,9 +1111,15 @@ VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
     free(img);
     return 0;
   }
+
+  if (ipl->nChannels == 1 && ipl->widthStep != ipl->width)
+  {
+    fprintf(stderr,"%s, %s, Warning: OpenCV added %d px of padding to the image\n",__FILE__,__FUNCTION__,ipl->widthStep - ipl->width);
+  }
+
   img->ipl = ipl;
   img->ndarray = NULL;
-  img->shape[VGL_WIDTH]     = ipl->width;
+  img->shape[VGL_WIDTH]     = ipl->nChannels == 1 ? ipl->widthStep : ipl->width; //fix grayscale padding introducted by OpenCV
   img->shape[VGL_HEIGHT]    = ipl->height;
   img->ndim      = 2;
   img->depth     = ipl->depth;
@@ -1158,10 +1164,15 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
     return 0;
   }
 
+  if (ipl->nChannels == 1 && ipl->widthStep != ipl->width)
+  {
+    fprintf(stderr,"%s, %s, Warning: OpenCV added %d px of padding to the image\n",__FILE__,__FUNCTION__,ipl->widthStep - ipl->width);
+  }
+
   int n = lEnd-lStart+1;
   img->ipl = ipl;
   img->ndarray = NULL;
-  img->shape[VGL_WIDTH] = ipl->width;
+  img->shape[VGL_WIDTH] = ipl->nChannels == 1 ? ipl->widthStep : ipl->width; //fix grayscale padding introducted by OpenCV
   img->shape[VGL_HEIGHT] = ipl->height;
   img->shape[VGL_LENGTH] = n;
   img->ndim      = 3;
