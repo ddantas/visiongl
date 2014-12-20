@@ -37,3 +37,4 @@ __kernel void vglClFuzzyAlgDilate(__read_only image2d_t img_input,
 	}
 	write_imagef(img_output,coords,pmax);
 }
+

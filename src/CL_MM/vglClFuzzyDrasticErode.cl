@@ -37,24 +37,24 @@ __kernel void vglClFuzzyDrasticErode(__read_only image2d_t img_input,
 				else
 					S.x = 1;
 
-				if (a.y == 0)
-					S.y = b;
-				else
-					S.y = 1;
+        if (a.y == 0)
+          S.y = b;
+        else
+          S.y = 1;
 
-				if (a.z == 0)
-					S.z = b;
-				else
-					S.z = 1;
+        if (a.z == 0)
+          S.z = b;
+        else
+          S.z = 1;
 
-				if (a.w == 0)
-					S.w = b;
-				else
-					S.w = 1;
-			}
-			pmin = min(pmin,S);
-			conv_controller++;
-		}
-	}
-	write_imagef(img_output,coords,pmin);
+        if (a.w == 0)
+          S.w = b;
+        else
+          S.w = 1;
+      }
+      pmin = min(pmin,S);
+      conv_controller++;
+    }
+  }
+  write_imagef(img_output,coords,pmin);
 }

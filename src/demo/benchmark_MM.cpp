@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
 	
     VglImage* img = vglLoadImage(inFilename, 0, 0);
     vglPrintImageInfo(img);
+    iplPrintImageInfo(img->ipl);
 
     if (img->nChannels == 3)
     {
@@ -95,35 +96,46 @@ int main(int argc, char* argv[])
     }
 
     VglImage* out = vglCreateImage(img);
-	float erodeMask[9] = { 0, 0, 0, 1, 1, 1, 0, 0, 0 };
-	sprintf(outFilename, "%s%s", outPath, "/out_cl_alg_fuzzy_erode.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgErode);
+    float erodeMask[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_std_erode.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClErode);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_std_dilate.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClDilate);
+
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_alg_fuzzy_erode.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgErode);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_alg_fuzzy_dilate.tif");
     benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgDilate);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_geo_fuzzy_erode.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoErode);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_geo_fuzzy_dilate.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoDilate);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_arith_fuzzy_erode.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithErode);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_arith_fuzzy_dilate.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithDilate);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_bound_fuzzy_erode.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundErode);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_bound_fuzzy_dilate.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundDilate);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_drastic_fuzzy_erode.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticErode);
-	sprintf(outFilename, "%s%s", outPath, "/out_cl_drastic_fuzzy_dilate.tif");
-    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticDilate);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_DaP_fuzzy_erode.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPErode);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_DaP_fuzzy_dilate.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPDilate);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_Hamacher_fuzzy_erode.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherErode);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl_Hamacher_fuzzy_dilate.tif");
-	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherDilate);
 
-	return 0;
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_geo_fuzzy_erode.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoErode);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_geo_fuzzy_dilate.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyGeoDilate);
+
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_arith_fuzzy_erode.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithErode);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_arith_fuzzy_dilate.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyArithDilate);
+
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_bound_fuzzy_erode.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundErode);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_bound_fuzzy_dilate.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyBoundDilate);
+
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_drastic_fuzzy_erode.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticErode);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_drastic_fuzzy_dilate.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDrasticDilate);
+
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_DaP_fuzzy_erode.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPErode);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_DaP_fuzzy_dilate.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyDaPDilate);
+
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_Hamacher_fuzzy_erode.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherErode);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_Hamacher_fuzzy_dilate.tif");
+    benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyHamacherDilate);
+
+    return 0;
 }

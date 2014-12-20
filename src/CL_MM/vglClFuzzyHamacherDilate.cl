@@ -11,7 +11,7 @@ __kernel void vglClFuzzyHamacherDilate(__read_only image2d_t img_input,
                                 __constant float* convolution_window, 
                                 int window_size_x, 
                                 int window_size_y,
-								float gama)
+                                float gama)
 {
 	int2 coords = (int2)(get_global_id(0), get_global_id(1));
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
