@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 
     printf("VisionGL-OpenCL on %s, %d operations\n\n", inFilename, nSteps);
 	
-    VglImage* img = vglLoadImage(inFilename, 1, 0);
+    VglImage* img = vglLoadImage(inFilename, 0, 0);
     vglPrintImageInfo(img);
 
     if (img->nChannels == 3)
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
     }
 
     VglImage* out = vglCreateImage(img);
-	float erodeMask[9] = { 0,1, 0, 1, 1, 1, 0, 1, 0 };
+	float erodeMask[9] = { 0, 0, 0, 1, 1, 1, 0, 0, 0 };
 	sprintf(outFilename, "%s%s", outPath, "/out_cl_alg_fuzzy_erode.tif");
 	benchmark(img,out,erodeMask,3,3,outFilename,nSteps,&vglClFuzzyAlgErode);
     sprintf(outFilename, "%s%s", outPath, "/out_cl_alg_fuzzy_dilate.tif");

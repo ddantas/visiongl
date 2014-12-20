@@ -24,11 +24,11 @@ __kernel void vglCl3dFuzzyArithErode(__read_only image3d_t img_input,
 	int factorz = floor((float)window_size_z / 2.0f);
 	int conv_controller = 0;
 	float4 pmin = (1.0,1.0,1.0,1.0);
-	for(int i = -factorx; i <= factorx; i++)
+  for(int w = -factorz; w <= factorz; w++)
 	{
 		for(int j = -factory; j <= factory; j++)
 		{
-			for(int w = -factorz; w <= factorz; w++)
+      for(int i = -factorx; i <= factorx; i++)		
 			{
 				float4 a = read_imagef(img_input, smp, (int4)(coords.x + i,coords.y + j, coords.z + w,0));
 				float b = 1 - convolution_window[conv_controller]; //complement of mask

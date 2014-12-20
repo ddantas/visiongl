@@ -21,14 +21,14 @@ __kernel void vglClErode(__read_only image2d_t img_input,
 	int factory = floor((float)window_size_y / 2.0f);
 	int conv_controller = 0;
 	float4 pmin = (1.0,1.0,1.0,1.0);
-	for(int i = -factorx; i <= factorx; i++)
+  for(int j = -factory; j <= factory; j++)
 	{
-		for(int j = -factory; j <= factory; j++)
+		for(int i = -factorx; i <= factorx; i++)
 		{
-		float4 p = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
-		if (convolution_window[conv_controller] != 0)
-			pmin = min(p,pmin);
-		conv_controller++;
+      float4 p = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
+      if (convolution_window[conv_controller] != 0)
+        pmin = min(p,pmin);
+      conv_controller++;
 		}
 	}
 	write_imagef(img_output,coords,pmin);
