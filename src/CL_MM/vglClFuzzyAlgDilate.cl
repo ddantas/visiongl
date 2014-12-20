@@ -21,9 +21,9 @@ __kernel void vglClFuzzyAlgDilate(__read_only image2d_t img_input,
 	int factory = floor((float)window_size_y / 2.0f);
 	int conv_controller = 0;
 	float4 pmax = (0,0,0,0);
-	for(int i = -factorx; i <= factorx; i++)
+  for(int j = -factory; j <= factory; j++)
 	{
-		for(int j = -factory; j <= factory; j++)
+    for(int i = -factorx; i <= factorx; i++)
 		{
 			float4 a = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
 			float b = convolution_window[conv_controller];
