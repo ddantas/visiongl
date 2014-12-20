@@ -767,7 +767,7 @@ void vglIpl4To3Channels(VglImage* img)
     cvCvtColor(img->ipl, iplRGB, CV_RGBA2RGB);
     cvReleaseImage(&(img->ipl));
     img->ipl = iplRGB;
-    img->nChannels = 4;
+    img->nChannels = 3;
 }
 
 /** Convert VglImage from 3 to 4 channels

@@ -27,7 +27,7 @@ __kernel void vglClFuzzyDaPDilate(__read_only image2d_t img_input,
 		for(int j = -factory; j <= factory; j++)
 		{
 			float4 a = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
-			int b = convolution_window[conv_controller];
+			float b = convolution_window[conv_controller];
 			float4 S = (a*b)/(max(max(a,b),gama));
 			pmax = max(pmax,S);
 			conv_controller++;

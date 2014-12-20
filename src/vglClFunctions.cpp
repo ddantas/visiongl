@@ -3,6 +3,7 @@
 #include "vglContext.h"
 #include "vglClFunctions.h"
 #include "cl2cpp_shaders.h"
+#include "cl2cpp_MM.h"
 #include <math.h>
 
 #include <fstream>
@@ -636,15 +637,33 @@ void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage
                           0,0,0,
                           0,1,0,
                           0,0,0};
-  float mask_2d[27] = { 0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0 };
-  float mask_2d2[27] = { 0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0 };
+
+  float mask1[3] = {0,1,1};
+  float mask2[3] = {1,1,0};
   for(int i = 0; i < times; i++){
-    if (i % 2 == 0){
-      vglCl3dErode(buf, buf2,square_mask,3,3,3);
+    if (i % 6 == 0){
+      vglCl3dErode(buf, buf2,mask1,3,1,1);
+      
       vglCl3dSum(buf2, dst, dst);
     }
+    else if (i % 6 == 1){
+      vglCl3dErode(buf2, buf,mask2,3,1,1);
+      vglCl3dSum(buf, dst, dst);
+    }
+    else if (i % 6 == 2){
+      vglCl3dErode(buf2, buf,mask1,1,3,1);
+      vglCl3dSum(buf, dst, dst);
+    }
+    else if (i % 6 == 3){
+      vglCl3dErode(buf2, buf,mask2,1,3,1);
+      vglCl3dSum(buf, dst, dst);
+    }
+    else if (i % 6 == 4){
+      vglCl3dErode(buf2, buf,mask1,1,1,3);
+      vglCl3dSum(buf, dst, dst);
+    }
     else{
-      vglCl3dErode(buf2, buf,cross_mask,3,3,3);
+      vglCl3dErode(buf2, buf,mask2,1,1,3);
       vglCl3dSum(buf, dst, dst);
     }
   }
@@ -828,7 +847,6 @@ bool vglClEqual(VglImage* input1, VglImage* input2)
 
   return e != 1;
 }
-
 
 void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float* window, int window_size_x, int window_size_y, int window_size_z)
 {

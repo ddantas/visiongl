@@ -27,7 +27,7 @@ __kernel void vglClFuzzyHamacherErode(__read_only image2d_t img_input,
 		for(int j = -factory; j <= factory; j++)
 		{
 			float4 a = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
-			int b = 1 - convolution_window[conv_controller]; //complement of mask
+			float b = 1 - convolution_window[conv_controller]; //complement of mask
 			float4 S = (a+b+((gama-2)*a*b))/(1+((gama-1)*a*b));
 			pmin = min(pmin,S);
 			conv_controller++;
