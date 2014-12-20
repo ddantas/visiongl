@@ -12,7 +12,6 @@ __kernel void vglClFuzzyGeoErode(__read_only image2d_t img_input,
                                 int window_size_x, 
                                 int window_size_y)
 {
-<<<<<<< HEAD
 	int2 coords = (int2)(get_global_id(0), get_global_id(1));
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
                               CLK_ADDRESS_CLAMP_TO_EDGE |   //Clamp to next edge
