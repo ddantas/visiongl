@@ -23,11 +23,11 @@ __kernel void vglCl3dDilate(__read_only image3d_t img_input,
 	int factorz = floor((float)window_size_z / 2.0f);
 	int conv_controller = 0;
 	float4 pmax = 0.0f;
-	for(int i = -factorx; i <= factorx; i++)
+	for(int w = -factorz; w <= factorz; w++)
 	{
 		for(int j = -factory; j <= factory; j++)
 		{
-			for(int w = -factorz; w <= factorz; w++)
+      for(int i = -factorx; i <= factorx; i++)
 			{
 				float4 p = read_imagef(img_input, smp, (int4)(coords.x + i,coords.y + j, coords.z + w, 0));
 				if (convolution_window[conv_controller] != 0)

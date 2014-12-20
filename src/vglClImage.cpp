@@ -458,7 +458,7 @@ void vglClUpload(VglImage* img)
             cl_image_format format;
             if (img->nChannels == 1)
             {
-                format.image_channel_order = CL_R;
+                format.image_channel_order = CL_INTENSITY;
             }
             else if (img->nChannels == 4)
             {
