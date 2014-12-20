@@ -28,7 +28,10 @@ __kernel void vglClFuzzyAlgDilate(__read_only image2d_t img_input,
 			float4 a = read_imagef(img_input, smp, (int2)(coords.x + i,coords.y + j));
 			float b = convolution_window[conv_controller];
 			float4 S = a*b;
-			pmax = max(pmax,S);
+			pmax.x = max(pmax.x,S.x);
+      pmax.y = max(pmax.y,S.y);
+      pmax.z = max(pmax.z,S.z);
+      pmax.w = max(pmax.w,S.w);
 			conv_controller++;
 		}
 	}
