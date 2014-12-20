@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 
     printf("VisionGL-OpenCL on %s, %d operations\n\n", inFilename, nSteps);
 	
-    VglImage* img = vglLoadImage(inFilename, 0, 0);
+    VglImage* img = vglLoadImage(inFilename, 1, 0);
     vglPrintImageInfo(img);
 
     if (img->nChannels == 3)
