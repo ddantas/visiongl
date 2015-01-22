@@ -628,6 +628,11 @@ void vglNdarray3To4Channels(VglImage* img)
         fprintf(stdout, "%s:%s: Warning: image already has 4 channels\n", __FILE__, __FUNCTION__);
         return;
     }
+    else if (img->nChannels != 3)
+    {
+        fprintf(stderr, "%s:%s: Error: image should have 3 channels but has %d channels\n", __FILE__, __FUNCTION__, img->nChannels);
+        return;
+    }
 
     int d = img->depth / 8;
     if (d < 1) d = 1; //d is the byte size of the depth color format
@@ -693,6 +698,11 @@ void vglNdarray4To3Channels(VglImage* img)
         fprintf(stdout, "%s:%s: Warning: image already has 3 channels\n", __FILE__, __FUNCTION__);
         return;
     }
+    else if (img->nChannels != 4)
+    {
+        fprintf(stderr, "%s:%s: Error: image should have 4 channels but has %d channels\n", __FILE__, __FUNCTION__, img->nChannels);
+        return;
+    }
 
     int d = img->depth / 8;
     if (d < 1) d = 1;
@@ -739,8 +749,15 @@ void vglIpl3To4Channels(VglImage* img)
     if (!img->ipl){
         return;
     }
-    if (img->ipl->nChannels != 3)
+
+    if (img->nChannels == 4)
     {
+        fprintf(stdout, "%s:%s: Warning: image already has 4 channels\n", __FILE__, __FUNCTION__);
+        return;
+    }
+    else if (img->nChannels != 3)
+    {
+        fprintf(stderr, "%s:%s: Error: image should have 3 channels but has %d channels\n", __FILE__, __FUNCTION__, img->nChannels);
         return;
     }
   
@@ -758,8 +775,14 @@ void vglIpl4To3Channels(VglImage* img)
     if (!img->ipl){
         return;
     }
-    if (img->ipl->nChannels != 4)
+    if (img->nChannels == 3)
     {
+        fprintf(stdout, "%s:%s: Warning: image already has 3 channels\n", __FILE__, __FUNCTION__);
+        return;
+    }
+    else if (img->nChannels != 4)
+    {
+        fprintf(stderr, "%s:%s: Error: image should have 4 channels but has %d channels\n", __FILE__, __FUNCTION__, img->nChannels);
         return;
     }
   
@@ -792,10 +815,17 @@ void vglImage3To4Channels(VglImage* img)
  */
 void vglImage4To3Channels(VglImage* img)
 {
-    if (img->nChannels != 4)
+    if (img->nChannels == 3)
     {
+        fprintf(stdout, "%s:%s: Warning: image already has 3 channels\n", __FILE__, __FUNCTION__);
         return;
     }
+    else if (img->nChannels != 4)
+    {
+        fprintf(stderr, "%s:%s: Error: image should have 4 channels but has %d channels\n", __FILE__, __FUNCTION__, img->nChannels);
+        return;
+    }
+
     if (img->ipl)
     {
         vglIpl4To3Channels(img);
@@ -822,11 +852,16 @@ void vglReleaseImage(VglImage** p_image)
     free(image->ndarray);
   }
   if (image->fbo != -1){
-    glDeleteFramebuffersEXT(1, &image->fbo); 
+    glDeleteFramebuffersEXT(1, &(image->fbo)); 
   }
   if (image->tex != -1){
-    glDeleteTextures(1, &image->tex);
+    glDeleteTextures(1, &(image->tex));
   }
+#ifdef __OPENCL__
+  if (image->oclPtr != NULL){
+    clReleaseMemObject(image->oclPtr);
+  }
+#endif
   delete(*p_image);
 }
 

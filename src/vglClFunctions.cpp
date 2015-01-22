@@ -215,7 +215,7 @@ cl_mem vglCl3dPartialHistogram(VglImage* img_input)
   err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &mobj_histogram );
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
-    err = clSetKernelArg( kernel, 2, sizeof( int ), &img_input->nChannels );
+  err = clSetKernelArg( kernel, 2, sizeof( int ), &img_input->nChannels );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input->ndim == 3){
@@ -559,7 +559,7 @@ void vglClErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, 
     }
   
     if (times % 2 == 1)
-      output = buff;
+      vglCl3dCopy(buff,output);
   }
 }
 
@@ -586,7 +586,7 @@ void vglCl3dDilate(VglImage* input, VglImage* output, VglImage* buff, float* mas
     }
 
     if (times % 2 == 1)
-      output = buff;
+      vglCl3dCopy(buff, output);
   }
 }
 
@@ -613,7 +613,7 @@ void vglClDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask,
     }
 
     if (times % 2 == 1)
-      output = buff;
+      vglCl3dCopy(buff, output);
   }
 }
 
@@ -692,23 +692,22 @@ void vglClDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage* 
   }
 }
 
-void vglClTopHat(VglImage* src, VglImage* dst, VglImage* buf, float* window, int window_size_x, int window_size_y, int times)
+void vglClTopHat(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, float* window, int window_size_x, int window_size_y, int times)
 {
 
-  vglClErode(src,dst,buf,window,window_size_x,window_size_y,times);
-  vglClDilate(src,dst,buf,window,window_size_x,window_size_y,times);
+  vglClErode(src, dst, buf, window, window_size_x, window_size_y, times);
+  vglClDilate(dst, buf, buf2, window, window_size_x, window_size_y, times);
 
-  //must implement vglClSub
-  //vglClSub(src,dst,dst);
+  vglClSub(src, buf, dst);
 }
 
 void vglCl3dTopHat(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, float* window, int window_size_x, int window_size_y, int window_size_z, int times)
 {
 
-  vglCl3dErode(src,dst,buf,window,window_size_x,window_size_y,window_size_z,times);
-  vglCl3dDilate(dst,buf,buf2,window,window_size_x,window_size_y,window_size_z,times);
+  vglCl3dErode(src, dst, buf, window, window_size_x, window_size_y, window_size_z, times);
+  vglCl3dDilate(dst, buf, buf2, window, window_size_x, window_size_y, window_size_z, times);
 
-  vglCl3dSub(src,buf,dst);
+  vglCl3dSub(src, buf, dst);
 }
 
 bool vglCl3dEqual(VglImage* input1, VglImage* input2)

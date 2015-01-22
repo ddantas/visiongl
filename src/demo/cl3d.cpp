@@ -37,7 +37,10 @@ from index 0 to index n\n\
   vglInit(500,500);
   vglClInit();
   VglImage* img = vglLoad3dImage(infilename, i_0, i_n);
-  vglNdarray3To4Channels(img);
+  if (img->nChannels == 3)
+  {
+    vglNdarray3To4Channels(img);
+  }
   VglImage* out = vglCreateImage(img);
 
   //3x3x3 mask for convolution
@@ -64,20 +67,23 @@ from index 0 to index n\n\
                      1.0f/32.0f, 1.0f/16.0f, 1.0f/32.0f, 
                      1.0f/64.0f, 1.0f/32.0f, 1.0f/64.0f};
 		
-  float erosion[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  float strel[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1,
                       1, 1, 1, 1, 1, 1, 1, 1, 1,
                       1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 
-
   //vglCl3dNot(img, out);
   //vglCl3dConvolution(img, out, blur333,3,3,3);
-  vglCl3dBlurSq3(img, out);
+  //vglCl3dBlurSq3(img, out);
   //vglCl3dThreshold(img, out, 0.5);
-  //vglCl3dErode(img, out, erosion, 3, 3, 3);
+  vglCl3dDilate(img, out, strel, 1, 1, 5);
   vglClDownload(out);
 
-  vglNdarray4To3Channels(out);
+  if (out->nChannels == 4)
+  {
+    vglNdarray4To3Channels(out);
+  }
+
   vglSave3dImage(out, outfilename, i_0, i_n);
   //clReleaseMemObject(img->oclPtr);
   //clReleaseMemObject(out->oclPtr);

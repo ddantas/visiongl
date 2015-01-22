@@ -295,7 +295,7 @@ rundemofrac:
 	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)
 
 rundemocam:
-	cd $(OUTPUT_BINPATH); ddd ./demo_$(CAM_NAME)
+	cd $(OUTPUT_BINPATH); ./demo_$(CAM_NAME)
 
 rundemogdcm:
 	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm  
