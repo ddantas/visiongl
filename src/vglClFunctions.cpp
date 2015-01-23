@@ -98,7 +98,7 @@ int* vglClSumPartialHistogram(cl_mem partial_hist, int size, int nchannels)
   
   int* histogram = (int*) malloc(nchannels*256*sizeof(int));
   err = clEnqueueReadBuffer(cl.commandQueue,mobj_histogram,CL_TRUE, 0, nchannels*256*sizeof(int), histogram, 0, NULL, NULL);
-  vglClCheckError(err,"ReadBuffer histogram");
+  vglClCheckError(err, (char*) "ReadBuffer histogram");
 
   err = clReleaseMemObject( mobj_histogram );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
@@ -282,7 +282,7 @@ int* vglClCumulativeSum(int* arr, int size)
   
   int* cumsum = (int*) malloc(size*sizeof(int));
   err = clEnqueueReadBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, size*sizeof(int), cumsum, 0, NULL, NULL);
-  vglClCheckError(err,"ReadBuffer histogram");
+  vglClCheckError(err, (char*) "ReadBuffer histogram");
 
   err = clReleaseMemObject( mobj_arr );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
@@ -345,7 +345,7 @@ int* vglClCumulativeSumNorm(int* arr, int size, int norm_total)
   
   int* cumsum = (int*) malloc(size*sizeof(int));
   err = clEnqueueReadBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, size*sizeof(int), cumsum, 0, NULL, NULL);
-  vglClCheckError(err,"ReadBuffer histogram");
+  vglClCheckError(err, (char*) "ReadBuffer histogram");
 
   err = clReleaseMemObject( mobj_arr );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
