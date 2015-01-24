@@ -3,6 +3,8 @@
 #include "vglGdcmIo.h"
 #include "glsl2cpp_shaders.h"
 
+//toupper
+#include <ctype.h>
 
 int main(int argc, char *argv[])
 {
