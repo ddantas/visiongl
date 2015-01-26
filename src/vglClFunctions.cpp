@@ -978,42 +978,6 @@ void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, VglImag
 }
 
 
-/*src = X
-  mask = Y
-  dst = buffer1, também é a vaiavel de saida
-  buff = buffer2,
-  buff2 = buffer3
-  em dst vai ficar a n-esima erosao condicional
-  em buff vai ficar a passo anterior do somatório das uniões para comparação
-  em buff2 vai ficar o passo atual do somatório das uniões para comparação de conergencia com buff*/
-void vglCl3dDilateFromMarker(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y,int strel_size_z)
-{
-
-  vglCl3dConditionalDilate(marker, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
-  vglCl3dCopy(dst, buff2);
-
-  int c = 0;
-  while(!vglCl3dEqual(buff, buff2))
-  {
-    if (c % 2 == 0)
-    {
-      vglCl3dConditionalDilate(dst, marker, src, strel, strel_size_x, strel_size_y, strel_size_z);
-      vglCl3dCopy(buff2, buff);
-      vglCl3dMax(marker, buff2, buff2);
-      //vglCl3dCopy(mask, dst);
-    }
-    else
-    {
-      vglCl3dConditionalDilate(marker, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
-      vglCl3dCopy(buff2, buff);
-      vglCl3dMax(dst, buff2, buff2);
-    }
-    c++;
-  }
-
-  vglCl3dCopy(buff2, dst);
-}
-
 /** Reconstruction by dilation
 
   */
