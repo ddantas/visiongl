@@ -32,9 +32,11 @@ int main(int argc, char* argv[])
     char* outFilename = (char*) malloc(strlen(outPath) + 200);
     printf("OpenCVCLBenchmark on %s for %d operations\n\n",inFilename,nSteps);
     cv::Mat imgxm = cv::imread(inFilename,1);
+    cv::Mat imgRGBA(imgxm.size(), CV_8UC4);
+    
 
-    cvtColor(imgxm, imgxm, CV_BGR2RGBA);
-    cv::ocl::oclMat img(imgxm), out(imgxm);
+    cvtColor(imgxm, imgRGBA, CV_BGR2RGBA);
+    cv::ocl::oclMat img(imgRGBA), out(imgRGBA);
 
     std::vector<int> saveparams;
     //saveparams.push_back(CV_IMWRITE_PNG_COMPRESSION);
@@ -48,7 +50,6 @@ int main(int argc, char* argv[])
     }
 
     //First call to Blur 3x3
-    cv::Size ksize(3,3);
     TimerStart();
     cv::ocl::GaussianBlur(img, out, cv::Size(3,3), 0);
     //ocl::blur(img,out,ksize);
@@ -59,9 +60,10 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-	cv::ocl::GaussianBlur(img, out, cv::Size(3,3), 0);
+	      cv::ocl::GaussianBlur(img, out, cv::Size(3,3), 0);
         //ocl::blur(img,out,ksize);
     }
+    cv::ocl::finish();
     printf("Time spent on %8d Blur 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
     
     cv::Mat saveout(out);
@@ -93,6 +95,7 @@ int main(int argc, char* argv[])
         p++;
         filter33->apply(img, out);
     }
+    cv::ocl::finish();
     printf("Time spent on %8d Convolution 3x3:         %s \n", nSteps, getTimeElapsedInSeconds());
     saveout = *new cv::Mat(out);
     cvtColor(saveout, saveout, CV_RGBA2BGR);
@@ -113,6 +116,7 @@ int main(int argc, char* argv[])
         p++;
         filter55->apply(img, out);
     }
+    cv::ocl::finish();
     printf("Time spent on %8d Convolution 5x5:         %s\n", nSteps, getTimeElapsedInSeconds());
     saveout = *new cv::Mat(out);
     cvtColor(saveout, saveout, CV_RGBA2BGR);
@@ -130,8 +134,9 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-	cv::ocl::erode(img, out, cverode33);
+	      cv::ocl::erode(img, out, cverode33);
     }
+    cv::ocl::finish();
     printf("Time spent on %8d Erode 3x3:               %s\n", nSteps, getTimeElapsedInSeconds());
     saveout = *new cv::Mat(out);
     cvtColor(saveout, saveout, CV_RGBA2BGR);
@@ -148,8 +153,9 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-	cv::ocl::bitwise_not(img,out);
+	      cv::ocl::bitwise_not(img,out);
     }
+    cv::ocl::finish();
     printf("Time spent on %8d Invert:                  %s\n", nSteps, getTimeElapsedInSeconds());
     saveout = *new cv::Mat(out);
     cvtColor(saveout, saveout, CV_RGBA2BGR);
@@ -169,6 +175,7 @@ int main(int argc, char* argv[])
         p++;
         img.copyTo(x1);
     }
+    cv::ocl::finish();
     printf("Time spent on %8d copy GPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
     saveout = *new cv::Mat(out);
     cvtColor(saveout, saveout, CV_RGBA2BGR);
@@ -189,6 +196,7 @@ int main(int argc, char* argv[])
         p++;
         img.upload(imgxm);
     }
+    cv::ocl::finish();
     printf("Time spent on %8d copy CPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     //First call to Copy GPU->CPU
@@ -204,6 +212,7 @@ int main(int argc, char* argv[])
         p++;
         img.download(x2);
     }
+    cv::ocl::finish();
     printf("Time spent on %8d copy GPU->CPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     return 0;
