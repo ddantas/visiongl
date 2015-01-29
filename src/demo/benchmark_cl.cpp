@@ -238,7 +238,9 @@ int main(int argc, char* argv[])
     cvSaveImage(outFilename, iplRGBA);
 
     //First call to Copy CPU->GPU
+    vglCheckContext(img, VGL_RAM_CONTEXT);
     TimerStart();
+    vglSetContext(img, VGL_RAM_CONTEXT);
     vglClUpload(img);
     vglClFlush();
     printf("First call to          Copy CPU->GPU:           %s \n", getTimeElapsedInSeconds());
@@ -248,6 +250,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
+        vglSetContext(img, VGL_RAM_CONTEXT);
         vglClUpload(img);
     }
     vglClFlush();
@@ -258,7 +261,9 @@ int main(int argc, char* argv[])
     cvSaveImage(outFilename, img->ipl);
 
     //First call to Copy GPU->CPU
+    vglCheckContext(img, VGL_CL_CONTEXT);
     TimerStart();
+    vglSetContext(img, VGL_CL_CONTEXT);
     vglClDownload(img);
     vglClFlush();
     printf("First call to          Copy GPU->CPU:           %s \n", getTimeElapsedInSeconds());
@@ -268,6 +273,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
+        vglSetContext(img, VGL_CL_CONTEXT);
         vglClDownload(img);
     }
     vglClFlush();
