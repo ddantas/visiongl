@@ -52,6 +52,7 @@ int main(int argc, char* argv[])
     //First call to Blur 3x3
     TimerStart();
     cv::ocl::GaussianBlur(img, out, cv::Size(3,3), 0);
+    cv::ocl::finish();
     //ocl::blur(img,out,ksize);
     printf("First call to          Blur 3x3:                %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Blur 3x3
@@ -86,6 +87,7 @@ int main(int argc, char* argv[])
     TimerStart();
     cv::Ptr<cv::ocl::FilterEngine_GPU> filter33 = cv::ocl::createLinearFilter_GPU(CV_8UC4, CV_8UC4, cvkernel33);
     filter33->apply(img, out);
+    cv::ocl::finish();
     printf("First call to          Convolution 3x3:         %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Convolution 3x3
     p = 0;
@@ -106,6 +108,7 @@ int main(int argc, char* argv[])
     TimerStart();
     cv::Ptr<cv::ocl::FilterEngine_GPU> filter55 = cv::ocl::createLinearFilter_GPU(CV_8UC4, CV_8UC4, cvkernel55);
     filter55->apply(img, out);
+    cv::ocl::finish();
     printf("First call to          Convolution 5x5:         %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Convolution 5x5
     p = 0;
@@ -127,6 +130,7 @@ int main(int argc, char* argv[])
     TimerStart();
     cv::Mat cverode33 = getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
     cv::ocl::erode(img, out, cverode33);
+    cv::ocl::finish();
     printf("First call to          Erode 3x3:               %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Erode 3x3
     p = 0;
@@ -146,6 +150,7 @@ int main(int argc, char* argv[])
     //First call to Invert
     TimerStart();
     cv::ocl::bitwise_not(img,out);
+    cv::ocl::finish();
     printf("Fisrt call to          Invert:                  %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Invert
     p = 0;
@@ -166,6 +171,7 @@ int main(int argc, char* argv[])
     TimerStart();
     cv::ocl::oclMat x1(img.size(), CV_8UC4);
     img.copyTo(x1);
+    cv::ocl::finish();
     printf("First call to          Copy GPU->GPU:           %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Copy GPU->GPU
     p = 0;
@@ -187,6 +193,7 @@ int main(int argc, char* argv[])
     p = 0;
     TimerStart();
     img.upload(imgxm);
+    cv::ocl::finish();
     printf("First call to          Copy CPU->GPU:           %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Copy CPU->GPU
     p = 0;
@@ -203,6 +210,7 @@ int main(int argc, char* argv[])
     cv::Mat x2;
     TimerStart();
     img.download(x2);
+    cv::ocl::finish();
     printf("First call to          Copy GPU->CPU:           %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Copy GPU->CPU
     p = 0;

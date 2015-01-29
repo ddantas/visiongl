@@ -113,6 +113,11 @@ void vglClNdNot(VglImage* img_input, VglImage* img_output);
 /** Direct copy from src to dst.
 
   */
+void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Direct copy from src to dst.
+
+  */
 void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 
 /** Threshold of src image by float parameter. if the pixel is below thresh,

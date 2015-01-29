@@ -77,7 +77,7 @@ ifeq ($(WITH_OPENCL), 1)
         OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
         OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
         OPENCL_LIBRARIES   = -lOpenCL
-        OPENCL_FILES = src/cl2cpp_shaders.cpp src/cl2cpp_MM.cpp src/vglClImage.cpp
+        OPENCL_FILES = src/cl2cpp_shaders.cpp src/vglClFunctions.cpp src/cl2cpp_MM.cpp src/vglClImage.cpp
 endif
 
 ifeq ($(WITH_GDCM), 1)
@@ -234,7 +234,7 @@ LINUXAMD64_DEMO_COLORDECONV = $(CC) $(COMPILER_FLAGS) \
 
 
 
-GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglClImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkIo.h $(INCLUDE_PATH)/vglTiffIo.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglTail.h $(INCLUDE_PATH)/vglDeconv.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
+GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglClImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkIo.h $(INCLUDE_PATH)/vglTiffIo.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglClFunctions*.h $(INCLUDE_PATH)/vglTail.h $(INCLUDE_PATH)/vglDeconv.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
 
 
 all:
@@ -295,7 +295,7 @@ rundemofrac:
 	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)
 
 rundemocam:
-	cd $(OUTPUT_BINPATH); ddd ./demo_$(CAM_NAME)
+	cd $(OUTPUT_BINPATH); ./demo_$(CAM_NAME)
 
 rundemogdcm:
 	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm  

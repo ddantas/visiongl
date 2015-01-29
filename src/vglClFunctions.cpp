@@ -28,7 +28,7 @@ int* vglClHistogram(VglImage* img_input){
   int* hist = vglClSumPartialHistogram(partial_hist,img_input->shape[VGL_WIDTH], img_input->nChannels);
 
   cl_int err = clReleaseMemObject( partial_hist );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  vglClCheckError(err, (char*) "clReleaseMemObject partial_hist");
 
   return hist;
 }
@@ -98,10 +98,10 @@ int* vglClSumPartialHistogram(cl_mem partial_hist, int size, int nchannels)
   
   int* histogram = (int*) malloc(nchannels*256*sizeof(int));
   err = clEnqueueReadBuffer(cl.commandQueue,mobj_histogram,CL_TRUE, 0, nchannels*256*sizeof(int), histogram, 0, NULL, NULL);
-  vglClCheckError(err,"ReadBuffer histogram");
+  vglClCheckError(err, (char*) "ReadBuffer histogram");
 
   err = clReleaseMemObject( mobj_histogram );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  vglClCheckError(err, (char*) "clReleaseMemObject mobj_histogram");
 
   return histogram;
 }
@@ -215,7 +215,7 @@ cl_mem vglCl3dPartialHistogram(VglImage* img_input)
   err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &mobj_histogram );
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
-    err = clSetKernelArg( kernel, 2, sizeof( int ), &img_input->nChannels );
+  err = clSetKernelArg( kernel, 2, sizeof( int ), &img_input->nChannels );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input->ndim == 3){
@@ -282,7 +282,7 @@ int* vglClCumulativeSum(int* arr, int size)
   
   int* cumsum = (int*) malloc(size*sizeof(int));
   err = clEnqueueReadBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, size*sizeof(int), cumsum, 0, NULL, NULL);
-  vglClCheckError(err,"ReadBuffer histogram");
+  vglClCheckError(err, (char*) "ReadBuffer histogram");
 
   err = clReleaseMemObject( mobj_arr );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
@@ -345,7 +345,7 @@ int* vglClCumulativeSumNorm(int* arr, int size, int norm_total)
   
   int* cumsum = (int*) malloc(size*sizeof(int));
   err = clEnqueueReadBuffer(cl.commandQueue,mobj_arr,CL_TRUE, 0, size*sizeof(int), cumsum, 0, NULL, NULL);
-  vglClCheckError(err,"ReadBuffer histogram");
+  vglClCheckError(err, (char*) "ReadBuffer histogram");
 
   err = clReleaseMemObject( mobj_arr );
   vglClCheckError(err, (char*) "clReleaseMemObject mobj_arr");
@@ -509,7 +509,7 @@ void vglCl3dGrayLevelTransform(VglImage* input, VglImage* output, int* transform
   
 }
 
-void vglCl3dErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int window_size_z, int times)
+void vglCl3dErode(VglImage* input, VglImage* output, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times)
 {
 
   if(input->ndim < 3)
@@ -521,23 +521,23 @@ void vglCl3dErode(VglImage* input, VglImage* output, VglImage* buff, float* mask
   if (times > 0)
   {
 
-    vglCl3dErode(input,buff,mask,window_size_x,window_size_y,window_size_z);
+    vglCl3dErode(input, buff, strel, strel_size_x, strel_size_y, strel_size_z);
   
     for(int i = 1; i < times; i++)
     {
       if (i % 2 == 0)
-        vglCl3dErode(output,buff,mask,window_size_x,window_size_y,window_size_z);
+        vglCl3dErode(output, buff, strel, strel_size_x, strel_size_y, strel_size_z);
       else
-        vglCl3dErode(buff,output,mask,window_size_x,window_size_y,window_size_z);
+        vglCl3dErode(buff, output, strel, strel_size_x, strel_size_y, strel_size_z);
     }
 
     if (times % 2 == 1)
-      vglCl3dCopy(buff,output);
+      vglCl3dCopy(buff, output);
   }
 
 }
 
-void vglClErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int times)
+void vglClErode(VglImage* input, VglImage* output, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times)
 {
 
   if(input->ndim > 2)
@@ -548,22 +548,22 @@ void vglClErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, 
 
   if (times > 0)
   {
-    vglClErode(input,buff,mask,window_size_x,window_size_y);
+    vglClErode(input, buff, strel, strel_size_x, strel_size_y);
   
     for(int i = 1; i < times; i++)
     {
       if (i % 2 == 0)
-        vglClErode(output,buff,mask,window_size_x,window_size_y);
+        vglClErode(output, buff, strel, strel_size_x, strel_size_y);
       else
-        vglClErode(buff,output,mask,window_size_x,window_size_y);
+        vglClErode(buff, output, strel, strel_size_x, strel_size_y);
     }
   
     if (times % 2 == 1)
-      output = buff;
+      vglCl3dCopy(buff, output);
   }
 }
 
-void vglCl3dDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y,int window_size_z, int times)
+void vglCl3dDilate(VglImage* input, VglImage* output, VglImage* buff, float* strel, int strel_size_x, int strel_size_y,int strel_size_z, int times)
 {
 
   if(input->ndim < 3)
@@ -575,22 +575,22 @@ void vglCl3dDilate(VglImage* input, VglImage* output, VglImage* buff, float* mas
   if (times > 0)
   {
   
-    vglCl3dDilate(input,buff,mask,window_size_x,window_size_y,window_size_z);
+    vglCl3dDilate(input, buff, strel, strel_size_x, strel_size_y, strel_size_z);
   
     for(int i = 1; i < times; i++)
     {
       if (i % 2 == 0)
-        vglCl3dDilate(output,buff,mask,window_size_x,window_size_y,window_size_z);
+        vglCl3dDilate(output, buff, strel, strel_size_x, strel_size_y, strel_size_z);
       else
-        vglCl3dDilate(buff,output,mask,window_size_x,window_size_y,window_size_z);
+        vglCl3dDilate(buff, output, strel, strel_size_x, strel_size_y, strel_size_z);
     }
 
     if (times % 2 == 1)
-      output = buff;
+      vglCl3dCopy(buff, output);
   }
 }
 
-void vglClDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask, int window_size_x, int window_size_y, int times)
+void vglClDilate(VglImage* input, VglImage* output, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times)
 {
 
   if(input->ndim > 2)
@@ -602,18 +602,18 @@ void vglClDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask,
   if (times > 0)
   {
 
-    vglClDilate(input,buff,mask,window_size_x,window_size_y);
+    vglClDilate(input, buff, strel, strel_size_x, strel_size_y);
   
     for(int i = 1; i < times; i++)
     {
       if (i % 2 == 0)
-        vglClDilate(output,buff,mask,window_size_x,window_size_y);
+        vglClDilate(output, buff, strel, strel_size_x, strel_size_y);
       else
-        vglClDilate(buff,output,mask,window_size_x,window_size_y);
+        vglClDilate(buff, output, strel, strel_size_x, strel_size_y);
     }
 
     if (times % 2 == 1)
-      output = buff;
+      vglCl3dCopy(buff, output);
   }
 }
 
@@ -627,8 +627,8 @@ void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage
 
   vglCl3dThreshold(src, buf, 0.0, 1.0f/256.0f);
   vglCl3dCopy(buf, dst);
-  float square_mask[27] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
-  float cross_mask[27] = {0,0,0,
+  float square_strel[27] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+  float cross_strel[27] = {0,0,0,
                           0,1,0,
                           0,0,0,
                           0,1,0,
@@ -638,31 +638,31 @@ void vglCl3dDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage
                           0,1,0,
                           0,0,0};
 
-  float mask1[3] = {0,1,1};
-  float mask2[3] = {1,1,0};
+  float strel1[3] = {0,1,1};
+  float strel2[3] = {1,1,0};
   for(int i = 0; i < times; i++){
     if (i % 6 == 0){
-      vglCl3dErode(buf, buf2, mask1, 3, 1, 1);      
+      vglCl3dErode(buf, buf2, strel1, 3, 1, 1);      
       vglCl3dSum(buf2, dst, dst);
     }
     else if (i % 6 == 1){
-      vglCl3dErode(buf2, buf, mask2, 3, 1, 1);
+      vglCl3dErode(buf2, buf, strel2, 3, 1, 1);
       vglCl3dSum(buf, dst, dst);
     }
     else if (i % 6 == 2){
-      vglCl3dErode(buf, buf2,mask1,1,3,1);
+      vglCl3dErode(buf, buf2,strel1,1,3,1);
       vglCl3dSum(buf2, dst, dst);
     }
     else if (i % 6 == 3){
-      vglCl3dErode(buf2, buf, mask2, 1, 3, 1);
+      vglCl3dErode(buf2, buf, strel2, 1, 3, 1);
       vglCl3dSum(buf, dst, dst);
     }
     else if (i % 6 == 4){
-      vglCl3dErode(buf, buf2, mask1, 1, 1, 3);
+      vglCl3dErode(buf, buf2, strel1, 1, 1, 3);
       vglCl3dSum(buf2, dst, dst);
     }
     else{
-      vglCl3dErode(buf2, buf, mask2, 1, 1, 3);
+      vglCl3dErode(buf2, buf, strel2, 1, 1, 3);
       vglCl3dSum(buf, dst, dst);
     }
   }
@@ -678,37 +678,36 @@ void vglClDistTransform5(VglImage* src, VglImage* dst, VglImage* buf, VglImage* 
   
   vglClThreshold(src, buf, 0.0, 1.0f/256.0);
   vglClCopy(buf, dst);
-  float square_mask[9] = {1,1,1,1,1,1,1,1,1};
-  float cross_mask[9] = {0,1,0,1,1,1,0,1,0};
+  float square_strel[9] = {1,1,1,1,1,1,1,1,1};
+  float cross_strel[9] = {0,1,0,1,1,1,0,1,0};
   for(int i = 0; i < times; i++){
     if (i % 2 == 0){
-      vglClErode(buf, buf2,square_mask,3,3);
+      vglClErode(buf, buf2,square_strel,3,3);
       vglClSum(buf2, dst, dst);
     }
     else{
-      vglClErode(buf2, buf,cross_mask,3,3);
+      vglClErode(buf2, buf,cross_strel,3,3);
       vglClSum(buf, dst, dst);
     }
   }
 }
 
-void vglClTopHat(VglImage* src, VglImage* dst, VglImage* buf, float* window, int window_size_x, int window_size_y, int times)
+void vglClTopHat(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, float* strel, int strel_size_x, int strel_size_y, int times)
 {
 
-  vglClErode(src,dst,buf,window,window_size_x,window_size_y,times);
-  vglClDilate(src,dst,buf,window,window_size_x,window_size_y,times);
+  vglClErode(src, dst, buf, strel, strel_size_x, strel_size_y, times);
+  vglClDilate(dst, buf, buf2, strel, strel_size_x, strel_size_y, times);
 
-  //must implement vglClSub
-  //vglClSub(src,dst,dst);
+  vglClSub(src, buf, dst);
 }
 
-void vglCl3dTopHat(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, float* window, int window_size_x, int window_size_y, int window_size_z, int times)
+void vglCl3dTopHat(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times)
 {
 
-  vglCl3dErode(src,dst,buf,window,window_size_x,window_size_y,window_size_z,times);
-  vglCl3dDilate(dst,buf,buf2,window,window_size_x,window_size_y,window_size_z,times);
+  vglCl3dErode(src, dst, buf, strel, strel_size_x, strel_size_y, strel_size_z, times);
+  vglCl3dDilate(dst, buf, buf2, strel, strel_size_x, strel_size_y, strel_size_z, times);
 
-  vglCl3dSub(src,buf,dst);
+  vglCl3dSub(src, buf, dst);
 }
 
 bool vglCl3dEqual(VglImage* input1, VglImage* input2)
@@ -847,285 +846,256 @@ bool vglClEqual(VglImage* input1, VglImage* input2)
   return e != 1;
 }
 
-void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float* window, int window_size_x, int window_size_y, int window_size_z)
+void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float* strel, int strel_size_x, int strel_size_y, int strel_size_z)
 {
 
-  if(src->ndim < 3)
+  if(src->ndim != 3)
   {
-    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClConditionalDilate instead.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: only images with 3 dimensions supported. Use vglClConditionalDilate instead.\n", __FILE__, __FUNCTION__);
     return;
   }
 
-  vglCl3dDilate(src,dst,window,window_size_x,window_size_y,window_size_z);
-  vglCl3dMin(mask,dst,dst);
+  vglCl3dDilate(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dMin(mask, dst, dst);
   
 }
 
-void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float* window, int window_size_x, int window_size_y)
+void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float* strel, int strel_size_x, int strel_size_y)
 {
 
-  if(src->ndim > 2)
+  if(src->ndim != 2)
   {
-    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglCl3dConditionalDilate instead.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: only images with 2 dimensions supported. Use vglCl3dConditionalDilate instead.\n", __FILE__, __FUNCTION__);
     return;
   }
 
-  vglClDilate(src,dst,window,window_size_x,window_size_y);
-  vglClMin(mask,dst,dst);
+  vglClDilate(src, dst, strel, strel_size_x, strel_size_y);
+  vglClMin(mask, dst, dst);
   
 }
 
-void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* mask,  float* window, int window_size_x, int window_size_y, int window_size_z)
+void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* mask,  float* strel, int strel_size_x, int strel_size_y, int strel_size_z)
 {
 
-  if(src->ndim < 3)
+  if(src->ndim != 3)
   {
-    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglClConditionalErode instead.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: only images with 3 dimensions supported. Use vglClConditionalDilate instead.\n", __FILE__, __FUNCTION__);
     return;
   }
 
-  vglCl3dErode(src,dst,window,window_size_x,window_size_y,window_size_z);
-  vglCl3dMax(mask,dst,dst);
+  vglCl3dErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dMax(mask, dst, dst);
   
 }
 
-void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask,  float* window, int window_size_x, int window_size_y)
+void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask,  float* strel, int strel_size_x, int strel_size_y)
 {
 
-  if(src->ndim > 2)
+  if(src->ndim != 2)
   {
-    fprintf(stderr, "%s: %s: Error: image with less then 3 dimensions not supported. Use vglCl3dConditionalErode instead.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: only images with 2 dimensions supported. Use vglCl3dConditionalDilate instead.\n", __FILE__, __FUNCTION__);
     return;
   }
 
-  vglClErode(src,dst,window,window_size_x,window_size_y);
-  vglClMax(mask,dst,dst);
+  vglClErode(src, dst, strel, strel_size_x, strel_size_y);
+  vglClMax(mask, dst, dst);
 }
 
-void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* window, int window_size_x, int window_size_y, int window_size_z, int times)
+void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times)
 {
     if (times > 0)
     {
-      vglCl3dConditionalDilate(src,buff,mask,window,window_size_x,window_size_y,window_size_z);
+      vglCl3dConditionalDilate(src, buff, mask, strel, strel_size_x, strel_size_y, strel_size_z);
 
       for(int i = 1; i < times; i++)
       {
         if (i % 2 == 0)
-          vglCl3dConditionalDilate(dst,buff,mask,window,window_size_x,window_size_y,window_size_z);
+          vglCl3dConditionalDilate(dst, buff, mask, strel, strel_size_x, strel_size_y, strel_size_z);
         else
-          vglCl3dConditionalDilate(buff,dst,mask,window,window_size_x,window_size_y,window_size_z);
+          vglCl3dConditionalDilate(buff, dst, mask, strel, strel_size_x, strel_size_y, strel_size_z);
       }
 
       if (times % 2 == 1)
-        vglCl3dCopy(buff,dst);
+        vglCl3dCopy(buff, dst);
     }
 }
 
-void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* window, int window_size_x, int window_size_y, int times)
+void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times)
 {
     if (times > 0)
     {
-      vglClConditionalDilate(src,buff,mask,window,window_size_x,window_size_y);
+      vglClConditionalDilate(src, buff, mask, strel, strel_size_x, strel_size_y);
 
       for(int i = 1; i < times; i++)
       {
         if (i % 2 == 0)
-           vglClConditionalDilate(dst,buff,mask,window,window_size_x,window_size_y);
+           vglClConditionalDilate(dst, buff, mask, strel, strel_size_x, strel_size_y);
         else
-          vglClConditionalDilate(buff,dst,mask,window,window_size_x,window_size_y);
+          vglClConditionalDilate(buff, dst, mask, strel, strel_size_x, strel_size_y);
       }
 
       if (times % 2 == 1)
-        vglCl3dCopy(buff,dst);
+        vglCl3dCopy(buff, dst);
     }
 }
 
-void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* window, int window_size_x, int window_size_y, int window_size_z, int times)
+void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times)
 {
     if (times > 0)
     {
-      vglCl3dConditionalErode(src,buff,mask,window,window_size_x,window_size_y,window_size_z);
+      vglCl3dConditionalErode(src, buff, mask, strel, strel_size_x, strel_size_y, strel_size_z);
 
       for(int i = 1; i < times; i++)
       {
         if (i % 2 == 0)
-           vglCl3dConditionalErode(dst,buff,mask,window,window_size_x,window_size_y,window_size_z);
+           vglCl3dConditionalErode(dst, buff, mask, strel, strel_size_x, strel_size_y, strel_size_z);
         else
-          vglCl3dConditionalErode(buff,dst,mask,window,window_size_x,window_size_y,window_size_z);
+          vglCl3dConditionalErode(buff, dst, mask, strel, strel_size_x, strel_size_y, strel_size_z);
       }
 
       if (times % 2 == 1)
-        vglCl3dCopy(buff,dst);
+        vglCl3dCopy(buff, dst);
     }
 }
 
-void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* window, int window_size_x, int window_size_y, int times)
+void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times)
 {
     if (times > 0)
     {
-      vglClConditionalErode(src,buff,mask,window,window_size_x,window_size_y);
+      vglClConditionalErode(src, buff, mask, strel, strel_size_x, strel_size_y);
 
       for(int i = 1; i < times; i++)
       {
         if (i % 2 == 0)
-           vglClConditionalErode(dst,buff,mask,window,window_size_x,window_size_y);
+           vglClConditionalErode(dst, buff, mask, strel, strel_size_x, strel_size_y);
         else
-          vglClConditionalErode(buff,dst,mask,window,window_size_x,window_size_y);
+          vglClConditionalErode(buff, dst, mask, strel, strel_size_x, strel_size_y);
       }
 
       if (times % 2 == 1)
-        vglCl3dCopy(buff,dst);
+        vglCl3dCopy(buff, dst);
     }
 }
 
 
-/*src = X
-  mask = Y
-  dst = buffer1, também é a vaiavel de saida
-  buff = buffer2,
-  buff2 = buffer3
-  em dst vai ficar a n-esima erosao condicional
-  em buff vai ficar a passo anterior do somatório das uniões para comparação
-  em buff2 vai ficar o passo atual do somatório das uniões para comparação de conergencia com buff*/
-void vglCl3dDilateFromMarker(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, VglImage* buff2, float* window, int window_size_x, int window_size_y,int window_size_z)
-{
+/** Reconstruction by dilation
 
-  vglCl3dConditionalDilate(mask,dst,src,window,window_size_x,window_size_y,window_size_z);
-  vglCl3dCopy(dst,buff2);
+  */
+void vglCl3dReconstructionByDilation(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y,int strel_size_z)
+{
+  vglCl3dConditionalDilate(marker, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dCopy(marker, buff);
 
   int c = 0;
-  while(!vglCl3dEqual(buff,buff2))
+  while(!vglCl3dEqual(dst, buff))
   {
     if (c % 2 == 0)
     {
-      vglCl3dConditionalDilate(dst,mask,src,window,window_size_x,window_size_y,window_size_z);
-      vglCl3dCopy(buff2,buff);
-      vglCl3dMax(mask,buff2,buff2);
-      //vglCl3dCopy(mask,dst);
+      vglCl3dConditionalDilate(dst, buff, src, strel, strel_size_x, strel_size_y, strel_size_z);
     }
     else
     {
-      vglCl3dConditionalDilate(mask,dst,src,window,window_size_x,window_size_y,window_size_z);
-      vglCl3dCopy(buff2,buff);
-      vglCl3dMax(dst,buff2,buff2);
+      vglCl3dConditionalDilate(buff, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
     }
     c++;
   }
-
-  vglCl3dCopy(buff2,dst);
-
 }
 
-void vglClDilateFromMarker(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, VglImage* buff2, float* window, int window_size_x, int window_size_y)
-{
+/** Reconstruction by dilation
 
-  vglClConditionalDilate(mask,dst,src,window,window_size_x,window_size_y);
-  vglClCopy(dst,buff2);
+  */
+void vglClReconstructionByDilation(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y)
+{
+  vglClConditionalDilate(marker, dst, src, strel, strel_size_x, strel_size_y);
+  vglClCopy(marker, buff);
 
   int c = 0;
-  while(!vglClEqual(buff,buff2))
+  while(!vglClEqual(dst, buff))
   {
     if (c % 2 == 0)
     {
-      vglClConditionalDilate(dst,mask,src,window,window_size_x,window_size_y);
-      vglClCopy(buff2,buff);
-      vglClMax(mask,buff2,buff2);
-      //vglCl3dCopy(mask,dst);
+      vglClConditionalDilate(dst, buff, src, strel, strel_size_x, strel_size_y);
     }
     else
     {
-      vglClConditionalDilate(mask,dst,src,window,window_size_x,window_size_y);
-      vglClCopy(buff2,buff);
-      vglClMax(dst,buff2,buff2);
+      vglClConditionalDilate(buff, dst, src, strel, strel_size_x, strel_size_y);
     }
     c++;
   }
-
-  vglCl3dCopy(buff2,dst);
-
 }
 
-void vglCl3dErodeFromMarker(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, VglImage* buff2, float* window, int window_size_x, int window_size_y,int window_size_z)
-{
+/** Reconstruction by erosion
 
-  vglCl3dConditionalErode(mask,dst,src,window,window_size_x,window_size_y,window_size_z);
-  vglCl3dCopy(dst,buff2);
+  */
+void vglCl3dReconstructionByErosion(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y,int strel_size_z)
+{
+  vglCl3dConditionalErode(marker, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dCopy(marker, buff);
 
   int c = 0;
-  while(!vglCl3dEqual(buff,buff2))
+  while(!vglCl3dEqual(dst, buff))
   {
     if (c % 2 == 0)
     {
-      vglCl3dConditionalErode(dst,mask,src,window,window_size_x,window_size_y,window_size_z);
-      vglCl3dCopy(buff2,buff);
-      vglCl3dMin(mask,buff2,buff2);
-      //vglCl3dCopy(mask,dst);
+      vglCl3dConditionalErode(dst, buff, src, strel, strel_size_x, strel_size_y, strel_size_z);
     }
     else
     {
-      vglCl3dConditionalErode(mask,dst,src,window,window_size_x,window_size_y,window_size_z);
-      vglCl3dCopy(buff2,buff);
-      vglCl3dMin(dst,buff2,buff2);
+      vglCl3dConditionalErode(buff, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
     }
     c++;
   }
-
-  vglCl3dCopy(buff2,dst);
-
 }
 
-void vglClErodeFromMarker(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, VglImage* buff2, float* window, int window_size_x, int window_size_y)
-{
+/** Reconstruction by erosion
 
-  vglClConditionalErode(mask,dst,src,window,window_size_x,window_size_y);
-  vglClCopy(dst,buff2);
+  */
+void vglClReconstructionByErosion(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y)
+{
+  vglClConditionalErode(marker, dst, src, strel, strel_size_x, strel_size_y);
+  vglClCopy(marker, buff);
 
   int c = 0;
-  while(!vglClEqual(buff,buff2))
+  while(!vglClEqual(dst, buff))
   {
     if (c % 2 == 0)
     {
-      vglClConditionalErode(dst,mask,src,window,window_size_x,window_size_y);
-      vglClCopy(buff2,buff);
-      vglClMin(mask,buff2,buff2);
-      //vglCl3dCopy(mask,dst);
+      vglClConditionalErode(dst, buff, src, strel, strel_size_x, strel_size_y);
     }
     else
     {
-      vglClConditionalErode(mask,dst,src,window,window_size_x,window_size_y);
-      vglClCopy(buff2,buff);
-      vglClMin(dst,buff2,buff2);
+      vglClConditionalErode(buff, dst, src, strel, strel_size_x, strel_size_y);
     }
     c++;
   }
-
-  vglCl3dCopy(buff2,dst);
-
 }
 
-void vglCl3dLastErosion(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, VglImage* buff3, VglImage* buff4, VglImage* buff5, float* window, int window_size_x, int window_size_y,int window_size_z)
+
+/*
+void vglCl3dLastErosion(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, VglImage* buff3, VglImage* buff4, VglImage* buff5, float* strel, int strel_size_x, int strel_size_y,int strel_size_z)
 {
   
-  vglCl3dErode(src, dst, window, window_size_x, window_size_y, window_size_z);
-  vglCl3dErode(dst, buff, window, window_size_x, window_size_y, window_size_z);
-  vglCl3dDilateFromMarker(dst,buff, buff, buff2, buff3, window, window_size_x, window_size_y, window_size_z);  
-  vglCl3dNot(buff,buff);
-  vglCl3dMin(dst,buff,buff);
-  vglCl3dCopy(buff,buff5);
+  vglCl3dErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dErode(dst, buff, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dDilateFromMarker(dst, buff, buff, buff2, buff3, strel, strel_size_x, strel_size_y, strel_size_z);  
+  vglCl3dNot(buff, buff);
+  vglCl3dMin(dst, buff, buff);
+  vglCl3dCopy(buff, buff5);
   
   int c = 0;
-  while(!vglCl3dEqual(buff4,buff5))
+  while(!vglCl3dEqual(buff4, buff5))
   {
-      vglCl3dErode(dst,buff,window,window_size_x, window_size_y, window_size_z);
-      vglCl3dErode(buff,buff4,window,window_size_x, window_size_y, window_size_z);
-      vglCl3dDilateFromMarker(buff,buff4,buff4,buff2,buff3,window,window_size_x, window_size_y, window_size_z);
-      vglCl3dNot(buff4,buff3);
-      vglCl3dCopy(buff5,buff4);
-      vglClMin(buff,buff3,buff2);
-      vglClMin(buff4,buff5,buff5);
-      vglCl3dCopy(buff,dst);
+      vglCl3dErode(dst, buff, strel, strel_size_x, strel_size_y, strel_size_z);
+      vglCl3dErode(buff, buff4, strel, strel_size_x, strel_size_y, strel_size_z);
+      vglCl3dDilateFromMarker(buff, buff4, buff4, buff2, buff3, strel, strel_size_x, strel_size_y, strel_size_z);
+      vglCl3dNot(buff4, buff3);
+      vglCl3dCopy(buff5, buff4);
+      vglClMin(buff, buff3, buff2);
+      vglClMin(buff4, buff5, buff5);
+      vglCl3dCopy(buff, dst);
       c++;
   }
   
-  vglCl3dCopy(buff5,dst);
+  vglCl3dCopy(buff5, dst);
 }
+*/

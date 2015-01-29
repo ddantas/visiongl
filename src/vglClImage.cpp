@@ -234,8 +234,8 @@ void vglClPrintSupportedImageFormats()
 
     // 2D
     clGetSupportedImageFormats(cl.context, CL_MEM_READ_ONLY, 
-                               CL_MEM_OBJECT_IMAGE2D,   
-                               NULL, NULL, &uiNumSupportedFormats);
+                               CL_MEM_OBJECT_IMAGE2D,
+                               0, NULL, &uiNumSupportedFormats);
     cl_image_format* ImageFormats = new cl_image_format[uiNumSupportedFormats];
     clGetSupportedImageFormats(cl.context, CL_MEM_READ_ONLY, 
                                CL_MEM_OBJECT_IMAGE2D,   
@@ -256,7 +256,7 @@ void vglClPrintSupportedImageFormats()
     // 3D
     clGetSupportedImageFormats(cl.context, CL_MEM_READ_ONLY, 
                                CL_MEM_OBJECT_IMAGE3D,   
-                               NULL, NULL, &uiNumSupportedFormats);
+                               0, NULL, &uiNumSupportedFormats);
     ImageFormats = new cl_image_format[uiNumSupportedFormats];
     clGetSupportedImageFormats(cl.context, CL_MEM_READ_ONLY, 
                                CL_MEM_OBJECT_IMAGE3D,   
