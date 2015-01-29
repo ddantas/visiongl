@@ -12,7 +12,7 @@
 #include <vglImage.h>
 
 VglImage* vglLoadTiff(char* inFilename);
-void vglPrintTiffInfo(char* inFilename);
+int vglPrintTiffInfo(char* inFilename);
 
 #endif
 

@@ -846,7 +846,13 @@ bool vglClEqual(VglImage* input1, VglImage* input2)
   return e != 1;
 }
 
-void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float* strel, int strel_size_x, int strel_size_y, int strel_size_z)
+/** Conditional dilation by parameterized structuring element.
+    All input images must not be the same.
+    Image in src is dilated by strel. The minimum between the result and mask is returned.
+
+    The structuring element is a strel_size_x by strel_size_y by strel_size_z parallelepiped.
+*/
+void vglCl3dConditionalDilate(VglImage* src, VglImage* mask, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int strel_size_z)
 {
 
   if(src->ndim != 3)
@@ -860,7 +866,13 @@ void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, floa
   
 }
 
-void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float* strel, int strel_size_x, int strel_size_y)
+/** Conditional dilation by parameterized structuring element. 
+    All input images must not be the same.
+    Image in src is dilated by strel. The minimum between the result and mask is returned.
+
+    The structuring element is a strel_size_x by strel_size_y rectangle.
+*/
+void vglClConditionalDilate(VglImage* src, VglImage* mask, VglImage* dst, float* strel, int strel_size_x, int strel_size_y)
 {
 
   if(src->ndim != 2)
@@ -874,7 +886,13 @@ void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float*
   
 }
 
-void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* mask,  float* strel, int strel_size_x, int strel_size_y, int strel_size_z)
+/** Conditional erosion by parameterized structuring element.
+    All input images must not be the same.
+    Image in src is erosed by strel. The maximum between the result and mask is returned.
+
+    The structuring element is a strel_size_x by strel_size_y by strel_size_z parallelepiped.
+*/
+void vglCl3dConditionalErode(VglImage* src, VglImage* mask, VglImage* dst,  float* strel, int strel_size_x, int strel_size_y, int strel_size_z)
 {
 
   if(src->ndim != 3)
@@ -888,7 +906,13 @@ void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* mask,  floa
   
 }
 
-void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask,  float* strel, int strel_size_x, int strel_size_y)
+/** Conditional erosion by parameterized structuring element. 
+    All input images must not be the same.
+    Image in src is eroded by strel. The maximum between the result and mask is returned.
+
+    The structuring element is a strel_size_x by strel_size_y rectangle.
+*/
+void vglClConditionalErode(VglImage* src, VglImage* mask, VglImage* dst,  float* strel, int strel_size_x, int strel_size_y)
 {
 
   if(src->ndim != 2)
@@ -901,89 +925,125 @@ void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask,  float*
   vglClMax(mask, dst, dst);
 }
 
-void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times)
+/** Conditional dilation by parameterized structuring element.
+    A buffer is required.
+    All input images must not be the same.
+    Image in src is dilated by strel. The minimum between the result and mask is returned.
+
+    The structuring element is a strel_size_x by strel_size_y by strel_size_z parallelepiped.
+    The parameter "times" indicates how many times the dilation will be applied.
+*/
+void vglCl3dConditionalDilate(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times)
 {
     if (times > 0)
     {
-      vglCl3dConditionalDilate(src, buff, mask, strel, strel_size_x, strel_size_y, strel_size_z);
+      vglCl3dConditionalDilate(src, mask, buff, strel, strel_size_x, strel_size_y, strel_size_z);
 
       for(int i = 1; i < times; i++)
       {
         if (i % 2 == 0)
-          vglCl3dConditionalDilate(dst, buff, mask, strel, strel_size_x, strel_size_y, strel_size_z);
+          vglCl3dConditionalDilate(dst, mask, buff, strel, strel_size_x, strel_size_y, strel_size_z);
         else
-          vglCl3dConditionalDilate(buff, dst, mask, strel, strel_size_x, strel_size_y, strel_size_z);
+          vglCl3dConditionalDilate(buff, mask, dst, strel, strel_size_x, strel_size_y, strel_size_z);
       }
 
-      if (times % 2 == 1)
+      if (times % 2 == 0)
         vglCl3dCopy(buff, dst);
     }
 }
 
-void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times)
+/** Conditional dilation by parameterized structuring element. 
+    A buffer is required.
+    All input images must not be the same.
+    Image in src is dilated by strel. The minimum between the result and mask is returned.
+
+    The structuring element is a strel_size_x by strel_size_y rectangle.
+    The parameter "times" indicates how many times the dilation will be applied.
+*/
+void vglClConditionalDilate(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times)
 {
     if (times > 0)
     {
-      vglClConditionalDilate(src, buff, mask, strel, strel_size_x, strel_size_y);
+      vglClConditionalDilate(src, mask, buff, strel, strel_size_x, strel_size_y);
 
       for(int i = 1; i < times; i++)
       {
         if (i % 2 == 0)
-           vglClConditionalDilate(dst, buff, mask, strel, strel_size_x, strel_size_y);
+           vglClConditionalDilate(dst, mask, buff, strel, strel_size_x, strel_size_y);
         else
-          vglClConditionalDilate(buff, dst, mask, strel, strel_size_x, strel_size_y);
+          vglClConditionalDilate(buff, mask, dst, strel, strel_size_x, strel_size_y);
       }
 
-      if (times % 2 == 1)
+      if (times % 2 == 0)
         vglCl3dCopy(buff, dst);
     }
 }
 
-void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times)
+/** Conditional erosion by parameterized structuring element.
+    A buffer is required.
+    All input images must not be the same.
+    Image in src is erosed by strel. The maximum between the result and mask is returned.
+
+    The structuring element is a strel_size_x by strel_size_y by strel_size_z parallelepiped.
+    The parameter "times" indicates how many times the erosion will be applied.
+*/
+void vglCl3dConditionalErode(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times)
 {
     if (times > 0)
     {
-      vglCl3dConditionalErode(src, buff, mask, strel, strel_size_x, strel_size_y, strel_size_z);
+      vglCl3dConditionalErode(src, mask, buff, strel, strel_size_x, strel_size_y, strel_size_z);
 
       for(int i = 1; i < times; i++)
       {
         if (i % 2 == 0)
-           vglCl3dConditionalErode(dst, buff, mask, strel, strel_size_x, strel_size_y, strel_size_z);
+           vglCl3dConditionalErode(dst, mask, buff, strel, strel_size_x, strel_size_y, strel_size_z);
         else
-          vglCl3dConditionalErode(buff, dst, mask, strel, strel_size_x, strel_size_y, strel_size_z);
+          vglCl3dConditionalErode(buff, mask, dst, strel, strel_size_x, strel_size_y, strel_size_z);
       }
 
-      if (times % 2 == 1)
+      if (times % 2 == 0)
         vglCl3dCopy(buff, dst);
     }
 }
 
-void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times)
+/** Conditional erosion by parameterized structuring element. 
+    A buffer is required.
+    All input images must not be the same.
+    Image in src is eroded by strel. The maximum between the result and mask is returned.
+
+    The structuring element is a strel_size_x by strel_size_y rectangle.
+    The parameter "times" indicates how many times the erosion will be applied.
+*/
+void vglClConditionalErode(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times)
 {
     if (times > 0)
     {
-      vglClConditionalErode(src, buff, mask, strel, strel_size_x, strel_size_y);
+      vglClConditionalErode(src, mask, buff, strel, strel_size_x, strel_size_y);
 
       for(int i = 1; i < times; i++)
       {
         if (i % 2 == 0)
-           vglClConditionalErode(dst, buff, mask, strel, strel_size_x, strel_size_y);
+           vglClConditionalErode(dst, mask, buff, strel, strel_size_x, strel_size_y);
         else
-          vglClConditionalErode(buff, dst, mask, strel, strel_size_x, strel_size_y);
+          vglClConditionalErode(buff, mask, dst, strel, strel_size_x, strel_size_y);
       }
 
-      if (times % 2 == 1)
+      if (times % 2 == 0)
         vglCl3dCopy(buff, dst);
     }
 }
 
 
-/** Reconstruction by dilation
+/** Reconstruction by dilation by parameterized structuring element.
+    A buffer is required.
+    All input images must not be the same.
+    Image in marker is dilated by strel, conditioned by src. This dilation is done until stability.
 
-  */
-void vglCl3dReconstructionByDilation(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y,int strel_size_z)
+    The structuring element is a strel_size_x by strel_size_y by strel_size_z parallelepiped.
+*/
+void vglCl3dReconstructionByDilation(VglImage* src, VglImage* marker, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y,int strel_size_z)
 {
-  vglCl3dConditionalDilate(marker, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dConditionalDilate(marker, src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
   vglCl3dCopy(marker, buff);
 
   int c = 0;
@@ -991,22 +1051,26 @@ void vglCl3dReconstructionByDilation(VglImage* src, VglImage* dst, VglImage* mar
   {
     if (c % 2 == 0)
     {
-      vglCl3dConditionalDilate(dst, buff, src, strel, strel_size_x, strel_size_y, strel_size_z);
+      vglCl3dConditionalDilate(dst, src, buff, strel, strel_size_x, strel_size_y, strel_size_z);
     }
     else
     {
-      vglCl3dConditionalDilate(buff, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
+      vglCl3dConditionalDilate(buff, src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
     }
     c++;
   }
 }
 
-/** Reconstruction by dilation
+/** Reconstruction by dilation by parameterized structuring element.
+    A buffer is required.
+    All input images must not be the same.
+    Image in marker is dilated by strel, conditioned by src. This dilation is done until stability.
 
-  */
-void vglClReconstructionByDilation(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y)
+    The structuring element is a strel_size_x by strel_size_y rectangle.
+*/
+void vglClReconstructionByDilation(VglImage* src, VglImage* marker, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y)
 {
-  vglClConditionalDilate(marker, dst, src, strel, strel_size_x, strel_size_y);
+  vglClConditionalDilate(marker, src, dst, strel, strel_size_x, strel_size_y);
   vglClCopy(marker, buff);
 
   int c = 0;
@@ -1014,22 +1078,26 @@ void vglClReconstructionByDilation(VglImage* src, VglImage* dst, VglImage* marke
   {
     if (c % 2 == 0)
     {
-      vglClConditionalDilate(dst, buff, src, strel, strel_size_x, strel_size_y);
+      vglClConditionalDilate(dst, src, buff, strel, strel_size_x, strel_size_y);
     }
     else
     {
-      vglClConditionalDilate(buff, dst, src, strel, strel_size_x, strel_size_y);
+      vglClConditionalDilate(buff, src, dst, strel, strel_size_x, strel_size_y);
     }
     c++;
   }
 }
 
-/** Reconstruction by erosion
+/** Reconstruction by erosion by parameterized structuring element.
+    A buffer is required.
+    All input images must not be the same.
+    Image in marker is erosed by strel, conditioned by src. This erosion is done until stability.
 
-  */
-void vglCl3dReconstructionByErosion(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y,int strel_size_z)
+    The structuring element is a strel_size_x by strel_size_y by strel_size_z parallelepiped.
+*/
+void vglCl3dReconstructionByErosion(VglImage* src, VglImage* marker, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y,int strel_size_z)
 {
-  vglCl3dConditionalErode(marker, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dConditionalErode(marker, src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
   vglCl3dCopy(marker, buff);
 
   int c = 0;
@@ -1037,22 +1105,26 @@ void vglCl3dReconstructionByErosion(VglImage* src, VglImage* dst, VglImage* mark
   {
     if (c % 2 == 0)
     {
-      vglCl3dConditionalErode(dst, buff, src, strel, strel_size_x, strel_size_y, strel_size_z);
+      vglCl3dConditionalErode(dst, src, buff, strel, strel_size_x, strel_size_y, strel_size_z);
     }
     else
     {
-      vglCl3dConditionalErode(buff, dst, src, strel, strel_size_x, strel_size_y, strel_size_z);
+      vglCl3dConditionalErode(buff, src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
     }
     c++;
   }
 }
 
-/** Reconstruction by erosion
+/** Reconstruction by erosion by parameterized structuring element.
+    A buffer is required.
+    All input images must not be the same.
+    Image in marker is erosed by strel, conditioned by src. This erosion is done until stability.
 
-  */
-void vglClReconstructionByErosion(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y)
+    The structuring element is a strel_size_x by strel_size_y rectangle.
+*/
+void vglClReconstructionByErosion(VglImage* src, VglImage* marker, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y)
 {
-  vglClConditionalErode(marker, dst, src, strel, strel_size_x, strel_size_y);
+  vglClConditionalErode(marker, src, dst, strel, strel_size_x, strel_size_y);
   vglClCopy(marker, buff);
 
   int c = 0;
@@ -1060,14 +1132,70 @@ void vglClReconstructionByErosion(VglImage* src, VglImage* dst, VglImage* marker
   {
     if (c % 2 == 0)
     {
-      vglClConditionalErode(dst, buff, src, strel, strel_size_x, strel_size_y);
+      vglClConditionalErode(dst, src, buff, strel, strel_size_x, strel_size_y);
     }
     else
     {
-      vglClConditionalErode(buff, dst, src, strel, strel_size_x, strel_size_y);
+      vglClConditionalErode(buff, src, dst, strel, strel_size_x, strel_size_y);
     }
     c++;
   }
+}
+
+/** Reconstruction by opening by parameterized structuring element.
+    Two buffers are required.
+    All input images must not be the same.
+    Image in src is eroded by strel. The result is stored in buff. 
+    Inage in buff is then used as marker in a reconstruction by dilation.
+
+    The structuring element is a strel_size_x by strel_size_y by strel_size_z parallelepiped.
+*/
+void vglCl3dReconstructionByOpening(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y, int strel_size_z)
+{
+  vglCl3dErode(src, buff, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dReconstructionByDilation(src, buff, dst, buff2, strel, strel_size_x, strel_size_y, strel_size_z);
+}
+
+/** Reconstruction by opening by parameterized structuring element.
+    Two buffers are required.
+    All input images must not be the same.
+    Image in src is eroded by strel. The result is stored in buff. 
+    Inage in buff is then used as marker in a reconstruction by dilation.
+
+    The structuring element is a strel_size_x by strel_size_y rectangle.
+*/
+void vglClReconstructionByOpening(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y)
+{
+  vglClErode(src, buff, strel, strel_size_x, strel_size_y);
+  vglClReconstructionByDilation(src, buff, dst, buff2, strel, strel_size_x, strel_size_y);
+}
+
+/** Reconstruction by closing by parameterized structuring element.
+    Two buffers are required.
+    All input images must not be the same.
+    Image in src is dilated by strel. The result is stored in buff. 
+    Inage in buff is then used as marker in a reconstruction by erosion.
+
+    The structuring element is a strel_size_x by strel_size_y by strel_size_z parallelepiped.
+*/
+void vglCl3dReconstructionByClosing(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y, int strel_size_z)
+{
+  vglCl3dDilate(src, buff, strel, strel_size_x, strel_size_y, strel_size_z);
+  vglCl3dReconstructionByErosion(src, buff, dst, buff2, strel, strel_size_x, strel_size_y, strel_size_z);
+}
+
+/** Reconstruction by closing by parameterized structuring element.
+    Two buffers are required.
+    All input images must not be the same.
+    Image in src is dilated by strel. The result is stored in buff. 
+    Inage in buff is then used as marker in a reconstruction by erosion.
+
+    The structuring element is a strel_size_x by strel_size_y rectangle.
+*/
+void vglClReconstructionByClosing(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y)
+{
+  vglClDilate(src, buff, strel, strel_size_x, strel_size_y);
+  vglClReconstructionByErosion(src, buff, dst, buff2, strel, strel_size_x, strel_size_y);
 }
 
 

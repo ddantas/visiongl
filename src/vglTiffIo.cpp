@@ -114,14 +114,14 @@ int tif_PrintAsc(TIFF* tif, tdata_t raster, char* filename)
 
       outfile = fopen(filename, "w");
       if (!outfile)
-        return 0;
+        return 1;
       
       fprintf(outfile, "ASCII output of %s\n", filename); 
 
       if (raster == NULL)
-        return 0;
+        return 1;
       if (tif == NULL)
-        return 0;
+        return 1;
 
     rasterc = (char*) raster;
     for (ic = 0; ic < c; ic++){
@@ -150,7 +150,7 @@ int tif_PrintAsc(TIFF* tif, tdata_t raster, char* filename)
       }
     }
     fclose(outfile);
-    return 1;
+    return 0;
 }
 
 tsize_t tif_NecessaryMem(TIFF* tif)
@@ -160,7 +160,7 @@ tsize_t tif_NecessaryMem(TIFF* tif)
   uint32 c = tif_nChannels(tif);
   tsize_t pixelSize = tif_PixelSize(tif);
   if (tif == NULL)
-    return 0;
+    return 1;
   return w*h*c*pixelSize;
 }
 
@@ -168,7 +168,7 @@ tdata_t tif_Malloc(TIFF* tif)
 {
   tsize_t necessaryMem = tif_NecessaryMem(tif);
 
-  if (necessaryMem == 0)
+  if (necessaryMem == 1)
     return NULL;
   if (tif == NULL)
     return NULL;
@@ -277,8 +277,8 @@ VglImage* vglLoadTiff(char* inFilename)
 
   tif = TIFFOpen(inFilename, "r");
   if (tif == NULL){
-    TIFFClose(tif); 
-    return img;
+    fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, inFilename);
+    return NULL;
   }
   
   int width  = tif_Width(tif);
@@ -304,10 +304,14 @@ VglImage* vglLoadTiff(char* inFilename)
   return img;
 }
 
-void vglPrintTiffInfo(char* inFilename)
+int vglPrintTiffInfo(char* inFilename)
 {
   TIFF* tif = TIFFOpen(inFilename, "r"); 
 
+  if (tif == NULL){
+    fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, inFilename);
+    return 1;
+  }
   if (tif) { 
     uint32 w, h; 
     uint16 bps, spp, photo, config, pageNumber, numberPages;
@@ -380,16 +384,16 @@ void vglPrintTiffInfo(char* inFilename)
     printf("Planar configuration = %d\n", config);
     printf("stripSize = %ld, stripMax = %d\n", (long int) stripSize, stripMax);
 
-    printbin((char*)&w, sizeof(w));
-    printbin((char*)&h, sizeof(h));
+    //printbin((char*)&w, sizeof(w));
+    //printbin((char*)&h, sizeof(h));
 
 
-    raster = tif_ReadData(tif);
+    //raster = tif_ReadData(tif);
     //tif_PrintAsc(tif, raster, (char*)"ascimg.txt");
 
     TIFFClose(tif); 
   } 
-  exit(0); 
+  return 0;
 }
 
 #endif

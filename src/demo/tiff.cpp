@@ -20,11 +20,15 @@ demo_tiff <input file> <output file>\n\
 
   char* inFilename = argv[1]; // name of the input file
   char* outFilename = argv[2]; // name of the output file
+  int i = vglPrintTiffInfo(inFilename);
   VglImage* vgltiff = vglLoadTiff(inFilename);
   
-  printf("\nwidth = %d\nheight = %d\nlayers = %d\ndepth = %d\nnChannels = %d\n\n", vgltiff->shape[VGL_WIDTH], vgltiff->shape[VGL_HEIGHT], vgltiff->shape[VGL_LENGTH], vgltiff->depth, vgltiff->nChannels);
-
-  vglPrintTiffInfo(inFilename);
+  if(vgltiff)
+  {
+    printf("\nwidth = %d\nheight = %d\nlayers = %d\ndepth = %d\nnChannels = %d\n\n", vgltiff->shape[VGL_WIDTH], vgltiff->shape[VGL_HEIGHT], vgltiff->shape[VGL_LENGTH], vgltiff->depth, vgltiff->nChannels);
 
   int r = vglGdcmSaveDicomUncompressed(vgltiff, outFilename); 
+  return 0;
+  }
+  return 1;
 }

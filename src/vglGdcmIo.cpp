@@ -122,7 +122,8 @@ VglImage* vglGdcmLoadDicom(char* inFilename)
     gdcm::ImageReader reader;
     reader.SetFileName(inFilename);
     if(!reader.Read())
-        std::cerr << "Could not read: " << inFilename << std::endl;
+      fprintf(stderr, "%s:%s: Error: File %s can not be read.\n", __FILE__, __FUNCTION__, inFilename);
+      //std::cerr << "Could not read: " << inFilename << std::endl;
   
     // The output of gdcm::Reader is a gdcm::File
     //gdcm::File &file = reader.GetFile();
@@ -205,7 +206,8 @@ int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
   {
     reader.SetFileName(imagevgl->filename);
     if(!reader.Read())
-      std::cerr << "Could not read: " << imagevgl->filename << std::endl;
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, imagevgl->filename);
+      //std::cerr << "Could not read: " << imagevgl->filename << std::endl;
     image = &reader.GetImage();
   }
   
@@ -274,7 +276,8 @@ int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
   writer.SetFileName( outFilename );
   if( !writer.Write() )
   {
-    std::cerr << "Could not write image" << std::endl;
+    fprintf(stderr, "%s:%s: Error: File %s can not be written.\n", __FILE__, __FUNCTION__, outFilename);
+    return 1;
   }
     
   return 0;

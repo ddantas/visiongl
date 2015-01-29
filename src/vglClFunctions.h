@@ -27,28 +27,36 @@ bool vglCl3dEqual(VglImage* input1, VglImage* input2);
 bool vglClEqual(VglImage* input1, VglImage* input2);
 
 /* ConditionalDilate for 3d and 2d */
-void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
-void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, float* strel, int strel_size_x, int strel_size_y);
+void vglCl3dConditionalDilate(VglImage* src, VglImage* mask, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
+void vglClConditionalDilate(VglImage* src, VglImage* mask, VglImage* dst, float* strel, int strel_size_x, int strel_size_y);
 
 /* ConditionalErode for 3d and 2d */
-void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
-void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, float* strel, int strel_size_x, int strel_size_y);
+void vglCl3dConditionalErode(VglImage* src, VglImage* mask, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
+void vglClConditionalErode(VglImage* src, VglImage* mask, VglImage* dst, float* strel, int strel_size_x, int strel_size_y);
 
 /* ConditionalDilate for 3d and 2d */
-void vglCl3dConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times);
-void vglClConditionalDilate(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times);
+void vglCl3dConditionalDilate(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times);
+void vglClConditionalDilate(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times);
 
 /* ConditionalErode for 3d and 2d */
-void vglCl3dConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times);
-void vglClConditionalErode(VglImage* src, VglImage* dst, VglImage* mask, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times);
+void vglCl3dConditionalErode(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int times);
+void vglClConditionalErode(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int times);
 
-/* ReconstructionByDilation */
-void vglCl3dReconstructionByDilation(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
-void vglClReconstructionByDilation(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y);
+/* ReconstructionByDilation for 3d and 2d */
+void vglCl3dReconstructionByDilation(VglImage* src, VglImage* marker, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
+void vglClReconstructionByDilation(VglImage* src, VglImage* marker, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y);
 
-/* ReconstructionByErosion */
-void vglCl3dReconstructionByErosion(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
-void vglClReconstructionByErosion(VglImage* src, VglImage* dst, VglImage* marker, VglImage* buff, float* strel, int strel_size_x, int strel_size_y);
+/* ReconstructionByErosion for 3d and 2d*/
+void vglCl3dReconstructionByErosion(VglImage* src, VglImage* marker, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
+void vglClReconstructionByErosion(VglImage* src, VglImage* marker, VglImage* dst, VglImage* buff, float* strel, int strel_size_x, int strel_size_y);
+
+/* ReconstructionByOpening for 3d and 2d */
+void vglCl3dReconstructionByOpening(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
+void vglClReconstructionByOpening(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y);
+
+/* ReconstructionByClosing for 3d and 2d */
+void vglCl3dReconstructionByClosing(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
+void vglClReconstructionByClosing(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y);
 
 /* Last Erosion
 Does the LastErosion described by Junior Barrera and Gerald Banon on their book
