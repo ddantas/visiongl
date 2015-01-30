@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     printf("VisionGL-OpenCL on %s, %d operations\n\n", inFilename, nSteps);
 	
     printf("CREATING IMAGE\n");
-    VglImage* img = vglLoadImage(inFilename, 1, 0);
+    VglImage* img = vglLoadImage(inFilename, CV_LOAD_IMAGE_UNCHANGED, 0);
 
     printf("CHECKING NCHANNELS\n");
     if (img->nChannels == 3)
@@ -193,6 +193,13 @@ int main(int argc, char* argv[])
 
     VglImage* gray = vglCreateImage(img);
     gray->ipl = cvCreateImage(cvGetSize(gray->ipl),IPL_DEPTH_8U,1);
+
+  if (img->nChannels == 1)
+  {
+    printf("Image is already grayscale. Not running conversion BGR->Gray and BGR->RGBA\n");
+  }  
+  else
+  {
     //First call to Convert BGR->Gray
     TimerStart();
     cvCvtColor(img->ipl, gray->ipl, CV_BGR2GRAY);
@@ -236,6 +243,7 @@ int main(int argc, char* argv[])
 
     sprintf(outFilename, "%s%s", outPath, "/out_cl_bgrToRgbaCpu.tif");
     cvSaveImage(outFilename, iplRGBA);
+  }
 
     //First call to Copy CPU->GPU
     vglCheckContext(img, VGL_RAM_CONTEXT);

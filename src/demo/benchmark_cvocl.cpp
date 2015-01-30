@@ -31,12 +31,28 @@ int main(int argc, char* argv[])
     char* outPath = argv[3];
     char* outFilename = (char*) malloc(strlen(outPath) + 200);
     printf("OpenCVCLBenchmark on %s for %d operations\n\n",inFilename,nSteps);
-    cv::Mat imgxm = cv::imread(inFilename,1);
-    cv::Mat imgRGBA(imgxm.size(), CV_8UC4);
-    
+    cv::Mat imgorig = cv::imread(inFilename, CV_LOAD_IMAGE_UNCHANGED);
 
-    cvtColor(imgxm, imgRGBA, CV_BGR2RGBA);
-    cv::ocl::oclMat img(imgRGBA), out(imgRGBA);
+    int type;
+    if (imgorig.channels() > 1)
+    {
+      type = CV_8UC4;
+    }
+    else
+    {
+      type = CV_8UC1;
+    }
+
+    cv::Mat imgcvt(imgorig.size(), type);
+    if (imgorig.channels() > 1)
+    {
+      cvtColor(imgorig, imgcvt, CV_RGB2RGBA);
+    }
+    else
+    {
+      imgorig.copyTo(imgcvt);
+    }
+    cv::ocl::oclMat img(imgcvt), out(imgcvt);
 
     std::vector<int> saveparams;
     //saveparams.push_back(CV_IMWRITE_PNG_COMPRESSION);
@@ -68,7 +84,10 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Blur 3x3:                %s\n", nSteps, getTimeElapsedInSeconds());
     
     cv::Mat saveout(out);
-    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    if(out.channels() == 4)
+    {
+      cvtColor(saveout, saveout, CV_RGBA2RGB);
+    }
     sprintf(outFilename, "%s%s", outPath, "/out_cvocl_blur33.tif");
     cv::imwrite(outFilename, saveout, saveparams);
 
@@ -100,7 +119,10 @@ int main(int argc, char* argv[])
     cv::ocl::finish();
     printf("Time spent on %8d Convolution 3x3:         %s \n", nSteps, getTimeElapsedInSeconds());
     saveout = *new cv::Mat(out);
-    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    if(out.channels() == 4)
+    {
+      cvtColor(saveout, saveout, CV_RGBA2RGB);
+    }
     sprintf(outFilename, "%s%s", outPath, "/out_cvocl_conv33.tif");
     cv::imwrite(outFilename, saveout, saveparams);
 
@@ -122,7 +144,10 @@ int main(int argc, char* argv[])
     cv::ocl::finish();
     printf("Time spent on %8d Convolution 5x5:         %s\n", nSteps, getTimeElapsedInSeconds());
     saveout = *new cv::Mat(out);
-    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    if(out.channels() == 4)
+    {
+      cvtColor(saveout, saveout, CV_RGBA2RGB);
+    }
     sprintf(outFilename, "%s%s", outPath, "/out_cvocl_conv55.tif");
     cv::imwrite(outFilename, saveout,saveparams);
 
@@ -143,7 +168,10 @@ int main(int argc, char* argv[])
     cv::ocl::finish();
     printf("Time spent on %8d Erode 3x3:               %s\n", nSteps, getTimeElapsedInSeconds());
     saveout = *new cv::Mat(out);
-    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    if(out.channels() == 4)
+    {
+      cvtColor(saveout, saveout, CV_RGBA2RGB);
+    }
     sprintf(outFilename, "%s%s", outPath, "/out_cvocl_erode33.tif");
     cv::imwrite(outFilename, saveout,saveparams);
 	
@@ -163,13 +191,16 @@ int main(int argc, char* argv[])
     cv::ocl::finish();
     printf("Time spent on %8d Invert:                  %s\n", nSteps, getTimeElapsedInSeconds());
     saveout = *new cv::Mat(out);
-    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    if(out.channels() == 4)
+    {
+      cvtColor(saveout, saveout, CV_RGBA2RGB);
+    }
     sprintf(outFilename, "%s%s", outPath, "/out_cvocl_invert.tif");
     cv::imwrite(outFilename, saveout,saveparams);
 
     //First call to Copy GPU->GPU
     TimerStart();
-    cv::ocl::oclMat x1(img.size(), CV_8UC4);
+    cv::ocl::oclMat x1(img.size(), type);
     img.copyTo(x1);
     cv::ocl::finish();
     printf("First call to          Copy GPU->GPU:           %s \n", getTimeElapsedInSeconds());
@@ -183,8 +214,11 @@ int main(int argc, char* argv[])
     }
     cv::ocl::finish();
     printf("Time spent on %8d copy GPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
-    saveout = *new cv::Mat(out);
-    cvtColor(saveout, saveout, CV_RGBA2BGR);
+    saveout = *new cv::Mat(x1);
+    if(out.channels() == 4)
+    {
+      cvtColor(saveout, saveout, CV_RGBA2RGB);
+    }
     sprintf(outFilename, "%s%s", outPath, "/out_cvocl_gpuCopy.tif");
     cv::imwrite(outFilename, saveout, saveparams);
 
@@ -192,7 +226,7 @@ int main(int argc, char* argv[])
     cv::ocl::oclMat x;
     p = 0;
     TimerStart();
-    img.upload(imgxm);
+    img.upload(imgorig);
     cv::ocl::finish();
     printf("First call to          Copy CPU->GPU:           %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Copy CPU->GPU
@@ -201,9 +235,9 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        img.upload(imgxm);
+        img.upload(imgorig);
+        cv::ocl::finish();
     }
-    cv::ocl::finish();
     printf("Time spent on %8d copy CPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     //First call to Copy GPU->CPU

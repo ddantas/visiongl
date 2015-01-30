@@ -24,6 +24,9 @@ struct VglClContext
 	cl_command_queue commandQueue;
 };
 
+void vglClInteropSetTrue(void);
+void vglClInteropSetFalse(void);
+
 void vglClPrintContext(void);
 void vglClCheckError(cl_int error, char* name);
 void vglClInit();

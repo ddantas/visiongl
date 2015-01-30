@@ -290,19 +290,19 @@ void vglUpload(VglImage* image, int swapRGB){
 
   if (nChannels == 3){
     if (swapRGB){
-      glFormat = GL_RGB;
+      glFormat = GL_BGR;
     }
     else{
-      glFormat = GL_BGR;
+      glFormat = GL_RGB;
     }
   }
   else if (nChannels == 4)
   {
     if (swapRGB){
-      glFormat = GL_RGBA;
+      glFormat = GL_BGRA;
     }
     else{
-      glFormat = GL_BGRA;
+      glFormat = GL_RGBA;
     }
   }
   else{
@@ -371,20 +371,20 @@ void vglUpload(VglImage* image, int swapRGB){
         internalFormat = GL_RGBA32F_ARB;
     }
     else{
-        internalFormat = GL_RGBA;
+      internalFormat = GL_RGBA8;
     }
   }
   else{
-        internalFormat = GL_RED; //Must be fixed, but for now, it's the fix.
+        internalFormat = GL_INTENSITY; //Must be fixed, but for now, it's the fix.
   }
 
   if (ndim == 3){
-    glTexImage3D(glTarget, LEVEL, internalFormat, 
+    glTexImage3D(glTarget, LEVEL, internalFormat,
                  image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH], 0,
                  glFormat, glType, image->ndarray);
   }
   else{
-    glTexImage2D(glTarget, LEVEL, internalFormat, 
+    glTexImage2D(glTarget, LEVEL, internalFormat,
                  ipl->width, ipl->height, 0,
                  glFormat, glType, ipl->imageData);
   }
@@ -712,7 +712,6 @@ void vglNdarray4To3Channels(VglImage* img)
     void* newndarray = malloc(img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 3 * d * img->shape[VGL_LENGTH]);
 
     int offset = 0;
-    uint8_t temp_alpha = 0;
     for(int i = 0 ; i < (datasize/d); i++)
     {
         if (((i+1) % 4) != 0)
@@ -955,10 +954,16 @@ void vglDownloadFaster(VglImage* image/*, VglImage* aux*/){
 
   ERRCHECK()
 
-  if (nChannels == 3){
-    glFormat = GL_BGR;
+  if (nChannels == 3)
+  {
+    glFormat = GL_RGB;
   }
-  else{
+  else if (nChannels == 4)
+  {
+    glFormat = GL_RGBA;
+  }
+  else
+  {
     glFormat = GL_LUMINANCE;
   }
 
@@ -1004,10 +1009,16 @@ void vglDownload(VglImage* image){
 
   ERRCHECK()
 
-  if (nChannels == 3){
-    glFormat = GL_BGR;
+  if (nChannels == 3)
+  {
+    glFormat = GL_RGB;
   }
-  else{
+  else if (nChannels == 4)
+  {
+    glFormat = GL_RGBA;
+  }
+  else
+  {
     glFormat = GL_LUMINANCE;
   }
 
@@ -1063,10 +1074,16 @@ void vglDownloadFBO(VglImage* image){
             exit(1);
   }
 
-  if (nChannels == 3){
+  if (nChannels == 3)
+  {
     glFormat = GL_BGR;
   }
-  else{
+  else if (nChannels == 4)
+  {
+    glFormat = GL_RGB;
+  }
+  else
+  {
     glFormat = GL_LUMINANCE;
   }
 
