@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 
     //First call to Threshold
     TimerStart();
-    vglCl3dThreshold(img, out, 127.0);
+    vglCl3dThreshold(img, out, 0.5);
     vglClFlush();
     printf("Fisrt call to          Threshold:               %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Threshold
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglCl3dThreshold(img, out, 127.0);
+        vglCl3dThreshold(img, out, 0.5);
     }
     vglClFlush();
     printf("Time spent on %8d Threshold:               %s\n", nSteps, getTimeElapsedInSeconds());
