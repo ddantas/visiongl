@@ -93,7 +93,8 @@ void display_cam(void)
             cvCvtColor(cvRetrieveFrame(capture[i]), img[i]->ipl, CV_RGB2RGBA);
 	}
         vglSetContext(img[i], VGL_RAM_CONTEXT);
-        vglUpload(img[i]);
+        int swapRgb = 1;
+        vglUpload(img[i], swapRgb);
     }
     i_frame++;
 }
@@ -193,7 +194,12 @@ int main(int argc, char** argv)
       num_cam++;
       printf("\n\n");
     }
-   }
+  }
+  if (num_cam < 1){
+    fprintf(stderr, "Error: no camera detected\n");
+    exit(1);
+  }
+
 
   window_list  = new VglNamedWindowList();
   window_list->main_window_id = vglInit(1280, 960);

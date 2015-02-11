@@ -157,6 +157,17 @@ static const char *vglClErrorMessages[] = {
 
 #define CL_MIN_ERROR -68
 
+void vglClInteropSetTrue(void)
+{
+  Interop = true;
+}
+
+void vglClInteropSetFalse(void)
+{
+  Interop = false;
+}
+
+
 void vglClPrintContext(void)
 {
     printf("cl_platform_id* platformId    = %p\n", cl.platformId);
@@ -426,7 +437,6 @@ void vglClUpload(VglImage* img)
     if (Interop && img->nChannels > 1)
     {
         vglClUploadInterop(img);
-       
     }
     else
     {
@@ -586,13 +596,13 @@ void vglClDownloadForce(VglImage* img)
 void vglClDownloadInterop(VglImage* img)
 {
     vglClToGl(img);
-	if (vglIsInContext(img,VGL_GL_CONTEXT) && !vglIsInContext(img,VGL_RAM_CONTEXT))
-	{
-		if (img->ndim == 2)
-			vglDownloadFaster(img);
-		else
-			vglDownload(img);
-	}
+    if (vglIsInContext(img,VGL_GL_CONTEXT) && !vglIsInContext(img,VGL_RAM_CONTEXT))
+    {
+        if (img->ndim == 2)
+            vglDownload(img); //vglDownloadFaster
+        else
+            vglDownload(img);
+    }
 }
 
 
@@ -601,7 +611,7 @@ void vglClAlloc(VglImage* img)
     glFlush();
     glFinish();
 
-	cl_int err_cl;
+    cl_int err_cl;
     if (img->oclPtr == NULL)
     {
 		if (img->ndim == 2)

@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 
     //First call to Threshold
     TimerStart();
-    vglCl3dThreshold(img, out, 127.0);
+    vglCl3dThreshold(img, out, 0.5);
     vglClFlush();
     printf("Fisrt call to          Threshold:               %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Threshold
@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglCl3dThreshold(img, out, 127.0);
+        vglCl3dThreshold(img, out, 0.5);
     }
     vglClFlush();
     printf("Time spent on %8d Threshold:               %s\n", nSteps, getTimeElapsedInSeconds());
@@ -218,15 +218,19 @@ int main(int argc, char* argv[])
     vglSave3dImage(out, outFilename, imgIFirst, imgILast);
 
     //First call to Copy CPU->GPU
-    p = 0;
+    vglCheckContext(img, VGL_RAM_CONTEXT);
+    TimerStart();
+    vglSetContext(img, VGL_RAM_CONTEXT);
     vglClUpload(img);
     vglClFlush();
     printf("First call to          Copy CPU->GPU:           %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Copy CPU->GPU
+    p = 0;
     TimerStart();
     while (p < nSteps)
     {
         p++;
+        vglSetContext(img, VGL_RAM_CONTEXT);
         vglClUpload(img);
     }
     vglClFlush();
@@ -237,7 +241,9 @@ int main(int argc, char* argv[])
     vglSave3dImage(img, outFilename, imgIFirst, imgILast);
 
     //First call to Copy GPU->CPU
+    vglCheckContext(img, VGL_CL_CONTEXT);
     TimerStart();
+    vglSetContext(img, VGL_CL_CONTEXT);
     vglClDownload(img);
     vglClFlush();
     printf("First call to          Copy GPU->CPU:           %s \n", getTimeElapsedInSeconds());
@@ -247,6 +253,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
+        vglSetContext(img, VGL_CL_CONTEXT);
         vglClDownload(img);
     }
     vglClFlush();
