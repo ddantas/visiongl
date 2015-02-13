@@ -7,7 +7,7 @@
 // SCALAR window_size_y
 // SCALAR window_size_z
 
-__kernel void vglCl3dFuzzyAlgErode(__read_only image3d_t img_input,
+__kernel void vglCl3dFuzzyStdErode(__read_only image3d_t img_input,
                                 __write_only image3d_t img_output,
                                 __constant float* convolution_window, 
                                 int window_size_x, 

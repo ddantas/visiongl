@@ -6,14 +6,19 @@ int* vglClHistogram(VglImage* img_input);
 int* vglClSumPartialHistogram(cl_mem partial_hist, int size, int nchannels);
 cl_mem vglClPartialHistogram(VglImage* img_input);
 cl_mem vglCl3dPartialHistogram(VglImage* img_input);
+
 int* vglClCumulativeSum(int* arr, int size);
 int* vglClCumulativeSumNorm(int* arr, int size, int norm_total);
+
 void vglClHistogramEq(VglImage* input, VglImage* output);
 void vglCl3dHistogramEq(VglImage*input, VglImage* output);
+
 void vglClGrayLevelTransform(VglImage* input, VglImage* output, int* transformation);
 void vglCl3dGrayLevelTransform(VglImage* input, VglImage* output, int* transformation);
+
 void vglCl3dErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, int strel_size_x, int strel_size_y, int strel_size_z, int times);
 void vglClErode(VglImage* input, VglImage* output, VglImage* buff, float* mask, int strel_size_x, int strel_size_y, int times);
+
 void vglCl3dDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask, int strel_size_x, int strel_size_y,int strel_size_z, int times);
 void vglClDilate(VglImage* input, VglImage* output, VglImage* buff, float* mask, int strel_size_x, int strel_size_y, int times);
 
@@ -58,9 +63,20 @@ void vglClReconstructionByOpening(VglImage* src, VglImage* dst, VglImage* buff, 
 void vglCl3dReconstructionByClosing(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y, int strel_size_z);
 void vglClReconstructionByClosing(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y);
 
-/* Last Erosion
-Does the LastErosion described by Junior Barrera and Gerald Banon on their book
-src -> image to be last eroded
-dst -> output image
-*/
-//void vglCl3dLastErosion(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, VglImage* buff3, VglImage* buff4, VglImage* buff5, float* strel, int strel_size_x, int strel_size_y,int strel_size_z);
+#define VGL_CL_FUZZY_STANDARD 1
+#define VGL_CL_FUZZY_BOUNDED 2
+#define VGL_CL_FUZZY_ALGEBRAIC 3
+#define VGL_CL_FUZZY_BOUNDED 4
+#define VGL_CL_FUZZY_DRASTIC 5
+#define VGL_CL_FUZZY_DAP 6
+#define VGL_CL_FUZZY_HAMACHER 7
+#define VGL_CL_FUZZY_GEOMETRIC 8
+#define VGL_CL_FUZZY_ARITHMETIC 9
+
+#define VGL_CL_FUZZY_USE_GAMMA(x) (x == VGL_CL_FUZZY_DEP || x == VGL_CL_FUZZY_HAMACHER)
+
+void vglClFuzzyErode(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int type = 1, float gamma = 0.2);
+void vglClFuzzyDilate(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int type = 1, float gamma = 0.2);
+
+void vglCl3dFuzzyErode(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int type = 1, float gamma = 0.2);
+void vglCl3dFuzzyDilate(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int type = 1, float gamma = 0.2);

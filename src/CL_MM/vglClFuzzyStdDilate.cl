@@ -6,7 +6,7 @@
 // SCALAR window_size_x
 // SCALAR window_size_y
 
-__kernel void vglClFuzzyAlgDilate(__read_only image2d_t img_input,
+__kernel void vglClFuzzyStdDilate(__read_only image2d_t img_input,
                                 __write_only image2d_t img_output,
                                 __constant float* convolution_window, 
                                 int window_size_x, 
