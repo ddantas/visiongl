@@ -10,7 +10,7 @@ __kernel void vglCl3dDilate(__read_only image3d_t img_input,
                           __constant float* convolution_window, 
                           int window_size_x, 
                           int window_size_y,
-						  int window_size_z)
+            						  int window_size_z)
 {
     int4 coords = (int4)(get_global_id(0), get_global_id(1), get_global_id(2), 0);
     const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
@@ -23,18 +23,18 @@ __kernel void vglCl3dDilate(__read_only image3d_t img_input,
     float4 pmax = (0.0, 0.0, 0.0, 0.0);
     for(int w = -factorz; w <= factorz; w++)
     {
-        int i = 0; 
-        int j = 0;
-        for(int j = -factory; j <= factory; j++)
-    	{
-            for(int i = -factorx; i <= factorx; i++)
-	    {
-                float4 p = read_imagef(img_input, smp, (int4)(coords.x + i,coords.y + j, coords.z + w, 0));
-                if (convolution_window[conv_controller] != 0)
-		    pmax = max(p, pmax);
-                    conv_controller++;
-	    }
-	}
+      int i = 0; 
+      int j = 0;
+      for(int j = -factory; j <= factory; j++)
+      {
+        for(int i = -factorx; i <= factorx; i++)
+	      {
+          float4 p = read_imagef(img_input, smp, (int4)(coords.x + i,coords.y + j, coords.z + w, 0));
+          if (!(convolution_window[conv_controller] == 0))
+  		      pmax = max(p, pmax);
+          conv_controller++;
+	      }
+      }
     }
     write_imagef(img_output,coords,pmax);
 }
