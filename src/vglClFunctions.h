@@ -64,16 +64,15 @@ void vglCl3dReconstructionByClosing(VglImage* src, VglImage* dst, VglImage* buff
 void vglClReconstructionByClosing(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, float* strel, int strel_size_x, int strel_size_y);
 
 #define VGL_CL_FUZZY_STANDARD 1
-#define VGL_CL_FUZZY_BOUNDED 2
-#define VGL_CL_FUZZY_ALGEBRAIC 3
-#define VGL_CL_FUZZY_BOUNDED 4
-#define VGL_CL_FUZZY_DRASTIC 5
-#define VGL_CL_FUZZY_DAP 6
-#define VGL_CL_FUZZY_HAMACHER 7
-#define VGL_CL_FUZZY_GEOMETRIC 8
-#define VGL_CL_FUZZY_ARITHMETIC 9
+#define VGL_CL_FUZZY_ALGEBRAIC 2
+#define VGL_CL_FUZZY_BOUNDED 3
+#define VGL_CL_FUZZY_DRASTIC 4
+#define VGL_CL_FUZZY_DAP 5
+#define VGL_CL_FUZZY_HAMACHER 6
+#define VGL_CL_FUZZY_GEOMETRIC 7
+#define VGL_CL_FUZZY_ARITHMETIC 8
 
-#define VGL_CL_FUZZY_USE_GAMMA(x) (x == VGL_CL_FUZZY_DEP || x == VGL_CL_FUZZY_HAMACHER)
+#define VGL_CL_FUZZY_USE_GAMMA(x) (x == VGL_CL_FUZZY_DAP || x == VGL_CL_FUZZY_HAMACHER)
 
 void vglClFuzzyErode(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int type = 1, float gamma = 0.2);
 void vglClFuzzyDilate(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int type = 1, float gamma = 0.2);
