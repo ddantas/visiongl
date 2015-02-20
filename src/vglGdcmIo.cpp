@@ -133,19 +133,17 @@ VglImage* vglGdcmLoadDicom(char* inFilename)
 
     gdcm::Image &image = reader.GetImage();
     //image.Print( std::cout );
-  
+
     gdcm::PixelFormat pixelformat = image.GetPixelFormat();
-
+ 
     VglImage* imagevgl; 
-
     int width  = image.GetColumns();
     int height = image.GetRows();
     int layers = (image.GetDimensions())[2];
     int depth  = pixelformat.GetBitsAllocated();          // bits per pixel
     int iplDepth = convertDepthGdcmToVgl(depth);           // depth \in {IPL_DEPTH_8U, ...}
     char* filename = (char *) malloc(strlen(inFilename)+1);
-    strcpy(filename, inFilename);
-    
+    strcpy(filename, inFilename);  
     int nChannels = pixelformat.GetSamplesPerPixel(); // number of channels
 
     imagevgl = vglCreate3dImage(cvSize(width,height), iplDepth, nChannels, layers);
@@ -317,5 +315,73 @@ int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outFilename)
   int r = vglGdcmSaveDicom(imagevgl, outFilename, compress);
   return r;
 }
+
+/** Function for loading a stack of 3d DICOM images with GDCM library
+  */
+
+VglImage*  vglGdcmLoad4dDicom(char* filename, int lStart, int lEnd, bool has_mipmap /*=0*/)
+{
+
+  char* tempFilename = (char*)malloc(strlen(filename) + 256);
+  sprintf(tempFilename, filename, lStart);
+  VglImage* tmp = vglGdcmLoadDicom(tempFilename);
+
+  int n = lEnd-lStart+1;
+  int shape[10];
+  shape[0] = tmp->shape[0];
+  shape[1] = tmp->shape[1];
+  shape[2] = tmp->shape[2];
+  shape[3] = n;
+
+  VglImage* img = vglCreateNdImage(4, shape, tmp->depth, tmp->nChannels);
+  //vglPrintImageInfo(img, "4D image");
+
+  int delta = tmp->getTotalSizeInBytes();
+  int offset = 0;
+  vglReleaseImage(&tmp);
+  for(int i = lStart; i <= lEnd; i++)
+  {
+    sprintf(tempFilename, filename, i);
+    printf("filename[%d] = %s\n", i, tempFilename);
+    VglImage* tmp = vglGdcmLoadDicom(tempFilename);
+    memcpy(img->getImageData() + offset, tmp->getImageData(), delta);
+    offset += delta;
+  }
+
+  vglSetContext(img, VGL_RAM_CONTEXT);
+
+  return img;
+}
+
+/** Function for saving a stack of 3d DICOM images with GDCM library
+  */
+
+int vglGdcmSave4dDicom(VglImage* image, char* filename, int lStart, int lEnd, int compress /*= 0 default uncompressed*/)
+{
+  if ( (image->nChannels != 1) && (image->nChannels != 3) )
+  {
+    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__, image->nChannels);
+    return 1;
+  }
+
+  //vglDownload(image); //must be fixed before enabling
+  char* temp_filename = (char*)malloc(strlen(filename)+256);
+  int c = 0;
+  for(int i = lStart; i <= lEnd; i++)
+  {
+    VglImage* temp_image = vglCreate3dImage(cvSize(image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT]), image->depth, image->nChannels, image->shape[VGL_LENGTH]);
+    temp_image->ndarray = (char*)malloc(temp_image->getTotalSizeInBytes());
+    memcpy((char*)temp_image->ndarray,((char*)image->ndarray)+c,temp_image->getTotalSizeInBytes());
+    sprintf(temp_filename, filename, i);
+    if(compress == 0)
+      vglGdcmSaveDicomUncompressed(temp_image, temp_filename);
+    else
+      vglGdcmSaveDicomCompressed(temp_image, temp_filename);
+    c += temp_image->getTotalSizeInBytes();
+    vglReleaseImage(&temp_image);
+  }
+
+  return 0;
+}     
 
 #endif

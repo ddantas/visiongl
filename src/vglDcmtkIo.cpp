@@ -214,7 +214,7 @@ int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname, int compress)
 {
     if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
     {
-        fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+      fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__, imagevgl->nChannels);
         return 1;
     }
 
@@ -306,8 +306,22 @@ int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname, int compress)
     OFBool           lossless = OFTrue;  /* see opt_oxfer */
     
 
+    DcmFileFormat *fileformat = new DcmFileFormat();
+    if(!imagevgl->filename)
+      int r = vglCreateHeaderDcmtk(imagevgl, fileformat);
+    else
+      OFCondition error = fileformat->loadFile(imagevgl->filename, opt_ixfer, EGL_noChange, DCM_MaxReadLength, opt_readMode);
+
+    DcmDataset *dataset = fileformat->getDataset();
+    
+    int nPixels = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->nChannels;
+    int dcmDepth = convertDepthVglToDcmtk(imagevgl->depth); 
+    int totalPixels = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->shape[VGL_LENGTH]*imagevgl->nChannels;
+
     if(compress == 1)
     {
+      if(dcmDepth == 16)
+	opt_oxfer = EXS_JPEGProcess14SV1;
       // check for JPEG lossless output transfer syntaxes
       lossless = (opt_oxfer == EXS_JPEGProcess14SV1) || (opt_oxfer == EXS_JPEGProcess14);
 
@@ -346,30 +360,20 @@ int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname, int compress)
 	opt_trueLossless);
     }
 
-    DcmFileFormat *fileformat = new DcmFileFormat();
-    if(!imagevgl->filename)
-      int r = vglCreateHeaderDcmtk(imagevgl, fileformat);
-    else
-      OFCondition error = fileformat->loadFile(imagevgl->filename, opt_ixfer, EGL_noChange, DCM_MaxReadLength, opt_readMode);
-
-    DcmDataset *dataset = fileformat->getDataset();
     
-    int nPixels = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->nChannels;
-    int dcmDepth = convertDepthVglToDcmtk(imagevgl->depth); 
-    int totalPixels = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->shape[VGL_LENGTH]*imagevgl->nChannels;
     
     if(dcmDepth == 8)
-       dataset->putAndInsertUint8Array(DCM_PixelData, (Uint8 *)imagevgl->ndarray, totalPixels);
+      dataset->putAndInsertUint8Array(DCM_PixelData, (Uint8 *)imagevgl->ndarray, totalPixels);
     else
       if(dcmDepth == 16)
-	 dataset->putAndInsertUint16Array(DCM_PixelData, (Uint16 *)imagevgl->ndarray, totalPixels);
+	dataset->putAndInsertUint16Array(DCM_PixelData, (Uint16 *)imagevgl->ndarray, totalPixels);
 
     if(imagevgl->nChannels == 3)
        dataset->putAndInsertString(DCM_PhotometricInterpretation, "RGB");
 
     if(compress == 1)
     {
-      DcmXfer original_xfer(dataset->getOriginalXfer());
+      //DcmXfer original_xfer(dataset->getOriginalXfer());
 
       OFString sopClass;
       if (fileformat->getMetaInfo()->findAndGetOFString(DCM_MediaStorageSOPClassUID, sopClass).good())
@@ -413,7 +417,7 @@ int vglDcmtkSaveDicomUncompressed(VglImage* imagevgl, char* outfilename)
 {
     if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
     {
-        fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+      fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__, imagevgl->nChannels);
         return 1;
     }
 
@@ -431,12 +435,79 @@ int vglDcmtkSaveDicomCompressed(VglImage* imagevgl, char* outfilename)
 {
     if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
     {
-        fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__);
+      fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__, imagevgl->nChannels);
         return 1;
     }
     int compressionMode = 1;
     int r = vglDcmtkSaveDicom(imagevgl, outfilename, compressionMode);
     return r;
 }
+
+/** Function for loading a stack of 3d DICOM images with DCMTK library
+  */
+
+VglImage*  vglDcmtkLoad4dDicom(char* filename, int lStart, int lEnd, bool has_mipmap /*=0*/)
+{
+
+  char* tempFilename = (char*)malloc(strlen(filename) + 256);
+  sprintf(tempFilename, filename, lStart);
+  VglImage* tmp = vglDcmtkLoadDicom(tempFilename);
+
+  int n = lEnd-lStart+1;
+  int shape[10];
+  shape[0] = tmp->shape[0];
+  shape[1] = tmp->shape[1];
+  shape[2] = tmp->shape[2];
+  shape[3] = n;
+
+  VglImage* img = vglCreateNdImage(4, shape, tmp->depth, tmp->nChannels);
+  //vglPrintImageInfo(img, "4D image");
+
+  int delta = tmp->getTotalSizeInBytes();
+  int offset = 0;
+  vglReleaseImage(&tmp);
+  for(int i = lStart; i <= lEnd; i++)
+  {
+    sprintf(tempFilename, filename, i);
+    printf("filename[%d] = %s\n", i, tempFilename);
+    VglImage* tmp = vglDcmtkLoadDicom(tempFilename);
+    memcpy(img->getImageData() + offset, tmp->getImageData(), delta);
+    offset += delta;
+  }
+
+  vglSetContext(img, VGL_RAM_CONTEXT);
+
+  return img;
+}
+
+/** Function for saving a stack of 3d DICOM images with DCMTK library
+  */
+
+int vglDcmtkSave4dDicom(VglImage* image, char* filename, int lStart, int lEnd, int compress)
+{
+  if ( (image->nChannels != 1) && (image->nChannels != 3) )
+  {
+    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__, image->nChannels);
+    return 1;
+  }
+  //vglDownload(image); //must be fixed before enabling
+  char* temp_filename = (char*)malloc(strlen(filename)+256);
+  int c = 0;
+  for(int i = lStart; i <= lEnd; i++)
+  {
+    VglImage* temp_image = vglCreate3dImage(cvSize(image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT]), image->depth, image->nChannels, image->shape[VGL_LENGTH]);
+    temp_image->ndarray = (char*)malloc(temp_image->getTotalSizeInBytes());
+    memcpy((char*)temp_image->ndarray,((char*)image->ndarray)+c,temp_image->getTotalSizeInBytes());
+    sprintf(temp_filename, filename, i);
+    if(compress == 0)
+      vglDcmtkSaveDicomUncompressed(temp_image, temp_filename);
+    else
+      vglDcmtkSaveDicomCompressed(temp_image, temp_filename);
+    c += temp_image->getTotalSizeInBytes();
+    vglReleaseImage(&temp_image);
+  }
+
+  return 0;
+}      
 
 #endif

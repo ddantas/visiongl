@@ -2,6 +2,7 @@
 
 #include <tiffio.h> 
 #include <vglTiffIo.h>
+#include <vglContext.h>
 
 /** \brief Convert depth from tiff's format to ipl's format.
   */
@@ -394,6 +395,41 @@ int vglPrintTiffInfo(char* inFilename)
     TIFFClose(tif); 
   } 
   return 0;
+}
+
+/** Function for loading a stack of 3d TIFF images
+  */
+VglImage* vglLoad4dTiff(char* filename, int lStart, int lEnd, bool has_mipmap /*=0*/)
+{
+  char* tempFilename = (char*)malloc(strlen(filename) + 256);
+  sprintf(tempFilename, filename, lStart);
+  VglImage* tmp = vglLoadTiff(tempFilename);
+
+  int n = lEnd-lStart+1;
+  int shape[10];
+  shape[0] = tmp->shape[0];
+  shape[1] = tmp->shape[1];
+  shape[2] = tmp->shape[2];
+  shape[3] = n;
+
+  VglImage* img = vglCreateNdImage(4, shape, tmp->depth, tmp->nChannels);
+  //vglPrintImageInfo(img, "4D image");
+
+  int delta = tmp->getTotalSizeInBytes();
+  int offset = 0;
+  vglReleaseImage(&tmp);
+  for(int i = lStart; i <= lEnd; i++)
+  {
+    sprintf(tempFilename, filename, i);
+    printf("filename[%d] = %s\n", i, tempFilename);
+    VglImage* tmp = vglLoadTiff(tempFilename);
+    memcpy(img->getImageData() + offset, tmp->getImageData(), delta);
+    offset += delta;
+  }
+
+  vglSetContext(img, VGL_RAM_CONTEXT);
+
+  return img;
 }
 
 #endif
