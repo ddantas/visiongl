@@ -7,6 +7,9 @@
 ***                                                                 ***
 *********************************************************************/
 #include "vglImage.h"
+
+void CL_MM();
+
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
@@ -80,6 +83,16 @@ void vglCl3dFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float*
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
+void vglCl3dFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+
+/** Erosion of src image by mask. Result is stored in dst image.
+
+  */
+void vglCl3dFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+
+/** Erosion of src image by mask. Result is stored in dst image.
+
+  */
 void vglClFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Erosion of src image by mask. Result is stored in dst image.
@@ -146,4 +159,14 @@ void vglClFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float* 
 
   */
 void vglClFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, float gama);
+
+/** Erosion of src image by mask. Result is stored in dst image.
+
+  */
+void vglClFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+
+/** Erosion of src image by mask. Result is stored in dst image.
+
+  */
+void vglClFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 

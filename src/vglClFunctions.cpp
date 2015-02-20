@@ -1198,32 +1198,162 @@ void vglClReconstructionByClosing(VglImage* src, VglImage* dst, VglImage* buff, 
   vglClReconstructionByErosion(src, buff, dst, buff2, strel, strel_size_x, strel_size_y);
 }
 
-
-/*
-void vglCl3dLastErosion(VglImage* src, VglImage* dst, VglImage* buff, VglImage* buff2, VglImage* buff3, VglImage* buff4, VglImage* buff5, float* strel, int strel_size_x, int strel_size_y,int strel_size_z)
+void vglClFuzzyErode(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int type, float gamma)
 {
-  
-  vglCl3dErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
-  vglCl3dErode(dst, buff, strel, strel_size_x, strel_size_y, strel_size_z);
-  vglCl3dDilateFromMarker(dst, buff, buff, buff2, buff3, strel, strel_size_x, strel_size_y, strel_size_z);  
-  vglCl3dNot(buff, buff);
-  vglCl3dMin(dst, buff, buff);
-  vglCl3dCopy(buff, buff5);
-  
-  int c = 0;
-  while(!vglCl3dEqual(buff4, buff5))
+
+  if (src->ndim != 2)
   {
-      vglCl3dErode(dst, buff, strel, strel_size_x, strel_size_y, strel_size_z);
-      vglCl3dErode(buff, buff4, strel, strel_size_x, strel_size_y, strel_size_z);
-      vglCl3dDilateFromMarker(buff, buff4, buff4, buff2, buff3, strel, strel_size_x, strel_size_y, strel_size_z);
-      vglCl3dNot(buff4, buff3);
-      vglCl3dCopy(buff5, buff4);
-      vglClMin(buff, buff3, buff2);
-      vglClMin(buff4, buff5, buff5);
-      vglCl3dCopy(buff, dst);
-      c++;
+    fprintf(stderr, "%s: %s: Error: only images with 2 dimensions supported. Use vglCl3dFuzzyErode instead.\n", __FILE__, __FUNCTION__);
+    return;
   }
-  
-  vglCl3dCopy(buff5, dst);
+
+  switch (type)
+  {
+    case VGL_CL_FUZZY_ALGEBRAIC:
+      vglClFuzzyAlgErode(src, dst, strel, strel_size_x, strel_size_y);
+      break;
+    case VGL_CL_FUZZY_ARITHMETIC:
+      vglClFuzzyArithErode(src, dst, strel, strel_size_x, strel_size_y);
+      break;
+    case VGL_CL_FUZZY_BOUNDED:
+      vglClFuzzyBoundErode(src, dst, strel, strel_size_x, strel_size_y);
+      break;
+    case VGL_CL_FUZZY_DAP:
+      vglClFuzzyDaPErode(src, dst, strel, strel_size_x, strel_size_y, gamma);
+      break;
+    case VGL_CL_FUZZY_DRASTIC:
+      vglClFuzzyDrasticErode(src, dst, strel, strel_size_x, strel_size_y);
+      break;
+    case VGL_CL_FUZZY_GEOMETRIC:
+      vglClFuzzyGeoErode(src, dst, strel, strel_size_x, strel_size_y);
+      break;
+    case VGL_CL_FUZZY_HAMACHER:
+      vglClFuzzyHamacherErode(src, dst, strel, strel_size_x, strel_size_y, gamma);
+      break;
+    case VGL_CL_FUZZY_STANDARD:
+      vglClFuzzyStdErode(src, dst, strel, strel_size_x, strel_size_y);
+      break;
+    default:
+      printf("%s: %s : Warning: Not a valid type of operation\n", __FILE__, __FUNCTION__);
+  }
 }
-*/
+
+void vglClFuzzyDilate(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int type, float gamma)
+{
+
+  if (src->ndim != 3)
+  {
+    fprintf(stderr, "%s: %s: Error: only images with 2 dimensions supported. Use vglCl3dFuzzyDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  switch (type)
+  {
+  case VGL_CL_FUZZY_ALGEBRAIC:
+    vglClFuzzyAlgDilate(src, dst, strel, strel_size_x, strel_size_y);
+    break;
+  case VGL_CL_FUZZY_ARITHMETIC:
+    vglClFuzzyArithDilate(src, dst, strel, strel_size_x, strel_size_y);
+    break;
+  case VGL_CL_FUZZY_BOUNDED:
+    vglClFuzzyBoundDilate(src, dst, strel, strel_size_x, strel_size_y);
+    break;
+  case VGL_CL_FUZZY_DAP:
+    vglClFuzzyDaPDilate(src, dst, strel, strel_size_x, strel_size_y, gamma);
+    break;
+  case VGL_CL_FUZZY_DRASTIC:
+    vglClFuzzyDrasticDilate(src, dst, strel, strel_size_x, strel_size_y);
+    break;
+  case VGL_CL_FUZZY_GEOMETRIC:
+    vglClFuzzyGeoDilate(src, dst, strel, strel_size_x, strel_size_y);
+    break;
+  case VGL_CL_FUZZY_HAMACHER:
+    vglClFuzzyHamacherDilate(src, dst, strel, strel_size_x, strel_size_y, gamma);
+    break;
+  case VGL_CL_FUZZY_STANDARD:
+    vglClFuzzyStdDilate(src, dst, strel, strel_size_x, strel_size_y);
+    break;
+  default:
+    printf("%s: %s : Warning: Not a valid type of operation\n", __FILE__, __FUNCTION__);
+  }
+}
+
+void vglCl3dFuzzyErode(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int strel_size_z, int type, float gamma)
+{
+
+  if (src->ndim != 3)
+  {
+    fprintf(stderr, "%s: %s: Error: only images with 3 dimensions supported. Use vglClFuzzyErode instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  switch (type)
+  {
+  case VGL_CL_FUZZY_ALGEBRAIC:
+    vglCl3dFuzzyAlgErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_ARITHMETIC:
+    vglCl3dFuzzyArithErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_BOUNDED:
+    vglCl3dFuzzyBoundErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_DAP:
+    vglCl3dFuzzyDaPErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z, gamma);
+    break;
+  case VGL_CL_FUZZY_DRASTIC:
+    vglCl3dFuzzyDrasticErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_GEOMETRIC:
+    vglCl3dFuzzyGeoErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_HAMACHER:
+    vglCl3dFuzzyHamacherErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z, gamma);
+    break;
+  case VGL_CL_FUZZY_STANDARD:
+    vglCl3dFuzzyStdErode(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  default:
+    printf("%s: %s : Warning: Not a valid type of operation\n", __FILE__, __FUNCTION__);
+  }
+}
+
+void vglCl3dFuzzyDilate(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y,int strel_size_z, int type, float gamma)
+{
+
+  if (src->ndim != 3)
+  {
+    fprintf(stderr, "%s: %s: Error: only images with 3 dimensions supported. Use vglClFuzzyDilate instead.\n", __FILE__, __FUNCTION__);
+    return;
+  }
+
+  switch (type)
+  {
+  case VGL_CL_FUZZY_ALGEBRAIC:
+    vglCl3dFuzzyAlgDilate(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_ARITHMETIC:
+    vglCl3dFuzzyArithDilate(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_BOUNDED:
+    vglCl3dFuzzyBoundDilate(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_DAP:
+    vglCl3dFuzzyDaPDilate(src, dst, strel, strel_size_x, strel_size_y, strel_size_z, gamma);
+    break;
+  case VGL_CL_FUZZY_DRASTIC:
+    vglCl3dFuzzyDrasticDilate(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_GEOMETRIC:
+    vglCl3dFuzzyGeoDilate(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  case VGL_CL_FUZZY_HAMACHER:
+    vglCl3dFuzzyHamacherDilate(src, dst, strel, strel_size_x, strel_size_y, strel_size_z, gamma);
+    break;
+  case VGL_CL_FUZZY_STANDARD:
+    vglCl3dFuzzyStdDilate(src, dst, strel, strel_size_x, strel_size_y, strel_size_z);
+    break;
+  default:
+    printf("%s: %s : Warning: Not a valid type of operation. type = %d\n", __FILE__, __FUNCTION__, type);
+  }
+}

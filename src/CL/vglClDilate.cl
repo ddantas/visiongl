@@ -26,7 +26,7 @@ __kernel void vglClDilate(__read_only image2d_t img_input,
         for(int j = -factorx; j <= factorx; j++)
         {
             float4 p = read_imagef(img_input, smp, (int2)(coords.x + j, coords.y + i));
-            if (convolution_window[conv_controller] != 0)
+            if (!(convolution_window[conv_controller] == 0))
                 pmax = max(p, pmax);
             conv_controller++;
         }

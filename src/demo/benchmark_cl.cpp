@@ -171,6 +171,26 @@ int main(int argc, char* argv[])
     sprintf(outFilename, "%s%s", outPath, "/out_cl_invert.tif");
     cvSaveImage(outFilename, out->ipl);
 
+    //First call to Threshold
+    TimerStart();
+    vglClThreshold(img, out, 0.5);
+    vglClFlush();
+    printf("Fisrt call to          Threshold:               %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Threshold
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClThreshold(img, out, 0.5);
+    }
+    vglClFlush();
+    printf("Time spent on %8d Threshold:               %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(out, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl_thresh.tif");
+    cvSaveImage(outFilename, out->ipl);
+
     //First call to Copy GPU->GPU
     TimerStart();
     vglClCopy(img,out);
