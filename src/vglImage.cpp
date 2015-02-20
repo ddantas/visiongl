@@ -1375,13 +1375,13 @@ void vglPrintImageInfo(VglImage* image, char* msg){
     printf("Image @ %p: w x h x l = %d x %d x %d\n", 
     image, image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH]);
     printf("ndim = %d\n", image->ndim);
-    printf("shape = \{");
+    printf("shape = {");
     for(int i = 0; i < VGL_MAX_DIM; i++)
     {
       if (i > 0) printf(", ");
       printf("%d", image->shape[i]);
     }
-    printf("\}\n");
+    printf("}\n");
     printf("Ipl @ %p\n", image->ipl);
     printf("ndarray @ %p\n", image->ndarray); 
     printf("nChannels = %d\n", image->nChannels);
