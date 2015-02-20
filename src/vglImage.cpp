@@ -590,6 +590,62 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, in
 }
 
 
+/** Create image as described by the parameters
+ */
+VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int nChannels, int has_mipmap /*=0*/)
+{
+  VglImage* vglImage = new VglImage;
+  IplImage* ipl = NULL;
+
+  for (int i = 0; i < VGL_MAX_DIM; i++)
+  {
+    vglImage->shape[i] = 0;
+  }
+  
+  vglImage->ipl = NULL;
+  vglImage->ndarray = NULL;
+  for (int i = 0; i < ndim; i++){
+    vglImage->shape[i] = shape[i];
+  }
+  vglImage->ndim      = ndim;
+  vglImage->depth     = depth;
+  vglImage->nChannels = nChannels;
+  vglImage->has_mipmap = has_mipmap;
+  vglImage->fbo = -1;
+  vglImage->tex = -1;
+  vglImage->cudaPtr = NULL;
+  vglImage->cudaPbo = -1;
+#ifdef __OPENCL__
+  vglImage->oclPtr = NULL;
+#endif
+  vglImage->filename = NULL;
+
+
+  int bytesPerPixel = vglImage->depth / 8;
+  if (bytesPerPixel < 1) bytesPerPixel = 1;
+
+  int c = 1;
+  if (nChannels >= 3)
+  {
+    c = 4; // Although image may be RGB, a fourth channel is allocated, as needed by OpenCL.
+  }
+
+  if (ndim <= 2)
+  {
+    vglImage->ipl = cvCreateImage(cvSize(shape[VGL_WIDTH], shape[VGL_HEIGHT]), depth, nChannels);
+  }
+  else
+  {
+    vglImage->ndarray = malloc(vglImage->getTotalSizeInBytes());
+  }
+
+  vglSetContext(vglImage, VGL_BLANK_CONTEXT);
+  //vglUpload(vglImage);
+
+  return vglImage;
+}
+
+
 /** Save PGM 3d images on the disk
 */
 void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
@@ -1318,9 +1374,16 @@ void vglPrintImageInfo(VglImage* image, char* msg){
     }
     printf("Image @ %p: w x h x l = %d x %d x %d\n", 
     image, image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH]);
+    printf("ndim = %d\n", image->ndim);
+    printf("shape = \{");
+    for(int i = 0; i < VGL_MAX_DIM; i++)
+    {
+      if (i > 0) printf(", ");
+      printf("%d", image->shape[i]);
+    }
+    printf("\}\n");
     printf("Ipl @ %p\n", image->ipl);
     printf("ndarray @ %p\n", image->ndarray); 
-    printf("ndim = %d\n", image->ndim);
     printf("nChannels = %d\n", image->nChannels);
     printf("depth = ");
     switch (image->depth){

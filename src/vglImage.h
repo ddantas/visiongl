@@ -53,6 +53,7 @@
 #define VGL_WIDTH 0
 #define VGL_HEIGHT 1
 #define VGL_LENGTH 2
+#define VGL_4D 3
 
 ////////// VglImage
 
@@ -180,6 +181,7 @@ VglImage* vglCopyCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0)
 VglImage* vglCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
+VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int nChannels, int has_mipmap = 0);
 void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd);
 VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 void vglReleaseImage(VglImage** p_image);
