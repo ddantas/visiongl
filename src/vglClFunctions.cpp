@@ -1241,7 +1241,7 @@ void vglClFuzzyErode(VglImage* src, VglImage* dst, float* strel, int strel_size_
 void vglClFuzzyDilate(VglImage* src, VglImage* dst, float* strel, int strel_size_x, int strel_size_y, int type, float gamma)
 {
 
-  if (src->ndim != 3)
+  if (src->ndim != 2)
   {
     fprintf(stderr, "%s: %s: Error: only images with 2 dimensions supported. Use vglCl3dFuzzyDilate instead.\n", __FILE__, __FUNCTION__);
     return;
