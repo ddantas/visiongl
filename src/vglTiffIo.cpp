@@ -302,6 +302,8 @@ VglImage* vglLoadTiff(char* inFilename)
   }while(TIFFReadDirectory(tif));
 
   TIFFClose(tif); 
+
+  vglSetContext(img, VGL_RAM_CONTEXT);
   return img;
 }
 
@@ -431,5 +433,59 @@ VglImage* vglLoad4dTiff(char* filename, int lStart, int lEnd, bool has_mipmap /*
 
   return img;
 }
+
+int vglSaveTiff(VglImage* image, char* outFilename)
+{
+  TIFF *out = TIFFOpen(outFilename,"w");
+  char *buff = new char[image->getTotalSizeInPixels()];
+  buff = image->getImageData();
+
+  int c = image->getBytesPerPixel();
+  for(int z = 0; z < image->shape[VGL_LENGTH]; z++)
+  {
+    TIFFSetField(out, TIFFTAG_IMAGEWIDTH, image->shape[VGL_WIDTH]);
+    TIFFSetField(out, TIFFTAG_IMAGELENGTH, image->shape[VGL_HEIGHT]);
+    TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, image->depth);
+    TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+    TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, image->nChannels);
+    TIFFSetField(out, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+    TIFFSetField(out, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+   
+    TIFFSetField(out, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
+    TIFFSetField(out, TIFFTAG_PAGENUMBER, z, image->shape[VGL_LENGTH]);
+    
+    for(int y = 0; y < image->shape[VGL_HEIGHT]; y++)
+      TIFFWriteScanline(out, &buff[c*(  (z*image->shape[VGL_WIDTH]*image->shape[VGL_HEIGHT])+(y*image->shape[VGL_WIDTH])  )], y, 0);
+    
+    TIFFWriteDirectory(out);
+  }
+ 
+  TIFFClose(out);
+}
+
+int vglSave4dTiff(VglImage* image, char* filename, int lStart, int lEnd)
+{
+  if ( (image->nChannels != 1) && (image->nChannels != 3) )
+  {
+    fprintf(stderr, "%s: %s: Error: image has %d channels but only 1 or 3 channels supported. Use vglImage4to3Channels function before saving\n", __FILE__, __FUNCTION__, image->nChannels);
+    return 1;
+  }
+  //vglDownload(image); //must be fixed before enabling
+  char* temp_filename = (char*)malloc(strlen(filename)+256);
+  int c = 0;
+  for(int i = lStart; i <= lEnd; i++)
+  {
+    VglImage* temp_image = vglCreate3dImage(cvSize(image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT]), image->depth, image->nChannels, image->shape[VGL_LENGTH]);
+    temp_image->ndarray = (char*)malloc(temp_image->getTotalSizeInBytes());
+    memcpy((char*)temp_image->ndarray,((char*)image->ndarray)+c,temp_image->getTotalSizeInBytes());
+    sprintf(temp_filename, filename, i);
+    vglSaveTiff(temp_image, temp_filename);
+    c += temp_image->getTotalSizeInBytes();
+    vglReleaseImage(&temp_image);
+  }
+
+  return 0;
+}      
+
 
 #endif
