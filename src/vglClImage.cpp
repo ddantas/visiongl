@@ -479,6 +479,10 @@ void vglClUpload(VglImage* img)
 	    {
                 format.image_channel_data_type = CL_UNORM_INT8;
 	    }
+            else if (img->depth == IPL_DEPTH_16U)
+	    {
+                format.image_channel_data_type = CL_UNORM_INT16;
+	    }
             else if (img->depth == IPL_DEPTH_32S)
 	    {
                 format.image_channel_data_type = CL_SIGNED_INT32;
