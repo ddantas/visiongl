@@ -475,7 +475,7 @@ VglImage* vglCopyCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /
   VglImage* retval = vglCreateImage(cvSize(img_in->width, img_in->height), img_in->depth, img_in->nChannels, ndim, has_mipmap);
   cvCopy(img_in, retval->ipl);
   vglSetContext(retval, VGL_RAM_CONTEXT);
-  vglUpload(retval);
+  //vglUpload(retval);
   return retval;
 }
 
@@ -536,7 +536,7 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
   vglImage->filename = NULL;
 
   vglSetContext(vglImage, VGL_BLANK_CONTEXT);
-  vglUpload(vglImage);
+  //vglUpload(vglImage);
   
   return vglImage;
 }
@@ -944,7 +944,7 @@ void vglReplaceIpl(VglImage* image, IplImage* new_ipl)
   image->ipl = new_ipl;
 
   vglSetContext(image, VGL_RAM_CONTEXT);
-  vglUpload(image);
+  //vglUpload(image);
 }
 
 /** Force transfer of image from GPU to RAM. Add RAM as valid context.
@@ -1210,7 +1210,7 @@ void vglDownloadPGM(VglImage* image){
 
     This function uses cvLoadImage to read image file.
  */
-VglImage* vglLoadImage(char* filename, int iscolor = /*-1*/, int has_mipmap /*= 0*/)
+VglImage* vglLoadImage(char* filename, int iscolor /*= -1*/, int has_mipmap /*= 0*/)
 {
   VglImage* img = new VglImage;
   IplImage* ipl = cvLoadImage(filename, iscolor);
@@ -1243,7 +1243,7 @@ VglImage* vglLoadImage(char* filename, int iscolor = /*-1*/, int has_mipmap /*= 
   img->filename = NULL;
 
   vglSetContext(img, VGL_RAM_CONTEXT);
-  vglUpload(img);
+  //vglUpload(img);
 
   if (img->ipl){
     return img;
@@ -1737,11 +1737,15 @@ void vglHorizontalFlip2(VglImage* src, VglImage* dst){
 }
 
 void vglClear(VglImage* image, float r, float g, float b, float a){
-      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, image->fbo);
-      ERRCHECK()
+  vglCheckContext(image, VGL_GL_CONTEXT);
 
-      glClearColor(r, g, b, a);
-      glClear(GL_COLOR_BUFFER_BIT);
+  vglPrintImageInfo(image);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, image->fbo);
+  ERRCHECK()
+
+  glClearColor(r, g, b, a);
+  glClear(GL_COLOR_BUFFER_BIT);
 
   vglSetContext(image, VGL_GL_CONTEXT);
 }

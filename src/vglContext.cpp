@@ -102,6 +102,11 @@ int vglCheckContext(VglImage* img, int context){
       }
     break;
     case VGL_GL_CONTEXT:
+      if (vglIsInContext(img, VGL_BLANK_CONTEXT)){
+        //printf("%s: case 1\n", __FUNCTION__);
+        vglAddContext(img, VGL_RAM_CONTEXT);
+      }
+      else
 #ifdef __OPENCL__
       if (vglIsInContext(img, VGL_CL_CONTEXT)){
         vglClDownload(img);        
