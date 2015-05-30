@@ -45,8 +45,8 @@ OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_le
 
 WITH_CUDA = 0
 WITH_OPENCL = 1
-WITH_GDCM = 0
-WITH_DCMTK = 0
+WITH_GDCM = 1
+WITH_DCMTK = 1
 WITH_TIFF = 0
 
 ifeq ($(WITH_OPENCL), 1)
@@ -79,6 +79,12 @@ ifeq ($(WITH_OPENCL), 1)
         OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
         OPENCL_LIBRARIES   = -lOpenCL
         OPENCL_FILES = src/cl2cpp_shaders.cpp src/vglClFunctions.cpp src/cl2cpp_MM.cpp src/vglClImage.cpp
+
+        OPENGL_INCLUDEPATH = $(OPENCL_INCLUDEPATH)
+        OPENGL_INCLUDEDIR  = $(OPENCL_INCLUDEDIR)
+else
+        OPENGL_INCLUDEPATH = /usr/include/
+        OPENGL_INCLUDEDIR  = -I $(OPENGL_INCLUDEPATH)
 endif
 
 ifeq ($(WITH_GDCM), 1)
@@ -105,6 +111,7 @@ endif
 ifeq ($(WITH_TIFF), 1)
 	TIFF_DEF        = -D__TIFF__
 endif
+
 
 
 
@@ -419,4 +426,10 @@ clinfo:
 
 runclinfo:
 	./src/demo/clinfo
+
+utils:
+	g++ $(COMPILER_FLAGS) src/demo/image_info.cpp $(OPENCV_INCLUDEDIR) $(OPENGL_INCLUDEDIR) -I src -lvisiongl $(OUTPUT_LIBDIR) $(GDCM_DEF) $(GDCM_INCLUDEDIR) $(DCMTK_DEF) $(DCMTK_INCLUDEDIR) -o src/demo/image_info
+
+runutils:
+	./src/demo/image_info images/lena_std.tif -p
 
