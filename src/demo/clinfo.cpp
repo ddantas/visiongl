@@ -5,6 +5,12 @@
  *      machine (or at least for a specific run-time).
  *
  * (Jeremy Sugerman, 13 August 2009)
+ *
+ *
+ *      Added functions to display image formats supported by
+ *      each device.
+ *
+ * (Daniel Oliveira Dantas, 30 May 2015)
  */
 
 #include <stdio.h>
@@ -121,6 +127,121 @@ CLErrString(cl_int status) {
    return unknown;
 }
 
+/*
+ * CLImageFormatString --
+ *
+ *      Utility function that converts an OpenCL image format into a human
+ *      readable string.
+ *
+ * Results:
+ *      const char * pointer to a static string.
+ */
+static const char *
+CLImageFormatString(cl_uint uiImageFormat) {
+   static struct { cl_uint code; const char *msg; } msg_table[] = {
+   // cl_channel_order
+      { CL_R, "CL_R", },  
+      { CL_A, "CL_A", },  
+      { CL_RG, "CL_RG", },  
+      { CL_RA, "CL_RA", },  
+      { CL_RGB, "CL_RGB", },
+      { CL_RGBA, "CL_RGBA", },  
+      { CL_BGRA, "CL_BGRA", },  
+      { CL_ARGB, "CL_ARGB", },  
+      { CL_INTENSITY, "CL_INTENSITY", },  
+      { CL_LUMINANCE, "CL_LUMINANCE", },  
+
+      // cl_channel_type 
+      { CL_SNORM_INT8, "CL_SNORM_INT8", },
+      { CL_SNORM_INT16, "CL_SNORM_INT16", },
+      { CL_UNORM_INT8, "CL_UNORM_INT8", },
+      { CL_UNORM_INT16, "CL_UNORM_INT16", },
+      { CL_UNORM_SHORT_565, "CL_UNORM_SHORT_565", },
+      { CL_UNORM_SHORT_555, "CL_UNORM_SHORT_555", },
+      { CL_UNORM_INT_101010, "CL_UNORM_INT_101010", },
+      { CL_SIGNED_INT8, "CL_SIGNED_INT8", },
+      { CL_SIGNED_INT16, "CL_SIGNED_INT16", },
+      { CL_SIGNED_INT32, "CL_SIGNED_INT32", },
+      { CL_UNSIGNED_INT8, "CL_UNSIGNED_INT8", },
+      { CL_UNSIGNED_INT16, "CL_UNSIGNED_INT16", },
+      { CL_UNSIGNED_INT32, "CL_UNSIGNED_INT32", },
+      { CL_HALF_FLOAT, "CL_HALF_FLOAT", },
+      { CL_FLOAT, "CL_FLOAT", },
+      { 0, NULL },
+   };
+
+   static char unknown[25];
+   int ii;
+
+   for (ii = 0; msg_table[ii].msg != NULL; ii++) {
+      if (msg_table[ii].code == uiImageFormat) {
+	  return msg_table[ii].msg;
+      }
+   }
+
+   snprintf(unknown, sizeof unknown, "Unknown format %X", uiImageFormat);
+   return unknown;
+
+}
+
+/*
+ * PrintSupportedFormats --
+ *
+ *      Prints 2d and 3d image formats supported by the given device ID.
+ * 
+ *      Based on code from:
+ *      https://github.com/sschaetz/nvidia-opencl-examples/blob/master/OpenCL/src/oclDeviceQuery/oclDeviceQuery.cpp
+ *
+ * Results:
+ *      void.
+ */
+void PrintSupportedFormats(cl_device_id device, cl_mem_object_type imageType)
+{
+   cl_int status;
+   cl_uint uiNumSupportedFormats = 0;
+
+   cl_context cxGPUContext = clCreateContext(0, 1, &device, NULL, NULL, &status);
+            
+   clGetSupportedImageFormats(cxGPUContext, CL_MEM_READ_ONLY, 
+                              imageType,   
+                              0, NULL, &uiNumSupportedFormats);
+   cl_image_format* ImageFormats = new cl_image_format[uiNumSupportedFormats];
+   clGetSupportedImageFormats(cxGPUContext, CL_MEM_READ_ONLY, 
+                              imageType,   
+                              uiNumSupportedFormats, ImageFormats, NULL);
+
+   int ndim = 0;
+   if (imageType == CL_MEM_OBJECT_IMAGE2D)
+     ndim = 2;
+   else if (imageType == CL_MEM_OBJECT_IMAGE3D)
+     ndim = 3;
+
+
+   printf("  ---------------------------------\n");
+   printf("  %dD Image Formats Supported (%u)\n", ndim, uiNumSupportedFormats); 
+   printf("  ---------------------------------\n");
+   printf("  %-6s%-22s%-22s\n\n", "#", "Channel Order", "Channel Type"); 
+   for(unsigned int i = 0; i < uiNumSupportedFormats; i++) 
+   {  
+      printf("  %-6u%-22s%-22s\n", (i + 1),
+          CLImageFormatString(ImageFormats[i].image_channel_order), 
+          CLImageFormatString(ImageFormats[i].image_channel_data_type));
+   }
+   printf("\n"); 
+   delete [] ImageFormats;
+
+}
+
+void PrintSupportedFormats2d(cl_device_id device)
+{
+  PrintSupportedFormats(device, CL_MEM_OBJECT_IMAGE2D);
+}
+
+void PrintSupportedFormats3d(cl_device_id device)
+{
+  PrintSupportedFormats(device, CL_MEM_OBJECT_IMAGE3D);
+}
+
 
 /*
  * PrintDevice --
@@ -221,7 +342,7 @@ PrintDevice(cl_device_id device) {
          continue;
       }
       if (size > sizeof buf) {
-         Warning("\tdevice[%p]: Large %s (%d bytes)!  Truncating to %d!\n",
+         Warning("\tdevice[%p]: Large %s (%ld bytes)!  Truncating to %ld!\n",
                  device, strProps[ii].name, size, sizeof buf);
       }
       printf("\tdevice[%p]: %s: %s\n",
@@ -311,7 +432,7 @@ PrintDevice(cl_device_id device) {
          continue;
       }
       if (size > sizeof val) {
-         Warning("\tdevice[%p]: Large %s (%d bytes)!  Truncating to %d!\n",
+         Warning("\tdevice[%p]: Large %s (%ld bytes)!  Truncating to %ld!\n",
                  device, hexProps[ii].name, size, sizeof val);
       }
       printf("\tdevice[%p]: %s: 0x%llx\n",
@@ -327,12 +448,17 @@ PrintDevice(cl_device_id device) {
          continue;
       }
       if (size > sizeof val) {
-         Warning("\tdevice[%p]: Large %s (%d bytes)!  Truncating to %d!\n",
+         Warning("\tdevice[%p]: Large %s (%ld bytes)!  Truncating to %ld!\n",
                  device, longProps[ii].name, size, sizeof val);
       }
       printf("\tdevice[%p]: %s: %lld\n",
              device, longProps[ii].name, val);
    }
+
+
+   PrintSupportedFormats2d(device);
+   PrintSupportedFormats3d(device);
+
 }
 
 
@@ -370,7 +496,7 @@ PrintPlatform(cl_platform_id platform) {
          continue;
       }
       if (size > sizeof buf) {
-         Warning("platform[%p]: Huge %s (%d bytes)!  Truncating to %d\n",
+         Warning("platform[%p]: Huge %s (%ld bytes)!  Truncating to %ld\n",
                  platform, props[ii].name, size, sizeof buf);
       }
       printf("platform[%p]: %s: %s\n", platform, props[ii].name, buf);
@@ -384,7 +510,7 @@ PrintPlatform(cl_platform_id platform) {
    }
    printf("platform[%p]: Found %d device(s).\n", platform, numDevices);
 
-   deviceList = malloc(numDevices * sizeof(cl_device_id));
+   deviceList = (cl_device_id*) malloc(numDevices * sizeof(cl_device_id));
    if ((status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL,
                                 numDevices, deviceList, NULL)) != CL_SUCCESS) {
       Warning("platform[%p]: Unable to enumerate the devices: %s\n",
@@ -420,7 +546,7 @@ main(int argc, char * argv[])
     }
     printf("Found %d platform(s).\n", numPlatforms);
 
-    platformList = malloc(sizeof(cl_platform_id) * numPlatforms);
+    platformList = (cl_platform_id*) malloc(sizeof(cl_platform_id) * numPlatforms);
     if ((status = clGetPlatformIDs(numPlatforms, platformList, NULL)) != CL_SUCCESS) {
        Warning("Unable to enumerate the platforms: %s\n",
                CLErrString(status));
