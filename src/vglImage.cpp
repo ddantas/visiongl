@@ -1210,7 +1210,7 @@ void vglDownloadPGM(VglImage* image){
 
     This function uses cvLoadImage to read image file.
  */
-VglImage* vglLoadImage(char* filename, int iscolor, int has_mipmap)
+VglImage* vglLoadImage(char* filename, int iscolor = /*-1*/, int has_mipmap /*= 0*/)
 {
   VglImage* img = new VglImage;
   IplImage* ipl = cvLoadImage(filename, iscolor);
