@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
        
     printf("CREATING IMAGE\n");
     VglImage* img = vglLoad3dImage(inFilename, imgIFirst, imgILast);
-    
+
     printf("CHECKING NCHANNELS\n");
     if (img->nChannels == 3)
     {
@@ -56,6 +56,7 @@ int main(int argc, char* argv[])
         }
     }
 
+    printf("CHECKING IF IMG IS NULL\n");
     if (img == NULL)
     {
         std::string str("Error: File not found: ");
@@ -85,7 +86,7 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Blur 3x3x3:              %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_blur333_%03d.jpg");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_blur333_%03d.tif");
     vglSave3dImage(out, outFilename, imgIFirst, imgILast);
 
     // Convolution kernels
@@ -116,7 +117,7 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Convolution 3x3x3:       %s \n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_conv333_%03d.jpg");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_conv333_%03d.tif");
     vglSave3dImage(out, outFilename, imgIFirst, imgILast);
 
     //Total time spent on n operations Convolution 5x5
@@ -131,7 +132,7 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Convolution 5x5x5:       %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_conv555_%03d.jpg");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_conv555_%03d.tif");
     vglSave3dImage(out, outFilename, imgIFirst, imgILast);
 
     //First call to Erode 3x3x3
@@ -154,7 +155,7 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Erode 3x3x3:             %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_erode333_%03d.jpg");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_erode333_%03d.tif");
     vglSave3dImage(out, outFilename, imgIFirst, imgILast);
 
     //First call to Invert
@@ -174,12 +175,13 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Invert:                  %s\n", nSteps, getTimeElapsedInSeconds());
 	
     vglCheckContext(out, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_invert_%03d.jpg");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_invert_%03d.tif");
     vglSave3dImage(out, outFilename, imgIFirst, imgILast);
 
+    float thresh = 0.2;
     //First call to Threshold
     TimerStart();
-    vglCl3dThreshold(img, out, 0.5);
+    vglCl3dThreshold(img, out, thresh);
     vglClFlush();
     printf("Fisrt call to          Threshold:               %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Threshold
@@ -188,13 +190,13 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglCl3dThreshold(img, out, 0.5);
+        vglCl3dThreshold(img, out, thresh);
     }
     vglClFlush();
     printf("Time spent on %8d Threshold:               %s\n", nSteps, getTimeElapsedInSeconds());
 	
     vglCheckContext(out, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_thresh_%03d.jpg");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_thresh_%03d.tif");
     vglSave3dImage(out, outFilename, imgIFirst, imgILast);
 
     //First call to Copy GPU->GPU
@@ -214,7 +216,7 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d copy GPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(out, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_gpuCopy_%03d.jpg");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_gpuCopy_%03d.tif");
     vglSave3dImage(out, outFilename, imgIFirst, imgILast);
 
     //First call to Copy CPU->GPU
@@ -237,7 +239,7 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d copy CPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(img, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_upload_%03d.jpg");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_upload_%03d.tif");
     vglSave3dImage(img, outFilename, imgIFirst, imgILast);
 
     //First call to Copy GPU->CPU
@@ -260,7 +262,7 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d copy GPU->CPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(img, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_download_%03d.jpg");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3d_download_%03d.tif");
     vglSave3dImage(img, outFilename, imgIFirst, imgILast);
 
     //flush

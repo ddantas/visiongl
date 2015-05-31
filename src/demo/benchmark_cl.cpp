@@ -54,14 +54,18 @@ int main(int argc, char* argv[])
         }
     }
 
+    printf("CHECKING IF IS NULL\n");
     if (img == NULL)
     {
         std::string str("Error: File not found: ");
         str.append(inFilename);
         printf("%s", str.c_str());
     }
+
+    printf("CREATING COPY\n");
     VglImage* out = vglCreateImage(img);
 
+    printf("CREATED COPY\n");
     //First call to Blur 3x3
     TimerStart();
     vglClBlurSq3(img, out);

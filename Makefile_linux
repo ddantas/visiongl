@@ -290,12 +290,12 @@ democl3d:
 	$(LINUXAMD64_DEMO_CL3D)
 
 demobenchmark:
-	#$(LINUXAMD64_DEMO_BENCHMARK_CV)
+	$(LINUXAMD64_DEMO_BENCHMARK_CV)
 	#$(LINUXAMD64_DEMO_BENCHMARK_CVOCL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CL3D)
-	#$(LINUXAMD64_DEMO_BENCHMARK_MM)
-	#$(LINUXAMD64_DEMO_BENCHMARK_FUZZYTOPHAT)
+	$(LINUXAMD64_DEMO_BENCHMARK_MM)
+	$(LINUXAMD64_DEMO_BENCHMARK_FUZZYTOPHAT)
 
 democolordeconv:
 	$(LINUXAMD64_DEMO_COLORDECONV)
@@ -333,12 +333,20 @@ rundemotiff:
 	cd $(OUTPUT_BINPATH); ./demo_$(TIFF_NAME) /media/20C4-AFD3/t007.tif /tmp/outt007test.dcm
 
 rundemobenchmark:
-	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 10 /tmp
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 10 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 10 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 10 /tmp
-	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/01_test.tif 10 /tmp
-	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_FUZZYTOPHAT_NAME) ../images/01_test.tif 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 1 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 1 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/01_test.tif 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_FUZZYTOPHAT_NAME) ../images/01_test.tif 10 /tmp
+
+rundemobenchmark16:
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/E1154S7I-001.tif 10 /tmp
+	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/E1154S7I-001.tif 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/E1154S7I-00%d.tif 1 7 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/E1154S7I-001.tif 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_FUZZYTOPHAT_NAME) ../images/E1154S7I-001.tif 10 /tmp
 
 rundemocolordeconv:
 	cd $(OUTPUT_BINPATH); ./demo_$(COLORDECONV_NAME) ../images/Emphysema_H_and_E.jpg 1 /tmp/image.%d.pgm 0.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 0.0
