@@ -1693,7 +1693,7 @@ void vglClear(VglImage* image, float r, float g, float b, float a){
 }
 
 
-/** Morpological opening by square structuring element. Opening is an 
+/** Morphological opening by square structuring element. Opening is an 
     erosion followed by a dilation. A buffer is required. Source 
     and destination may be the same.
 
@@ -1772,7 +1772,7 @@ void vglCloseSq3(VglImage* src, VglImage* dst, VglImage* buf, int times){
   vglSetContext(dst, VGL_GL_CONTEXT);
 }
 
-/** Morpological erosion by square structuring element 3x3. A buffer is 
+/** Morphological erosion by square structuring element 3x3. A buffer is 
     required. Source and destination may be the same.
 
     The structuring element is a 3x3 square. The parameter 
@@ -1795,7 +1795,7 @@ void vglErodeSq3Sep(VglImage* src, VglImage* dst, VglImage* buf, int times){
   vglSetContext(dst, VGL_GL_CONTEXT);
 }
 
-/** Morpological erosion by square structuring element 5x5. A buffer is 
+/** Morphological erosion by square structuring element 5x5. A buffer is 
     required. Source and destination may be the same.
 
     The structuring element is a 5x5 square. The parameter 
@@ -1818,7 +1818,7 @@ void vglErodeSq5Sep(VglImage* src, VglImage* dst, VglImage* buf, int times){
   vglSetContext(dst, VGL_GL_CONTEXT);
 }
 
-/** Morpological conditional erosion by cross structuring 
+/** Morphological conditional erosion by cross structuring 
     element 3x3. A buffer is required. Source and destination 
     may be the same.
 

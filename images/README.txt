@@ -12,7 +12,7 @@ DICOM
 2d (256x120)     RGB   8bit  Uncompr.  esopecho.dcm -> http://deanvaughan.org/wordpress/2013/07/dicom-sample-images/
 2d (800x600)     RGB   8bit  Compres.  I_000032.dcm -> http://www.triltech.com/test-images.htm
 3d (480x430x17)  RGB   8bit  Compres.  I_000003.dcm -> http://www.triltech.com/test-images.htm
-3d (512x512x76)  Gray  8bit  Compres.  E1154S7I.dcm -> http://physionet.incor.usp.br/physiobank/database/images/
+3d (512x512x76)  Gray  16bit Uncompr.  E1154S7I.dcm -> http://physionet.incor.usp.br/physiobank/database/images/
 3d (512x512x76)  Gray  8bit  Compres.  E1154S7I_8bit.dcm -> from E1154S7I.dcm
 3d (512x512x76)  Gray  16bit Compres.  E1154S7I_16bit.dcm -> from E1154S7I.dcm
 
@@ -23,6 +23,8 @@ TIF
 2d (512x512)     Gray  8bit  Uncompr.  lena_1024.tif -> From lena_std.tif
 2d (512x512)     Gray  8bit  Uncompr.  retina.tif -> http://www.isi.uu.nl/Research/Databases/DRIVE/
 2d (512x512)     RGB   8bit  Uncompr.  01_test.tif -> http://www.isi.uu.nl/Research/Databases/DRIVE/
+2d (512x512)     Gray  16bit Uncompr.  E1154S7I-%03d.dcm -> from E1154S7I.dcm
+3d (512x512x7)   Gray  16bit Uncompr.  E1154S7I_3d.dcm -> from E1154S7I.dcm
 
 JPG 
 
