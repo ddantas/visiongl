@@ -1249,6 +1249,7 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
   int delta = ipl->height*ipl->width*ipl->nChannels*bpp;
   int offset = delta;  
   memcpy(img->ndarray, (void*)ipl->imageData, delta);
+	cvReleaseImage(&ipl);
   for(int i = lStart+1; i <= lEnd; i++)
   {
     sprintf(tempFilename,filename,i);
@@ -1261,6 +1262,7 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
 
     memcpy(((char*)img->ndarray) + offset, (void*) ipl->imageData, delta);
     offset += delta;
+		cvReleaseImage(&ipl);
   }
 
   vglSetContext(img, VGL_RAM_CONTEXT);
