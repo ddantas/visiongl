@@ -622,6 +622,8 @@ void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
                 cvSaveImage(temp_filename, ipl);
                 c += image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d;
         }
+	cvReleaseImage(&ipl);
+	free(temp_image);
 }                
 
 /** Converts ndarray from 3 channels to 4 channels

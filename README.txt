@@ -116,7 +116,7 @@ Please download dcmtk-3.6.1_20131114 source code or later, available in:
 http://dicom.offis.de/download/dcmtk/snapshot/
 
 Set the options below as follows:
-GDCM_BUILD_SHARED_LIBS: ON
+BUILD_SHARED_LIBS: ON
 CMAKE_INSTALL_PREFFIX: /usr/local/dcmtk
 
 Then run:
