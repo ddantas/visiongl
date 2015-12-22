@@ -483,6 +483,7 @@ VglImage* vglCopyCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /
  */
 VglImage* vglCreateImage(VglImage* img_in)
 {
+  /*
   if (img_in->ndim == 2)
   {
     return vglCreateImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
@@ -491,6 +492,8 @@ VglImage* vglCreateImage(VglImage* img_in)
   {
     return vglCreate3dImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->shape[VGL_LENGTH], img_in->has_mipmap);
   }
+  */
+  return vglCreateImage(img_in->shape, img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap); 
 }
 
 
@@ -516,13 +519,26 @@ VglImage* vglCreateImage(int* shape, int depth, int nChannels, int ndim /*=2*/, 
 
   vglImage->ipl = NULL;
   vglImage->ndarray = NULL;
+  int offset = 1;
   for (int i = 0; i < VGL_MAX_DIM; i++)
   {
     if (i < ndim)
+    {
       vglImage->shape[i] = shape[i];
+      offset *= shape[i];
+    }
     else
+    {
       vglImage->shape[i] = 0;
+      vglImage->shape[i + VGL_MAX_DIM] = offset;
+    }
   }
+  if ( (ndim == 1) && (shape[VGL_HEIGHT] > 1) )
+  {
+    vglImage->shape[VGL_HEIGHT] = shape[VGL_HEIGHT];
+    vglImage->shape[VGL_HEIGHT + VGL_MAX_DIM] = 0;
+  }
+
   vglImage->ndim      = ndim;
   vglImage->depth     = depth;
   vglImage->nChannels = nChannels;
@@ -537,7 +553,7 @@ VglImage* vglCreateImage(int* shape, int depth, int nChannels, int ndim /*=2*/, 
   vglImage->filename = NULL;
 
 
-  if (ndim == 2)
+  if (ndim <= 2)
   {
     vglImage->ipl = cvCreateImage(cvSize(shape[0], shape[1]), depth, nChannels);
   }
@@ -595,6 +611,24 @@ VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int nChannels, int h
   return vglImage;
 }
 
+
+void vglSaveImage(VglImage* image, char* filename)
+{
+  vglCheckContext(image, VGL_RAM_CONTEXT);
+
+  if (image->ndim <= 2 && image->ipl != NULL)
+  {
+    cvSaveImage(filename, image->ipl);
+  }
+  else if (image->ndim == 3)
+  {
+    vglSave3dImage(image, filename, 0, image->shape[VGL_LENGTH] - 1);
+  }
+  else
+  {
+    fprintf(stderr, "%s:%s: Error: unable to save image with more than 3 dimensions\n", __FILE__, __FUNCTION__);
+  }
+}
 
 /** Save PGM 3d images on the disk
 */
@@ -1192,7 +1226,6 @@ VglImage* vglLoadImage(char* filename, int iscolor /*= -1*/, int has_mipmap /*= 
   img->ipl = ipl;
 
   vglSetContext(img, VGL_RAM_CONTEXT);
-  //vglUpload(img);
 
   if (img->ipl){
     return img;
@@ -1243,8 +1276,6 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
   shape[1] = height;
   shape[2] = n;
   img = vglCreateImage((int*)shape, ipl->depth, ipl->nChannels, ndim);
-  vglPrintImageInfo(img, "IMG IN LOAD3DIMAGE");
-  printf("TRYING TO RELEASE NDARRAY\n");
   free(img->ndarray);
   img->ndarray = (char*)malloc(img->getTotalSizeInBytes());
 
@@ -1288,6 +1319,7 @@ void iplPrintImageInfo(IplImage* ipl, char* msg){
 	}
         printf("Image @ %p: w x h = %d(%d) x %d\n", 
                 ipl, ipl->width, ipl->widthStep, ipl->height);
+        printf("imageData @ %p\n", ipl->imageData); 
         printf("nChannels = %d\n", ipl->nChannels);
         printf("depth = ");
         switch (ipl->depth){

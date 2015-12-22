@@ -618,17 +618,16 @@ void vglClAlloc(VglImage* img)
     cl_int err_cl;
     if (img->oclPtr == NULL)
     {
-		if (img->ndim == 2)
-		{
-			img->oclPtr = clCreateFromGLTexture2D(cl.context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, img->tex, &err_cl);
-			vglClCheckError(err_cl, (char*) "clCreateFromGLTexture");
-		}
-		else if(img->ndim == 3)
-		{
-			img->oclPtr = clCreateFromGLTexture3D(cl.context, CL_MEM_READ_WRITE, GL_TEXTURE_3D, 0, img->tex, &err_cl);
-			vglClCheckError(err_cl, (char*) "clCreateFromGLTexture");
-		}
-
+        if (img->ndim == 2)
+        {
+            img->oclPtr = clCreateFromGLTexture2D(cl.context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, img->tex, &err_cl);
+            vglClCheckError(err_cl, (char*) "clCreateFromGLTexture");
+        }
+        else if(img->ndim == 3)
+        {
+            img->oclPtr = clCreateFromGLTexture3D(cl.context, CL_MEM_READ_WRITE, GL_TEXTURE_3D, 0, img->tex, &err_cl);
+            vglClCheckError(err_cl, (char*) "clCreateFromGLTexture");
+        }
     }
 }
 
@@ -645,48 +644,37 @@ void vglGlToCl(VglImage* img)
 
     if (!vglIsInContext(img, VGL_CL_CONTEXT))
     {
-        //printf("==========ACQUIRE: vgl = %p, ocl = %d\n", img, img->oclPtr);
-		cl_int err_cl = clFlush(cl.commandQueue);
-		vglClCheckError(err_cl, (char*) "clFlush");
+        cl_int err_cl = clFlush(cl.commandQueue);
+        vglClCheckError(err_cl, (char*) "clFlush");
 
-		err_cl = clFinish(cl.commandQueue);
-		vglClCheckError(err_cl, (char*) "clFinish");
+        err_cl = clFinish(cl.commandQueue);
+        vglClCheckError(err_cl, (char*) "clFinish");
 
         err_cl = clEnqueueAcquireGLObjects(cl.commandQueue, 1 , (cl_mem*) &img->oclPtr, 0 , NULL, NULL);
-		vglClCheckError(err_cl, (char*) "clEnqueueAcquireGLObjects");
+        vglClCheckError(err_cl, (char*) "clEnqueueAcquireGLObjects");
         
         vglSetContext(img, VGL_CL_CONTEXT);
     }
-    //printf("Vai sair de %s\n", __FUNCTION__);
 }
 
 void vglClToGl(VglImage* img)
 {
-    //vglDownload(img);
-
     if (!vglIsInContext(img, VGL_CL_CONTEXT))
     {
-        //vglGlToCl(img);      
-        //fprintf(stderr, "vglClToGl: Error: image context = %d not in VGL_CL_CONTEXT\n", img->inContext);
-        return;
-	}
+      return;
+    }
 
     cl_int err_cl;
-    //printf("==========RELEASE: vgl = %p, ocl = %d\n", img, img->oclPtr);
     err_cl = clEnqueueReleaseGLObjects(cl.commandQueue, 1 , (cl_mem*) &img->oclPtr, 0 , NULL, NULL);
     vglClCheckError(err_cl, (char*) "clEnqueueReleaseGLObjects");
 
     err_cl = clFlush(cl.commandQueue);
     vglClCheckError(err_cl, (char*) "clFlush");
 
-	err_cl = clFinish(cl.commandQueue);
-	vglClCheckError(err_cl, (char*) "clFinish");
+    err_cl = clFinish(cl.commandQueue);
+    vglClCheckError(err_cl, (char*) "clFinish");
 
     vglSetContext(img, VGL_GL_CONTEXT);
-
-    //printf("Vai sair de %s\n", __FUNCTION__);
-    
-
 }
 
 void vglClDownload(VglImage* img)
@@ -710,30 +698,30 @@ void vglClDownload(VglImage* img)
         }
 
         size_t Origin[3] = { 0, 0, 0};
-
-        if(img->ndim == 2)
+        int nFrames = 1;
+        if(img->ndim == 3)
         {
-            size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 1 };
-            cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, img->ipl->imageData, 0, NULL, NULL );
-            vglClCheckError( err_cl, (char*) "clEnqueueReadImage2D" );
-            //cvCvtColor(img->iplRGBA, img->ipl, CV_RGBA2BGR);
+          nFrames = img->shape[VGL_LENGTH];
         }
-        else if(img->ndim == 3)
+
+        void* imageData = img->getImageData();
+        if (!imageData)
         {
-            size_t Size3d[3] = { img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH] };
-            cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0,(char*) img->ndarray, 0, NULL, NULL );
-            vglClCheckError( err_cl, (char*) "clEnqueueReadImage3D" );
+          fprintf(stderr, "%s: %s: Error: both ipl and ndarray are NULL.\n", __FILE__, __FUNCTION__);
+          exit(1);
+        }
+   
+        if ( (img->ndim == 2) || (img->ndim == 3) )
+        {
+            size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
+            cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, imageData, 0, NULL, NULL );
+            vglClCheckError( err_cl, (char*) "clEnqueueReadImage" );
         }
         else
         {
-            void* imageData = img->getImageData();
-            if (!imageData)
-            {
-                fprintf(stderr, "%s: %s: Error: both ipl and ndarray are NULL.\n", __FILE__, __FUNCTION__);
-                exit(1);
-            }
+            vglPrintImageInfo(img, (char*) "inside vglClDownload");
             cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), imageData, 0, NULL, NULL);
-            vglClCheckError( err, (char*) "clEnqueueReadNDImage" );
+            vglClCheckError( err, (char*) "clEnqueueReadBuffer" );
 	}
         vglAddContext(img, VGL_RAM_CONTEXT);
     }

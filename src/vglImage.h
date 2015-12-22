@@ -62,7 +62,7 @@ class VglImage{
   IplImage* ipl;
   void*     ndarray;
   int       ndim;                // 2 if conventional image, 3 if three-dimensional etc
-  int       shape[VGL_MAX_DIM];  // shape[0] = width, shape[1] = height, shape[2] = number of frames etc
+  int       shape[2*VGL_MAX_DIM];  // shape[0] = width, shape[1] = height, shape[2] = number of frames etc
   int       depth;
   int       nChannels;
   int       has_mipmap;
@@ -183,6 +183,7 @@ VglImage* vglCreateImage(int* shape, int depth, int nChannels, int ndim = 2, int
 VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
 VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int nChannels, int has_mipmap = 0);
+void vglSaveImage(VglImage* image, char* filename);
 void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd);
 VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 void vglReleaseImage(VglImage** p_image);
