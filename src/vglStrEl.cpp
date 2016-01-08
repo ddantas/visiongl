@@ -65,6 +65,33 @@ VglStrEl::VglStrEl(int type, int ndim)
     }
     break;
     case(VGL_STREL_GAUSS):
+    {
+      printf("STREL GAUSS entrou\n");
+      int coord[VGL_MAX_DIM+1];
+      coord[0] = 0;
+      int size = vglShape->getSize();
+      printf("STREL GAUSS size = %d\n", size);
+      for (int i = 0; i < size; i++)
+      {
+        printf("STREL GAUSS i = %d\n", i);
+        float val = 1.0;
+        vglShape->getCoordFromIndex(i, coord);
+        for (int d = 1; d <= ndim; d++)
+	{
+          if (coord[d] == 1)
+	  {
+            val *= .5;
+	  }
+          else
+	  {
+            val *= .25;
+	  }        
+	}
+        printf("STREL GAUSS i = %d, val = %f\n", i, val);
+        data[i] = val;
+      }
+    }
+    break;
     case(VGL_STREL_CUBE):
     default:
     {
