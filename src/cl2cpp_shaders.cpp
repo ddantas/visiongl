@@ -1369,7 +1369,9 @@ void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
 void vglClNdNot(VglImage* img_input, VglImage* img_output){
 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
+  printf("checkcontext inside vglClNdNot\n");
   vglCheckContext(img_output, VGL_CL_CONTEXT);
+  vglPrintImageInfo(img_output, (char*) "img_output");
 
   cl_int err;
 
