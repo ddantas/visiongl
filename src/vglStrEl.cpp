@@ -1,7 +1,18 @@
 
 #include <vglStrEl.h>
 #include <vglShape.h>
+#include <vglClStrEl.h>
 
+/** /brief Common code for structuring element construction.
+
+    Common code for structuring element construction. Function called from all VglStrEl
+    constructors. Ideally, should be a constructor called from other constructors,
+    but C++03 does not support it.
+
+    Receives two parameters:
+    data: array with convolution window elements.
+    vglShape: shape, or dimension sizes, associated with array.
+ */
 void VglStrEl::VglCreateStrEl(float* data, VglShape* vglShape)
 {
   int size = vglShape->getSize();
@@ -19,16 +30,29 @@ VglStrEl::VglStrEl(float* data, VglShape* vglShape)
   this->VglCreateStrEl(data, vglShape);
 }
 
+/** /brief Constructs elementary cubic structuring element.
+
+    Constructs elementary cubic structuring element. Can be an elementary cross, cube or 
+    gaussian. Size is 3^ndim.
+
+    Receives two parameters:
+    type: (VGL_SHAPE_CUBE|VGL_SHAPE_CROSS|VGL_SHAPE_GAUSS)
+    ndim: number of dimensions.
+ */
 VglStrEl::VglStrEl(int type, int ndim)
 {
   int shape[VGL_MAX_DIM];
   shape[0] = 1;
+  shape[2] = 1; //1d shapes are internally treated as 2d images.
   for (int i = 1; i <= ndim; i++)
   {
     shape[i] = 3;
   }
   VglShape* vglShape = new VglShape(shape, ndim);
 
+
+  printf("WILL PRINT SHAPE\n");
+  vglShape->print();
   int size = vglShape->getSize();
   float* data = (float*) malloc(sizeof(float) * size);
   int index;
@@ -220,4 +244,42 @@ int* VglStrEl::getShape()
 int* VglStrEl::getOffset()
 {
   return this->vglShape->getOffset();
+}
+
+
+/** Return shape as VglClStrEl
+
+    Return shape as VglClStrEl, type suitable for passing structuring
+    element as parameter to OpenCl kernel.
+
+ */
+VglClStrEl* VglStrEl::asVglClStrEl()
+{
+  VglClStrEl* result = new VglClStrEl;
+
+  int size = this->getSize();
+  if (size > VGL_MAX_CLSTREL_SIZE)
+  {
+    fprintf(stderr, "%s: %s: Error: structuring element size = %d > %d = VGL_MAX_CLSTREL_SIZE. Change this value in vglClStrEl.h to a greater one.\n", __FILE__, __FUNCTION__, size, VGL_MAX_CLSTREL_SIZE);
+  }
+
+  int ndim = this->getNdim();
+  int* shape = this->getShape();
+  int* offset = this->getOffset();
+  float* data = this->getData();
+
+  result->ndim = ndim;
+  result->size = size;
+  
+  for (int i = 0; i <= VGL_MAX_DIM; i++)
+  {
+    result->shape[i] = shape[i];
+    result->offset[i] = offset[i];
+  }
+  for (int i = 0; i < size; i++)
+  {
+    result->data[i] = data[i];
+  }
+
+  return result;
 }

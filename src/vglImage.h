@@ -33,27 +33,12 @@
 #include <CL/cl.h>
 #endif
 
-#define VGL_WIN_X0   -1.0
-#define VGL_WIN_X1    1.0
-#define VGL_WIN_DX    (VGL_WIN_X1 - VGL_WIN_X0)
-#define VGL_WIN_Y0   -1.0
-#define VGL_WIN_Y1    1.0
-#define VGL_WIN_DY    (VGL_WIN_Y1 - VGL_WIN_Y0)
-
-
 // VGL HEADER - Vision with OpenGL
 
 
-#define VGL_MIN_WINDOW_SPLIT 1
-#define VGL_DEFAULT_WINDOW_SPLIT 2
-#define VGL_MAX_WINDOW_SPLIT 4
-#define VGL_MAX_WINDOWS      (VGL_MAX_WINDOW_SPLIT * VGL_MAX_WINDOW_SPLIT)
-
-#define VGL_MAX_DIM 10
-#define VGL_WIDTH 0
-#define VGL_HEIGHT 1
-#define VGL_LENGTH 2
-#define VGL_4D 3
+//VisionGL
+#include <vglConst.h>
+#include <vglShape.h>
 
 ////////// VglImage
 
@@ -63,6 +48,7 @@ class VglImage{
   void*     ndarray;
   int       ndim;                // 2 if conventional image, 3 if three-dimensional etc
   int       shape[2*VGL_MAX_DIM];  // shape[0] = width, shape[1] = height, shape[2] = number of frames etc
+  VglShape* vglShape;
   int       depth;
   int       nChannels;
   int       has_mipmap;

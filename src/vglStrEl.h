@@ -9,6 +9,7 @@
 
 #include <vglImage.h>
 #include <vglShape.h>
+#include <vglClStrEl.h>
 
 //CL
 #ifdef __OPENCL__
@@ -39,6 +40,8 @@ class VglStrEl{
   int getNdim();
   int* getShape();
   int* getOffset();
+
+  VglClStrEl* asVglClStrEl();
 
 };
 

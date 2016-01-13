@@ -108,11 +108,6 @@ void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 /** Direct copy from src to dst.
 
   */
-void vglClNdNot(VglImage* img_input, VglImage* img_output);
-
-/** Direct copy from src to dst.
-
-  */
 void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 
 /** Direct copy from src to dst.

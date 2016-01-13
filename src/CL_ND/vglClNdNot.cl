@@ -9,7 +9,7 @@ __kernel void vglClNdNot(__global char* img_input, __global char* img_output)
     int w = get_global_size(0);
     int coord = y*w+x;
 
-    img_output[coord] = img_input[coord];
+    img_output[coord] = 1.0 - img_input[coord];
 
 }
 

@@ -25,6 +25,29 @@ sub LineStartCommentedDefault { # ($line) {
 }
 
 #############################################################################
+# LineStartPreamble
+#
+# Eliminates preamble, i.e., typedefs and includes, before __kernel header.
+# 
+sub LineStartPreamble { # ($line) {
+  my $line = $_[0];
+
+  # *? is ungreedy match; 
+  # s modifier makes . match new line
+  $line =~ s#^\s*(typedef\s*struct\s*\w*\s*\{.*?\}\s*\w*\s*;)##s;
+  $result = $1;
+  if ($result)
+  {
+    return ($result, $line);
+  }
+
+  $line =~ s#^\s*(\#\s*include\s*[\"<].*?[\">])##s;
+  $result = $1;
+  return ($result, $line);
+
+}
+
+#############################################################################
 # LineStartHeader
 #
 # Returns the header of the program, that is, the 
@@ -79,9 +102,9 @@ sub LineStartDirective { # ($line) {
   my $result = $1;
   print "Directive type >>>$result<<<\n";
   if ($result){
-    if (!($result =~ m#^(SCALAR|ARRAY)$#))
+    if (!($result =~ m#^(SCALAR|ARRAY|SHAPE)$#))
     {
-      die "Directive $result invalid. Valid directives are (SCALAR|ARRAY)\n";
+      die "Directive $result invalid. Valid directives are (SCALAR|ARRAY|SHAPE)\n";
     }
   }
   else{
@@ -160,10 +183,10 @@ sub ProcessClDirectives { # ($directives, $variable) {
     ($result_directive, $directives[$i]) = LineStartDirective($directives[$i]);
     print "1 Directive type = >>>$result_directive<<<\n";
     if (!$result_directive){
-      die "Error: Start-of-line directive (SCALAR|ARRAY) not found\n";
+      die "Error: Start-of-line directive (SCALAR|ARRAY|SHAPE) not found\n";
     }
     else{
-      print "After eliminating directive (SCALAR|ARRAY):\n$directives[$i]\n";
+      print "After eliminating directive (SCALAR|ARRAY|SHAPE):\n$directives[$i]\n";
     }
 
     ($result_variable, $directives[$i]) = LineStartVariable($directives[$i]);
@@ -238,10 +261,10 @@ sub ProcessClDirective { # ($directive) {
     ($result_directive, $directive) = LineStartDirective($directive);
     print "1 Directive type = >>>$result_directive<<<\n";
     if (!$result_directive){
-      die "Error: Start-of-line directive (SCALAR|ARRAY) not found\n";
+      die "Error: Start-of-line directive (SCALAR|ARRAY|SHAPE) not found\n";
     }
     else{
-      print "After eliminating directive (SCALAR|ARRAY):\n$directive\n";
+      print "After eliminating directive (SCALAR|ARRAY|SHAPE):\n$directive\n";
     }
 
     ($result_variable, $directive) = LineStartVariable($directive);
@@ -454,10 +477,18 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
   delete $dircomment[$i-1];
   print "DIRECTIVE SIZE AFTER LineStartSingleLineComment: $#dircomment\n";
 
-  print "Starting for to print directives found\n";
+  print "Starting loop to print directives found\n";
   for($i = 0; $i <= $#dirvar; $i++){
       print ("ProcessClFile result = <$dirisarray[$i]> <$dirvar[$i]> <$dirsize[$i]>\n");  
   }
+
+  print "Eliminating preamble (typedef|include)\n\n\n\n";
+  do
+  {
+    ($preamble, $line) = LineStartPreamble($line);
+
+  }
+  while ($preamble);
 
   ($perl_header, $line) = LineStartHeader($line);
   if (!$perl_header){
@@ -469,7 +500,7 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
   }
 
   ($semantics, $type, $variable, $default, $kernelname) = ProcessClHeader($perl_header);
-  print "variable sizeeeeee = $#variable\n";
+  print "variable size = $#variable\n";
   print "ProcessClFile dircomment size = $#dircomment\n";
 
 

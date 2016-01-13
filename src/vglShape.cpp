@@ -1,6 +1,10 @@
 
+#include <vglConst.h>
 #include <vglShape.h>
+#include <vglClShape.h>
 
+//printf
+#include <stdio.h>
 
 /** /brief Common code for shape construction.
 
@@ -16,9 +20,14 @@ void VglShape::vglCreateShape(int* shape, int ndim)
 {
   this->ndim = ndim;
   this->size = 1;
+  int maxi = ndim;
+  if (ndim == 1)
+  {
+    maxi = 2;
+  }
   for (int i = 0; i <= VGL_MAX_DIM; i++)
   {
-    if (i <= ndim)
+    if (i <= maxi)
     {
       this->size *= shape[i];
       this->shape[i] = shape[i];
@@ -33,7 +42,7 @@ void VglShape::vglCreateShape(int* shape, int ndim)
     }
     else
     {
-      this->shape[i]  = 0;
+      this->shape[i]  = 1;
       this->offset[i] = 0;
     }
   }
@@ -60,6 +69,22 @@ VglShape::VglShape(int* shape, int ndim)
   this->vglCreateShape(shape, ndim);
 }
   
+/** /brief 1D shape constructor.
+
+    1D shapes are internally treated as 2D images. Receives two parameters:
+    w: width.
+    h: height.
+ */
+VglShape::VglShape(int w, int h)
+{
+  int shape[VGL_MAX_DIM+1];
+  int ndim = 1;
+  shape[0] = 1;
+  shape[1] = w;
+  shape[2] = h;
+  this->vglCreateShape(shape, ndim);
+}
+
 /** /brief 2D shape constructor.
 
     Receives three parameters:
@@ -235,4 +260,24 @@ void VglShape::print(char* msg)
     printf("====== VglShape->print():\n");
   }
   this->printInfo();
+}
+
+/** Return shape as VglClShape
+
+    Return shape as VglClShape, type suitable for passing shape as parameter
+    to OpenCl kernel.
+
+ */
+VglClShape* VglShape::asVglClShape()
+{
+  VglClShape* result = new VglClShape;
+
+  result->ndim = this->ndim;
+  result->size = this->size;
+  for (int i = 0; i <= VGL_MAX_DIM; i++)
+  {
+    result->shape[i] = this->shape[i];
+    result->offset[i] = this->offset[i];
+  }
+  return result;
 }

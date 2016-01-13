@@ -7,24 +7,16 @@
 #ifndef __VGLSHAPE_H__
 #define __VGLSHAPE_H__
 
-#include <vglImage.h>
+//#include <vglImage.h>
 
 //CL
 #ifdef __OPENCL__
 #include <CL/cl.h>
+#include <vglClShape.h>
 #endif
 
+
 ////////// VglShape
-
-#define VGL_SHAPE_D0        0
-#define VGL_SHAPE_D1        1
-#define VGL_SHAPE_D2        2
-#define VGL_SHAPE_D3        3
-#define VGL_SHAPE_D4        4
-
-#define VGL_SHAPE_NCHANNELS VGL_SHAPE_D0
-#define VGL_SHAPE_WIDTH     VGL_SHAPE_D1
-#define VGL_SHAPE_HEIGHT    VGL_SHAPE_D2
 
 #define VglShapeIndex1C2D(vs, i, j)       (i + j * vs->offset[2])
 #define VglShapeIndexNC2D(vs, c, i, j)    (c + i * vs->offset[1] + j * vs->offset[2])
@@ -42,6 +34,7 @@ class VglShape{
 
   VglShape(VglShape* vglShape);
   VglShape(int* shape, int ndim);
+  VglShape(int w, int h);
   VglShape(int nChannels, int w, int h);
   VglShape(int nChannels, int w, int h, int d3);
   ~VglShape();
@@ -59,6 +52,7 @@ class VglShape{
   int* getShape();
   int* getOffset();
 
+  VglClShape* asVglClShape();
  
 };
 

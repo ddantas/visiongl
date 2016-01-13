@@ -78,7 +78,7 @@ ifeq ($(WITH_OPENCL), 1)
         OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
         OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
         OPENCL_LIBRARIES   = -lOpenCL
-        OPENCL_FILES = src/cl2cpp_shaders.cpp src/vglClFunctions.cpp src/cl2cpp_MM.cpp src/vglClImage.cpp
+        OPENCL_FILES = src/cl2cpp_shaders.cpp src/vglClFunctions.cpp src/vglClImage.cpp src/cl2cpp_MM.cpp src/cl2cpp_ND.cpp
 
         OPENGL_INCLUDEPATH = $(OPENCL_INCLUDEPATH)
         OPENGL_INCLUDEDIR  = $(OPENCL_INCLUDEDIR)
@@ -369,6 +369,9 @@ frag_diffeq:
 
 cl:
 	./perlModules/cl2cpp.pl -o src/cl2cpp_shaders -p CL src/CL/*.cl
+
+cl_nd:
+	./perlModules/cl2cpp.pl -o src/cl2cpp_ND -p CL src/CL_ND/*.cl
 
 cloud_cl:
 	./perlModules/cl2cloud.pl -o src/cloud_CL src/CL/*.cl
