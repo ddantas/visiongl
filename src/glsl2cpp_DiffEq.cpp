@@ -13,19 +13,7 @@
 
 #include <iostream>
 
-//GL
-#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
-/** vglForcesNewton
-
-    Iterates n masses using newtons formula.
-
-    In this step, the forces are calculated.
-
-  */
-void vglForcesNewton(VglImage*  src, VglImage*  dst){
-
-  vglCheckContext(src, VGL_GL_CONTEXT);
+void *(){
 
   GLint _viewport[4];
   glGetIntegerv(GL_VIEWPORT, _viewport);
@@ -34,7 +22,7 @@ void vglForcesNewton(VglImage*  src, VglImage*  dst){
   static GLuint _f = 0;
   if (_f == 0){
     printf("FRAGMENT SHADER\n====================\n");
-    _f = vglShaderLoad(GL_FRAGMENT_SHADER, (char*) "FS_DiffEq/vglForcesNewton.frag");
+    _f = vglShaderLoad(GL_FRAGMENT_SHADER, (char*) "FS_DiffEq/*.frag");
     if (!_f){
       printf("%s: %s: Error loading fragment shader.\n", __FILE__, __FUNCTION__);
       exit(1);
@@ -43,117 +31,4 @@ void vglForcesNewton(VglImage*  src, VglImage*  dst){
   ERRCHECK()
 
   glUseProgram(_f);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, src->tex);
-  glUniform1i(glGetUniformLocation(_f, "sampler0"),  0);
-  ERRCHECK()
-
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
-  CHECK_FRAMEBUFFER_STATUS()
-  ERRCHECK()
-
-  glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
-
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
-
-      glBegin(GL_QUADS);
-          glTexCoord2f( 0.0,  0.0);
-          glVertex3f ( -1.0, -1.0, 0.0); //Left  Up
-
-          glTexCoord2f( 1.0,  0.0);
-          glVertex3f (  0.0, -1.0, 0.0); //Right Up
-
-          glTexCoord2f( 1.0,  1.0);
-          glVertex3f (  0.0,  0.0, 0.0); //Right Bottom
-
-          glTexCoord2f( 0.0,  1.0);
-          glVertex3f ( -1.0,  0.0, 0.0); //Left  Bottom
-      glEnd();
-
-  glUseProgram(0);
-
-  glViewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
-
-
-
-  if (dst->has_mipmap){
-    glBindTexture(GL_TEXTURE_2D, dst->tex);
-    glGenerateMipmapEXT(GL_TEXTURE_2D);
-  }
-  glActiveTexture(GL_TEXTURE0);
-
-  vglSetContext(dst, VGL_GL_CONTEXT);
-}
-
-/** vglPosNewton
-
-    Iterates n masses using newtons formula.
-
-    In this step, the positions and speed are are calculated 
-    from the force.
-
-  */
-void vglPosNewton(VglImage*  src, VglImage*  dst){
-
-  vglCheckContext(src, VGL_GL_CONTEXT);
-
-  GLint _viewport[4];
-  glGetIntegerv(GL_VIEWPORT, _viewport);
-
-
-  static GLuint _f = 0;
-  if (_f == 0){
-    printf("FRAGMENT SHADER\n====================\n");
-    _f = vglShaderLoad(GL_FRAGMENT_SHADER, (char*) "FS_DiffEq/vglPosNewton.frag");
-    if (!_f){
-      printf("%s: %s: Error loading fragment shader.\n", __FILE__, __FUNCTION__);
-      exit(1);
-   }
-  }
-  ERRCHECK()
-
-  glUseProgram(_f);
-
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, src->tex);
-  glUniform1i(glGetUniformLocation(_f, "sampler0"),  0);
-  ERRCHECK()
-
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
-  CHECK_FRAMEBUFFER_STATUS()
-  ERRCHECK()
-
-  glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
-
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
-
-      glBegin(GL_QUADS);
-          glTexCoord2f( 0.0,  0.0);
-          glVertex3f ( -1.0, -1.0, 0.0); //Left  Up
-
-          glTexCoord2f( 1.0,  0.0);
-          glVertex3f (  0.0, -1.0, 0.0); //Right Up
-
-          glTexCoord2f( 1.0,  1.0);
-          glVertex3f (  0.0,  0.0, 0.0); //Right Bottom
-
-          glTexCoord2f( 0.0,  1.0);
-          glVertex3f ( -1.0,  0.0, 0.0); //Left  Bottom
-      glEnd();
-
-  glUseProgram(0);
-
-  glViewport(_viewport[0], _viewport[1], _viewport[2], _viewport[3]);
-
-
-
-  if (dst->has_mipmap){
-    glBindTexture(GL_TEXTURE_2D, dst->tex);
-    glGenerateMipmapEXT(GL_TEXTURE_2D);
-  }
-  glActiveTexture(GL_TEXTURE0);
-
-  vglSetContext(dst, VGL_GL_CONTEXT);
-}
 

@@ -12,33 +12,33 @@
     The four differences are stored in the RGBA image dst.
 
   */
-void vglAbsDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst, float  disparity);
+void vglAbsDiffDisparity(VglImage* img_ref, VglImage* img_2, VglImage* dst, float disparity);
 
 /** Calculates average absolute difference between img_ref and img_2 at levels of detail in [0, max_lod]. Disparities considered are in the closed interval [4*disparity, 4*disparity+3].
 
     The four differences are stored in the RGBA image dst.
 
   */
-void vglAbsDiffDisparityMipmap(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst, float  disparity, float  max_lod);
+void vglAbsDiffDisparityMipmap(VglImage* img_ref, VglImage* img_2, VglImage* dst, float disparity, float max_lod);
 
 /** Find best disparity. The first input image, img_dif, contains absolute differences between a pair of images at disparities [4*disparity, 4*disparity+3]. 
 
     The second input image contains the smallest differences found in channel R, and corresponding disparity value in channel A, Is also an output image, and is updated whenever a smaller difference is found.
 
   */
-void vglFindDisparity(VglImage*  img_dif, VglImage*  img_disp, float  disparity);
+void vglFindDisparity(VglImage* img_dif, VglImage* img_disp, float disparity);
 
 /** Do the same as vglFindDisparity, but the smallest difference is stored in img_best, and corresponding disparity in img_disp. Both are input and output images.
 
   */
-void vglFindDisparityDiff(VglImage*  img_sum, VglImage*  img_disp, VglImage*  img_best, float  disparity);
+void vglFindDisparityDiff(VglImage* img_sum, VglImage* img_disp, VglImage* img_best, float disparity);
 
 /** Calculate absolute difference between green channel of img_ref and img_2. Disparities considered are in the closed interval [4*disparity, 4*disparity+3].
 
     The four differences are stored in the RGBA image dst.
 
   */
-void vglGreenDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst, float  disparity);
+void vglGreenDiffDisparity(VglImage* img_ref, VglImage* img_2, VglImage* dst, float disparity);
 
 /** Apply homography in img_src and stores result in img_dst.
 
@@ -65,7 +65,7 @@ void vglGreenDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst,
     tbe matrix before using it in OpenGL context.
 
   */
-void vglHomography(VglImage*  img_src, VglImage*  img_dst, float*  f_homo);
+void vglHomography(VglImage* img_src, VglImage* img_dst, float* f_homo);
 
 /** Convert depth map to affine reconstruction
 
@@ -89,18 +89,18 @@ void vglHomography(VglImage*  img_src, VglImage*  img_dst, float*  f_homo);
 
     h: height of camera in cm
  */
-void vglMapTo3D(VglImage*  img_map, VglImage*  img_3d, float  f, float  b, float  D, float  disp_k= 0.0, float  h= 10.0);
+void vglMapTo3D(VglImage* img_map, VglImage* img_3d, float f, float b, float D, float disp_k= 0.0, float h= 10.0);
 
 /** Mean of pixel values of levels of detail in [0, max_lod]. Result is stored in img_out.
 
 
   */
-void vglMeanMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod);
+void vglMeanMipmap(VglImage* img_dif, VglImage* img_out, float max_lod);
 
 /** Mean filter with a 3x3 square mask.
 
   */
-void vglMeanSq3(VglImage*  img_dif, VglImage*  img_out);
+void vglMeanSq3(VglImage* img_dif, VglImage* img_out);
 
 /** Undistort, correct projection and rectify img_src and stores result in img_dst, for use with stereo algorithm
 
@@ -132,21 +132,21 @@ void vglMeanSq3(VglImage*  img_dif, VglImage*  img_out);
     tbe matrix before using it in OpenGL context.
 
   */
-void vglRectify(VglImage*  img_src, VglImage*  img_dst, float*  f_dist, float*  f_proj, float*  f_homo);
+void vglRectify(VglImage* img_src, VglImage* img_dst, float* f_dist, float* f_proj, float* f_homo);
 
 /** VglSumDiff
 
     Sum of differences
 
   */
-void vglSumDiff(VglImage*  img_dif, VglImage*  img_out);
+void vglSumDiff(VglImage* img_dif, VglImage* img_out);
 
 /** VglSumDiffMipmap
 
     Sum of differences
 
   */
-void vglSumDiffMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod);
+void vglSumDiffMipmap(VglImage* img_dif, VglImage* img_out, float max_lod);
 
 /** Correct camera lens distortion of img_src and stores the result in img_dst.
 
@@ -157,5 +157,5 @@ void vglSumDiffMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod);
     http://www.cognotics.com/opencv/docs/1.0/ref/opencvref_cv.htm#cv_3d
 
   */
-void vglUndistort(VglImage*  img_src, VglImage*  img_dst, float*  f_dist, float*  f_proj);
+void vglUndistort(VglImage* img_src, VglImage* img_dst, float* f_dist, float* f_proj);
 

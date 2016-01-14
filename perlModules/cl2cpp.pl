@@ -699,11 +699,11 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
  
   print CPP "
   if ($var_worksize->ndim <= 2){
-    size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { $var_worksize->getWidth(), $var_worksize->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if ($var_worksize->ndim == 3){
-    size_t worksize[] = { $var_worksize->shape[VGL_WIDTH], $var_worksize->shape[VGL_HEIGHT], $var_worksize->shape[VGL_LENGTH] };
+    size_t worksize[] = { $var_worksize->getWidth(), $var_worksize->getHeight(), $var_worksize->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{

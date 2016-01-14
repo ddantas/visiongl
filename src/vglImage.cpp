@@ -380,7 +380,7 @@ void vglUpload(VglImage* image, int swapRGB){
 
   if (ndim == 3){
     glTexImage3D(glTarget, LEVEL, internalFormat,
-                 image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH], 0,
+                 image->getWidth(), image->getHeight(), image->getLength(), 0,
                  glFormat, glType, image->ndarray);
   }
   else{
@@ -463,7 +463,7 @@ VglImage* vglCloneImage(IplImage* img_in, int ndim /*=2* /, int has_mipmap /*=0*
  */
 VglImage* vglCopyCreateImage(VglImage* img_in)
 {
-  VglImage* retval = vglCreateImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
+  VglImage* retval = vglCreateImage(cvSize(img_in->getWidth(), img_in->getHeight()), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
   vglCopy(img_in, retval);
   return retval;
 }
@@ -486,14 +486,14 @@ VglImage* vglCreateImage(VglImage* img_in)
   /*
   if (img_in->ndim == 2)
   {
-    return vglCreateImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
+    return vglCreateImage(cvSize(img_in->getWidth(), img_in->getHeight()), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
   }
   else
   {
-    return vglCreate3dImage(cvSize(img_in->shape[VGL_WIDTH], img_in->shape[VGL_HEIGHT]), img_in->depth, img_in->nChannels, img_in->shape[VGL_LENGTH], img_in->has_mipmap);
+    return vglCreate3dImage(cvSize(img_in->getWidth(), img_in->getHeight()), img_in->depth, img_in->nChannels, img_in->getLength(), img_in->has_mipmap);
   }
   */
-  return vglCreateImage(img_in->shape, img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap); 
+  return vglCreateImage(img_in->shape, img_in->depth, img_in->ndim, img_in->has_mipmap); 
 }
 
 
@@ -507,7 +507,7 @@ VglImage* vglCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /*=0*
 
 /** Create image as described by the parameters
  */
-VglImage* vglCreateImage(int* shape, int depth, int nChannels, int ndim /*=2*/, int has_mipmap /*=0*/)
+VglImage* vglCreateImage(int* shape, int depth, int ndim /*=2*/, int has_mipmap /*=0*/)
 {
   VglImage* vglImage = new VglImage;
 
@@ -519,29 +519,28 @@ VglImage* vglCreateImage(int* shape, int depth, int nChannels, int ndim /*=2*/, 
 
   vglImage->ipl = NULL;
   vglImage->ndarray = NULL;
-  int offset = 1;
-  for (int i = 0; i < VGL_MAX_DIM; i++)
+  for (int i = 0; i <= VGL_MAX_DIM; i++)
   {
-    if (i < ndim)
+    if (i <= ndim)
     {
       vglImage->shape[i] = shape[i];
-      offset *= shape[i];
     }
     else
     {
-      vglImage->shape[i] = 0;
-      vglImage->shape[i + VGL_MAX_DIM] = offset;
+      vglImage->shape[i] = 1;
     }
+    printf("shp[%d] = %d\n", i, vglImage->shape[i]);
   }
   if ( (ndim == 1) && (shape[VGL_HEIGHT] > 1) )
   {
-    vglImage->shape[VGL_HEIGHT] = shape[VGL_HEIGHT];
-    vglImage->shape[VGL_HEIGHT + VGL_MAX_DIM] = 0;
+    vglImage->shape[VGL_SHAPE_HEIGHT] = shape[VGL_SHAPE_HEIGHT];
+    printf("shp[%d] = %d\n", VGL_SHAPE_HEIGHT, vglImage->shape[VGL_SHAPE_HEIGHT]);
   }
+  vglImage->vglShape = new VglShape(vglImage->shape, ndim);
 
   vglImage->ndim      = ndim;
   vglImage->depth     = depth;
-  vglImage->nChannels = nChannels;
+  vglImage->nChannels = shape[0];
   vglImage->has_mipmap = has_mipmap;
   vglImage->fbo = -1;
   vglImage->tex = -1;
@@ -555,7 +554,7 @@ VglImage* vglCreateImage(int* shape, int depth, int nChannels, int ndim /*=2*/, 
 
   if (ndim <= 2)
   {
-    vglImage->ipl = cvCreateImage(cvSize(shape[0], shape[1]), depth, nChannels);
+    vglImage->ipl = cvCreateImage(cvSize(shape[1], shape[2]), depth, shape[0]);
   }
   else
   {
@@ -572,10 +571,16 @@ VglImage* vglCreateImage(int* shape, int depth, int nChannels, int ndim /*=2*/, 
 VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int has_mipmap)
 {
   int shape[VGL_MAX_DIM];
-  shape[0] = size.width;
-  shape[1] = size.height;
+  shape[0] = nChannels;
+  shape[1] = size.width;
+  shape[2] = size.height;
 
-  VglImage* vglImage = vglCreateImage(shape, depth, nChannels, ndim, has_mipmap);
+  printf("DEBUGGIN ndim = %d\n", ndim);
+  printf("DEBUGGIN s0 = %d\n", shape[0]);
+  printf("DEBUGGIN s1 = %d\n", shape[1]);
+  printf("DEBUGGIN s2 = %d\n", shape[2]);
+
+  VglImage* vglImage = vglCreateImage(shape, depth, ndim, has_mipmap);
 
   return vglImage;
 }
@@ -592,11 +597,12 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, in
   {
     shape[i] = 0;
   }
-  shape[0] = size.width;
-  shape[1] = size.height;
-  shape[2] = layers;
+  shape[0] = nChannels;
+  shape[1] = size.width;
+  shape[2] = size.height;
+  shape[3] = layers;
   
-  vglImage = vglCreateImage(shape, depth, nChannels, 3, has_mipmap);
+  vglImage = vglCreateImage(shape, depth, 3, has_mipmap);
   
   return vglImage;
 }
@@ -604,9 +610,9 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int layers, in
 
 /** Create image as described by the parameters
  */
-VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int nChannels, int has_mipmap /*=0*/)
+VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int has_mipmap /*=0*/)
 {
-  VglImage* vglImage = vglCreateImage(shape, depth, nChannels, ndim, has_mipmap);
+  VglImage* vglImage = vglCreateImage(shape, depth, ndim, has_mipmap);
 
   return vglImage;
 }
@@ -622,7 +628,7 @@ void vglSaveImage(VglImage* image, char* filename)
   }
   else if (image->ndim == 3)
   {
-    vglSave3dImage(image, filename, 0, image->shape[VGL_LENGTH] - 1);
+    vglSave3dImage(image, filename, 0, image->getLength() - 1);
   }
   else
   {
@@ -640,21 +646,21 @@ void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
         int d = image->depth / 8;
         if (d < 1) d = 1; //d is the byte size of the depth color format
 
-        char* temp_image = (char*)malloc(image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
-        memcpy(temp_image,image->ndarray,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
+        char* temp_image = (char*)malloc(image->getHeight()*image->getWidth()*image->nChannels*d);
+        memcpy(temp_image,image->ndarray,image->getHeight()*image->getWidth()*image->nChannels*d);
 
-        IplImage* ipl = cvCreateImage(cvSize(image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT]), image->depth, image->nChannels);
+        IplImage* ipl = cvCreateImage(cvSize(image->getWidth(), image->getHeight()), image->depth, image->nChannels);
         ipl->imageData = temp_image;
 
         cvSaveImage(temp_filename,  ipl);
-        int c = image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*d*image->nChannels;
+        int c = image->getHeight()*image->getWidth()*d*image->nChannels;
         for(int i = lStart+1; i <= lEnd; i++)
         {
-                memcpy(temp_image,((char*)image->ndarray)+c,image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d);
+                memcpy(temp_image,((char*)image->ndarray)+c,image->getHeight()*image->getWidth()*image->nChannels*d);
                 ipl->imageData = temp_image;
                 sprintf(temp_filename, filename, i);
                 cvSaveImage(temp_filename, ipl);
-                c += image->shape[VGL_HEIGHT]*image->shape[VGL_WIDTH]*image->nChannels*d;
+                c += image->getHeight()*image->getWidth()*image->nChannels*d;
         }
 	cvReleaseImage(&ipl);
 	free(temp_image);
@@ -679,9 +685,9 @@ void vglNdarray3To4Channels(VglImage* img)
     int d = img->depth / 8;
     if (d < 1) d = 1; //d is the byte size of the depth color format
         
-    int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 4 * d * img->shape[VGL_LENGTH];
+    int datasize = img->getHeight() * img->getWidth() * 4 * d * img->getLength();
 
-    void* newndarray = (char*)malloc(img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 4 * d * img->shape[VGL_LENGTH]);
+    void* newndarray = (char*)malloc(img->getHeight() * img->getWidth() * 4 * d * img->getLength());
 
     int offset = 0;
     uint8_t temp_alpha = 0;
@@ -751,9 +757,9 @@ void vglNdarray4To3Channels(VglImage* img)
     int d = img->depth / 8;
     if (d < 1) d = 1;
         
-    int datasize = img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * img->nChannels * d * img->shape[VGL_LENGTH];
+    int datasize = img->getHeight() * img->getWidth() * img->nChannels * d * img->getLength();
 
-    void* newndarray = malloc(img->shape[VGL_HEIGHT] * img->shape[VGL_WIDTH] * 3 * d * img->shape[VGL_LENGTH]);
+    void* newndarray = malloc(img->getHeight() * img->getWidth() * 3 * d * img->getLength());
 
     int offset = 0;
     for(int i = 0 ; i < (datasize/d); i++)
@@ -962,7 +968,7 @@ void vglDownloadFaster(VglImage* image/*, VglImage* aux*/){
 
   // New version ddantas 5/2/3009
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, image->fbo);
-  glViewport(0, 0, 2*image->shape[VGL_WIDTH], 2*image->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*image->getWidth(), 2*image->getHeight());
   // Old version needs aux image
   //glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, aux->fbo);
   //glViewport(0, 0, 2*aux->width, 2*aux->height);
@@ -1131,7 +1137,7 @@ void vglDownloadFBO(VglImage* image){
     glFormat = GL_LUMINANCE;
   }
 
-  glReadPixels(0, 0, image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], glFormat, glType, image->ipl->imageData);
+  glReadPixels(0, 0, image->getWidth(), image->getHeight(), glFormat, glType, image->ipl->imageData);
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
@@ -1351,7 +1357,7 @@ void vglPrintImageInfo(VglImage* image, char* msg){
         printf("====== vglPrintImageInfo:\n");
     }
     printf("Image @ %p: w x h x l = %d x %d x %d\n", 
-    image, image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT], image->shape[VGL_LENGTH]);
+    image, image->getWidth(), image->getHeight(), image->getLength());
     printf("ndim = %d\n", image->ndim);
     printf("shape = {");
     for(int i = 0; i < VGL_MAX_DIM; i++)
@@ -1432,7 +1438,7 @@ void vglCopyImageTex(VglImage* src, VglImage* dst)
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
 	ERRCHECK()
 
-	glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+	glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight());
 
 	glBegin(GL_QUADS);
 		glTexCoord2f( 0.0,  0.0);
@@ -1517,7 +1523,7 @@ void vglCopyImageTexFS(VglImage* src, VglImage* dst)
 
     //printf("Using fragment shader = %d.\n", f);
 
-	glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+	glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight());
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1595,7 +1601,7 @@ void vglCopyImageTexVFS(VglImage* src, VglImage* dst)
       glGetIntegerv(GL_CURRENT_PROGRAM, &retval);
       //printf("current program = %d\n", retval);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight());
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1631,7 +1637,7 @@ void vglVerticalFlip2(VglImage* src, VglImage* dst){
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
       ERRCHECK()
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight());
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  1.0);
@@ -1693,7 +1699,7 @@ void vglHorizontalFlip2(VglImage* src, VglImage* dst){
       glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, dst->fbo);
       ERRCHECK()
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight());
 
       glBegin(GL_QUADS);
           glTexCoord2f( 1.0,  0.0);
@@ -1897,7 +1903,7 @@ int SavePPM(char* filename, int w, int h, void* savebuf){
 int vglSavePPM(VglImage* img, char* filename){
     vglCheckContext(img, VGL_GL_CONTEXT);
     vglDownloadPPM(img);
-    return SavePPM(filename, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->ipl->imageData);
+    return SavePPM(filename, img->getWidth(), img->getHeight(), img->ipl->imageData);
 }
 
 /** Save image data to PGM file, 1 channel, unsigned byte
@@ -1917,7 +1923,7 @@ int SavePGM(char* filename, int w, int h, void* savebuf){
 int vglSavePGM(VglImage* img, char* filename){
     vglCheckContext(img, VGL_GL_CONTEXT);
     vglDownloadPGM(img);
-    return SavePGM(filename, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->ipl->imageData);
+    return SavePGM(filename, img->getWidth(), img->getHeight(), img->ipl->imageData);
 }
 
 /** Load image data from PGM file, 1 channel, unsigned byte
@@ -2129,7 +2135,7 @@ void vglBaricenterVga(VglImage* src, double* x_avg /*= NULL*/, double* y_avg /*=
   int width  = 640;
   int height = 480;
 
-  if(src->shape[VGL_WIDTH] != 640 || src->shape[VGL_HEIGHT] != 480){
+  if(src->getWidth() != 640 || src->getHeight() != 480){
       fprintf(stderr, "%s: %s: Error: image must be 640x480.\n", __FILE__, __FUNCTION__);
   }
 
@@ -2221,7 +2227,7 @@ void vglMultiOutput_model(VglImage*  src, VglImage*  dst, VglImage*  dst1){
     //glDrawBuffer(GL_COLOR_ATTACHMENT1_EXT);
     ERRCHECK()
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight());
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2298,7 +2304,7 @@ void vglInOut_model(VglImage*  dst, VglImage*  dst1){
     //glDrawBuffer(GL_COLOR_ATTACHMENT1_EXT);
     ERRCHECK()
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight());
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2388,7 +2394,7 @@ void vglMultiInput_model(VglImage*  src0, VglImage*  src1, VglImage*  dst){
 
   ERRCHECK()
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight());
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.3,  0.3);

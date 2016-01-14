@@ -28,7 +28,7 @@
 // (IN_TEX: VglImage* img_src, OUT_FBO: VglImage* img_dst, float* f_homo)
 
 uniform sampler2D img_src;
-uniform vec2 tex_size; // img_src->width, img_src->height
+uniform vec2 tex_size; // img_src->getWidth(), img_src->getHeight()
 uniform mat3 homo; // f_homo
 
 

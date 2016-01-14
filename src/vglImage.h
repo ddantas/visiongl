@@ -74,16 +74,16 @@ class VglImage{
   size_t getTotalSizeInPixels()
   {
     size_t totalSize = 1;
-    for(int i = 0; i < this->ndim; i++)
+    for(int i = 1; i <= this->ndim; i++)
     {
       totalSize *= this->shape[i];
     }
     totalSize *= this->nChannels;
 
     // 1D images may be stored as 2d images.
-    if ( (this->ndim == 1) && (this->shape[VGL_HEIGHT] > 1) )
+    if ( (this->ndim == 1) && (this->getHeight() > 1) )
     {
-      totalSize *= this->shape[VGL_HEIGHT];
+      totalSize *= this->getHeight();
     }
     return totalSize;
   }
@@ -113,6 +113,47 @@ class VglImage{
       return NULL;
     }     
   }
+
+  int getWidth()
+  {
+    if (this->vglShape == NULL)
+    {
+      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape is NULL\n", __FILE__, __FUNCTION__);
+    }
+    else if (this->vglShape->shape == NULL)
+    {
+      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape->shape is NULL\n", __FILE__, __FUNCTION__);
+    }
+    return this->vglShape->shape[VGL_SHAPE_WIDTH];
+  }
+
+  int getHeight()
+  {
+    if (this->vglShape == NULL)
+    {
+      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape is NULL\n", __FILE__, __FUNCTION__);
+    }
+    else if (this->vglShape->shape == NULL)
+    {
+      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape->shape is NULL\n", __FILE__, __FUNCTION__);
+    }
+    return this->vglShape->shape[VGL_SHAPE_HEIGHT];
+  }
+
+  int getLength()
+  {
+    if (this->vglShape == NULL)
+    {
+      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape is NULL\n", __FILE__, __FUNCTION__);
+    }
+    else if (this->vglShape->shape == NULL)
+    {
+      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape->shape is NULL\n", __FILE__, __FUNCTION__);
+    }
+    return this->vglShape->shape[VGL_SHAPE_D3];
+  }
+
+
 
 
 };
@@ -165,10 +206,10 @@ VglImage* vglCopyCreateImage(VglImage* img_in);
 VglImage* vglCreateImage(VglImage* img_in);
 VglImage* vglCopyCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
-VglImage* vglCreateImage(int* shape, int depth, int nChannels, int ndim = 2, int has_mipmap = 0);
+VglImage* vglCreateImage(int* shape, int depth, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
-VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int nChannels, int has_mipmap = 0);
+VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int has_mipmap = 0);
 void vglSaveImage(VglImage* image, char* filename);
 void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd);
 VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);

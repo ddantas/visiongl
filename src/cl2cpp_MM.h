@@ -7,9 +7,6 @@
 ***                                                                 ***
 *********************************************************************/
 #include "vglImage.h"
-
-void CL_MM();
-
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */

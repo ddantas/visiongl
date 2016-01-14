@@ -47,7 +47,7 @@ void shader_15_1(VglImage* src, VglImage* dst){
   glUniform1f(glGetUniformLocation(_f, "width"),  src->ipl->width);
   glUniform1f(glGetUniformLocation(_f, "height"),  src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -111,9 +111,9 @@ void vgl1to3Channels(VglImage* src, VglImage* dst){
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
 
-  glUniform1i(glGetUniformLocation(_f, "width"),  src->shape[VGL_WIDTH]);
+  glUniform1i(glGetUniformLocation(_f, "width"),  src->getWidth());
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -180,7 +180,7 @@ void vgl3dNot(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -252,7 +252,7 @@ void vglAbsDiff(VglImage* src0, VglImage* src1, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -328,7 +328,7 @@ void vglAnd(VglImage* src0, VglImage* src1, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -404,7 +404,7 @@ void vglBaricenterInit(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -472,7 +472,7 @@ void vglBlurSq3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -541,7 +541,7 @@ void vglClear2(VglImage* src_dst, float r, float g, float b, float a){
   glUniform1f(glGetUniformLocation(_f, "b"), b);
   glUniform1f(glGetUniformLocation(_f, "a"), a);
 
-  glViewport(0, 0, 2*src_dst->shape[VGL_WIDTH], 2*src_dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*src_dst->getWidth(), 2*src_dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -607,7 +607,7 @@ void vglContrast(VglImage* src, VglImage* dst, float factor){
 
   glUniform1f(glGetUniformLocation(_f, "factor"),  factor);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -665,7 +665,7 @@ void vglCoordToColor(VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -730,7 +730,7 @@ void vglCopy(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -817,7 +817,7 @@ void vglCrossingNumber(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -920,7 +920,7 @@ void vglDeleteSkeletonCorners(VglImage* src, VglImage* dst, int step){
   glUniform1i(glGetUniformLocation(_f, "step"),  step);
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1017,7 +1017,7 @@ void vglDeleteSkeletonWarts(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1121,7 +1121,7 @@ void vglDeleteSkeletonWarts2(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1193,7 +1193,7 @@ void vglDiff(VglImage* src0, VglImage* src1, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1263,7 +1263,7 @@ void vglDilateCross3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1329,7 +1329,7 @@ void vglDilateSq3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1395,7 +1395,7 @@ void vglErodeCross3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1461,7 +1461,7 @@ void vglErodeHL3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1527,7 +1527,7 @@ void vglErodeHL5(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1593,7 +1593,7 @@ void vglErodeHL7(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1659,7 +1659,7 @@ void vglErodeSq3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1725,7 +1725,7 @@ void vglErodeSq3off(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1791,7 +1791,7 @@ void vglErodeSq5(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1857,7 +1857,7 @@ void vglErodeSq5off(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1923,7 +1923,7 @@ void vglErodeSq7(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -1990,7 +1990,7 @@ void vglErodeSqSide(VglImage* src, VglImage* dst, int side){
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
   glUniform1i(glGetUniformLocation(_f, "radius"),  (side - 1) / 2);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2056,7 +2056,7 @@ void vglErodeVL3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2122,7 +2122,7 @@ void vglErodeVL5(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2188,7 +2188,7 @@ void vglErodeVL7(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2288,7 +2288,7 @@ void vglFeaturePoints(VglImage* src, VglImage* dst, int type){
   glUniform1i(glGetUniformLocation(_f, "type"),  type);
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2354,7 +2354,7 @@ void vglGaussianBlurSq3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2419,7 +2419,7 @@ void vglGray(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2485,7 +2485,7 @@ void vglHorizontalFlip(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2562,7 +2562,7 @@ void vglInOut(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*src->shape[VGL_WIDTH], 2*src->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*src->getWidth(), 2*src->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2634,7 +2634,7 @@ void vglJulia(VglImage* dst, float ox, float oy, float half_win, float c_real, f
   glUniform1f(glGetUniformLocation(_f, "c_real"),  c_real);
   glUniform1f(glGetUniformLocation(_f, "c_imag"),  c_imag);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2700,7 +2700,7 @@ void vglLaplaceSq3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2761,7 +2761,7 @@ void vglMandel(VglImage* dst, float ox, float oy, float half_win){
   glUniform1f(glGetUniformLocation(_f, "oy"),  oy);
   glUniform1f(glGetUniformLocation(_f, "half_win"),  half_win);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2827,7 +2827,7 @@ void vglMipmap(VglImage* src, VglImage* dst, float lod){
 
   glUniform1f(glGetUniformLocation(_f, "lod"),  lod);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2893,7 +2893,7 @@ void vglMulScalar(VglImage* src, VglImage* dst, float factor){
 
   glUniform1f(glGetUniformLocation(_f, "factor"), factor);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -2968,7 +2968,7 @@ void vglMultiInput(VglImage* src0, VglImage* src1, VglImage* dst, float weight){
 
   glUniform1f(glGetUniformLocation(_f, "weight"), weight);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3049,7 +3049,7 @@ void vglMultiOutput(VglImage* src, VglImage* dst, VglImage* dst1){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3123,7 +3123,7 @@ void vglNoise(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3188,7 +3188,7 @@ void vglNot(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3260,7 +3260,7 @@ void vglOr(VglImage* src0, VglImage* src1, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3328,12 +3328,12 @@ void vglRescale(VglImage* src, VglImage* dst, float x0, float y0, float x1, floa
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
 
-  glUniform1f(glGetUniformLocation(_f, "x_0"),  x0 / (float)src->shape[VGL_WIDTH]);
-  glUniform1f(glGetUniformLocation(_f, "y_0"),  y0 / (float)src->shape[VGL_HEIGHT]);
-  glUniform1f(glGetUniformLocation(_f, "x_1"),  x1 / (float)src->shape[VGL_WIDTH]);
-  glUniform1f(glGetUniformLocation(_f, "y_1"),  y1 / (float)src->shape[VGL_HEIGHT]);
+  glUniform1f(glGetUniformLocation(_f, "x_0"),  x0 / (float)src->getWidth());
+  glUniform1f(glGetUniformLocation(_f, "y_0"),  y0 / (float)src->getHeight());
+  glUniform1f(glGetUniformLocation(_f, "x_1"),  x1 / (float)src->getWidth());
+  glUniform1f(glGetUniformLocation(_f, "y_1"),  y1 / (float)src->getHeight());
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3398,7 +3398,7 @@ void vglRgbToBgr(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3463,7 +3463,7 @@ void vglRgbToHsl(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3528,7 +3528,7 @@ void vglRgbToHsv(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3593,7 +3593,7 @@ void vglRgbToXyz(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3659,7 +3659,7 @@ void vglRobertsGradient(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3727,7 +3727,7 @@ void vglSelfSum22(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3795,7 +3795,7 @@ void vglSelfSum3v(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3863,7 +3863,7 @@ void vglSelfSum4h(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3931,7 +3931,7 @@ void vglSelfSum5h(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -3999,7 +3999,7 @@ void vglSelfSum5v(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4065,7 +4065,7 @@ void vglSharpenSq3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4131,7 +4131,7 @@ void vglSobelGradient(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4197,7 +4197,7 @@ void vglSobelXSq3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4263,7 +4263,7 @@ void vglSobelYSq3(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4335,7 +4335,7 @@ void vglSum(VglImage* src0, VglImage* src1, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4412,7 +4412,7 @@ void vglSumWeighted(VglImage* src0, VglImage* src1, VglImage* dst, float weight)
 
   glUniform1f(glGetUniformLocation(_f, "weight"), weight);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4481,7 +4481,7 @@ void vglSwapRGB(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4550,7 +4550,7 @@ void vglTestInOut(VglImage* src_dst, float r, float g, float b, float a){
   glUniform1f(glGetUniformLocation(_f, "b"), b);
   glUniform1f(glGetUniformLocation(_f, "a"), a);
 
-  glViewport(0, 0, 2*src_dst->shape[VGL_WIDTH], 2*src_dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*src_dst->getWidth(), 2*src_dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4625,7 +4625,7 @@ void vglTestInOut2(VglImage* src_dst, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*src_dst->shape[VGL_WIDTH], 2*src_dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*src_dst->getWidth(), 2*src_dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4707,7 +4707,7 @@ void vglTestMultiInput(VglImage* src0, VglImage* src1, VglImage* dst, float weig
 
   glUniform1f(glGetUniformLocation(_f, "weight"), weight);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4786,7 +4786,7 @@ void vglTestMultiOutput(VglImage* src, VglImage* dst, VglImage* dst1){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4863,7 +4863,7 @@ void vglTeste(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -4957,7 +4957,7 @@ void vglThinBernardAux(VglImage* src, VglImage* eroded, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -5053,7 +5053,7 @@ void vglThinChinAux(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -5121,7 +5121,7 @@ void vglThresh(VglImage* src, VglImage* dst, float thresh, float top){
   glUniform1f(glGetUniformLocation(_f, "thresh"),  thresh);
   glUniform1f(glGetUniformLocation(_f, "top"),  top);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -5190,7 +5190,7 @@ void vglThreshLevelSet(VglImage* src, VglImage* dst, float thresh, float top){
   glUniform1f(glGetUniformLocation(_f, "thresh"),  thresh);
   glUniform1f(glGetUniformLocation(_f, "top"),  top);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -5256,7 +5256,7 @@ void vglVerticalFlip(VglImage* src, VglImage* dst){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -5323,7 +5323,7 @@ void vglWhiteRohrerEdge(VglImage* src, VglImage* dst, float radius){
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
   glUniform1f(glGetUniformLocation(_f, "radius"),  radius);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -5390,7 +5390,7 @@ void vglXGY(VglImage* src, VglImage* dst){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  src->ipl->width, src->ipl->height);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -5456,7 +5456,7 @@ void vglZoom(VglImage* src, VglImage* dst, float factor){
 
   glUniform1f(glGetUniformLocation(_f, "factor"),  factor);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);

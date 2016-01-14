@@ -74,6 +74,7 @@ __kernel void vglClNdDilate(__global char* img_input,
   }
 
   img_output[coord] = img_input[img_shape->size - coord];
+  img_output[coord] = img_input[coord];
 }
 
 

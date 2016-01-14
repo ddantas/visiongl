@@ -66,11 +66,11 @@ void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -147,11 +147,11 @@ void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convol
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -213,11 +213,11 @@ void vglCl3dCopy(VglImage* img_input, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -294,11 +294,11 @@ void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -378,11 +378,11 @@ void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -448,11 +448,11 @@ void vglCl3dMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), img_input1->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -515,11 +515,11 @@ void vglCl3dMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), img_input1->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -578,11 +578,11 @@ void vglCl3dNot(VglImage* img_input, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -645,11 +645,11 @@ void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), img_input1->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -712,11 +712,11 @@ void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), img_input1->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -781,11 +781,11 @@ void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top){
   vglClCheckError( err, (char*) "clSetKernelArg 3" );
 
   if (src->ndim <= 2){
-    size_t worksize[] = { src->shape[VGL_WIDTH], src->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { src->getWidth(), src->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (src->ndim == 3){
-    size_t worksize[] = { src->shape[VGL_WIDTH], src->shape[VGL_HEIGHT], src->shape[VGL_LENGTH] };
+    size_t worksize[] = { src->getWidth(), src->getHeight(), src->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -844,11 +844,11 @@ void vglClBlurSq3(VglImage* img_input, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -922,11 +922,11 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -988,11 +988,11 @@ void vglClCopy(VglImage* img_input, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1066,11 +1066,11 @@ void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_w
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1147,11 +1147,11 @@ void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_wi
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1213,11 +1213,11 @@ void vglClInvert(VglImage* img_input, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1280,11 +1280,11 @@ void vglClMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), img_input1->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1347,11 +1347,11 @@ void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), img_input1->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1414,11 +1414,11 @@ void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), img_input1->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1481,11 +1481,11 @@ void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->shape[VGL_WIDTH], img_input1->shape[VGL_HEIGHT], img_input1->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input1->getWidth(), img_input1->getHeight(), img_input1->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1550,11 +1550,11 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh, float top){
   vglClCheckError( err, (char*) "clSetKernelArg 3" );
 
   if (src->ndim <= 2){
-    size_t worksize[] = { src->shape[VGL_WIDTH], src->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { src->getWidth(), src->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (src->ndim == 3){
-    size_t worksize[] = { src->shape[VGL_WIDTH], src->shape[VGL_HEIGHT], src->shape[VGL_LENGTH] };
+    size_t worksize[] = { src->getWidth(), src->getHeight(), src->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{

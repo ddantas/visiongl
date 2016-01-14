@@ -7,22 +7,6 @@
 ***                                                                 ***
 *********************************************************************/
 #include "vglImage.h"
-/** vglForcesNewton
 
-    Iterates n masses using newtons formula.
-
-    In this step, the forces are calculated.
-
-  */
-void vglForcesNewton(VglImage*  src, VglImage*  dst);
-
-/** vglPosNewton
-
-    Iterates n masses using newtons formula.
-
-    In this step, the positions and speed are are calculated 
-    from the force.
-
-  */
-void vglPosNewton(VglImage*  src, VglImage*  dst);
+void *();
 

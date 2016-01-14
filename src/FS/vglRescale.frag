@@ -7,10 +7,10 @@
 
 uniform sampler2D src;
 
-uniform float x_0;       // x0 / (float)src->shape[VGL_WIDTH]
-uniform float y_0;       // y0 / (float)src->shape[VGL_HEIGHT]
-uniform float x_1;       // x1 / (float)src->shape[VGL_WIDTH]
-uniform float y_1;       // y1 / (float)src->shape[VGL_HEIGHT]
+uniform float x_0;       // x0 / (float)src->getWidth()
+uniform float y_0;       // y0 / (float)src->getHeight()
+uniform float x_1;       // x1 / (float)src->getWidth()
+uniform float y_1;       // y1 / (float)src->getHeight()
 
 void main(void){
 

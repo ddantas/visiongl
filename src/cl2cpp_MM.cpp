@@ -81,11 +81,11 @@ void vglCl3dFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* con
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -165,11 +165,11 @@ void vglCl3dFuzzyAlgErode(VglImage* img_input, VglImage* img_output, float* conv
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -249,11 +249,11 @@ void vglCl3dFuzzyArithDilate(VglImage* img_input, VglImage* img_output, float* c
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -333,11 +333,11 @@ void vglCl3dFuzzyArithErode(VglImage* img_input, VglImage* img_output, float* co
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -417,11 +417,11 @@ void vglCl3dFuzzyBoundDilate(VglImage* img_input, VglImage* img_output, float* c
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -501,11 +501,11 @@ void vglCl3dFuzzyBoundErode(VglImage* img_input, VglImage* img_output, float* co
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -588,11 +588,11 @@ void vglCl3dFuzzyDaPDilate(VglImage* img_input, VglImage* img_output, float* con
   vglClCheckError( err, (char*) "clSetKernelArg 6" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -675,11 +675,11 @@ void vglCl3dFuzzyDaPErode(VglImage* img_input, VglImage* img_output, float* conv
   vglClCheckError( err, (char*) "clSetKernelArg 6" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -759,11 +759,11 @@ void vglCl3dFuzzyDrasticDilate(VglImage* img_input, VglImage* img_output, float*
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -843,11 +843,11 @@ void vglCl3dFuzzyDrasticErode(VglImage* img_input, VglImage* img_output, float* 
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -927,11 +927,11 @@ void vglCl3dFuzzyGeoDilate(VglImage* img_input, VglImage* img_output, float* con
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1011,11 +1011,11 @@ void vglCl3dFuzzyGeoErode(VglImage* img_input, VglImage* img_output, float* conv
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1098,11 +1098,11 @@ void vglCl3dFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float
   vglClCheckError( err, (char*) "clSetKernelArg 6" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1185,11 +1185,11 @@ void vglCl3dFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float*
   vglClCheckError( err, (char*) "clSetKernelArg 6" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1269,11 +1269,11 @@ void vglCl3dFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* con
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1353,11 +1353,11 @@ void vglCl3dFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* conv
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1434,11 +1434,11 @@ void vglClFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* convo
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1515,11 +1515,11 @@ void vglClFuzzyAlgErode(VglImage* img_input, VglImage* img_output, float* convol
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1596,11 +1596,11 @@ void vglClFuzzyArithDilate(VglImage* img_input, VglImage* img_output, float* con
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1677,11 +1677,11 @@ void vglClFuzzyArithErode(VglImage* img_input, VglImage* img_output, float* conv
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1758,11 +1758,11 @@ void vglClFuzzyBoundDilate(VglImage* img_input, VglImage* img_output, float* con
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1839,11 +1839,11 @@ void vglClFuzzyBoundErode(VglImage* img_input, VglImage* img_output, float* conv
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -1923,11 +1923,11 @@ void vglClFuzzyDaPDilate(VglImage* img_input, VglImage* img_output, float* convo
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -2007,11 +2007,11 @@ void vglClFuzzyDaPErode(VglImage* img_input, VglImage* img_output, float* convol
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -2088,11 +2088,11 @@ void vglClFuzzyDrasticDilate(VglImage* img_input, VglImage* img_output, float* c
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -2169,11 +2169,11 @@ void vglClFuzzyDrasticErode(VglImage* img_input, VglImage* img_output, float* co
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -2250,11 +2250,11 @@ void vglClFuzzyGeoDilate(VglImage* img_input, VglImage* img_output, float* convo
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -2331,11 +2331,11 @@ void vglClFuzzyGeoErode(VglImage* img_input, VglImage* img_output, float* convol
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -2415,11 +2415,11 @@ void vglClFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float* 
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -2499,11 +2499,11 @@ void vglClFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float* c
   vglClCheckError( err, (char*) "clSetKernelArg 5" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -2580,11 +2580,11 @@ void vglClFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* convo
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -2661,11 +2661,11 @@ void vglClFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* convol
   vglClCheckError( err, (char*) "clSetKernelArg 4" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{

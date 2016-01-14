@@ -17,7 +17,7 @@
     The four differences are stored in the RGBA image dst.
 
   */
-void vglAbsDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst, float  disparity){
+void vglAbsDiffDisparity(VglImage* img_ref, VglImage* img_2, VglImage* dst, float disparity){
 
   vglCheckContext(img_ref, VGL_GL_CONTEXT);
 
@@ -57,7 +57,7 @@ void vglAbsDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst, f
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_ref->ipl->width, img_ref->ipl->height);
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -97,7 +97,7 @@ void vglAbsDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst, f
     The four differences are stored in the RGBA image dst.
 
   */
-void vglAbsDiffDisparityMipmap(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst, float  disparity, float  max_lod){
+void vglAbsDiffDisparityMipmap(VglImage* img_ref, VglImage* img_2, VglImage* dst, float disparity, float max_lod){
 
   vglCheckContext(img_ref, VGL_GL_CONTEXT);
 
@@ -138,7 +138,7 @@ void vglAbsDiffDisparityMipmap(VglImage*  img_ref, VglImage*  img_2, VglImage*  
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
   glUniform1f(glGetUniformLocation(_f, "max_lod"),  max_lod);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -178,7 +178,7 @@ void vglAbsDiffDisparityMipmap(VglImage*  img_ref, VglImage*  img_2, VglImage*  
     The second input image contains the smallest differences found in channel R, and corresponding disparity value in channel A, Is also an output image, and is updated whenever a smaller difference is found.
 
   */
-void vglFindDisparity(VglImage*  img_dif, VglImage*  img_disp, float  disparity){
+void vglFindDisparity(VglImage* img_dif, VglImage* img_disp, float disparity){
 
   vglCheckContext(img_dif, VGL_GL_CONTEXT);
 
@@ -218,7 +218,7 @@ void vglFindDisparity(VglImage*  img_dif, VglImage*  img_disp, float  disparity)
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_dif->ipl->width, img_dif->ipl->height);
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
 
-  glViewport(0, 0, 2*img_disp->shape[VGL_WIDTH], 2*img_disp->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_disp->getWidth(), 2*img_disp->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -256,7 +256,7 @@ void vglFindDisparity(VglImage*  img_dif, VglImage*  img_disp, float  disparity)
 /** Do the same as vglFindDisparity, but the smallest difference is stored in img_best, and corresponding disparity in img_disp. Both are input and output images.
 
   */
-void vglFindDisparityDiff(VglImage*  img_sum, VglImage*  img_disp, VglImage*  img_best, float  disparity){
+void vglFindDisparityDiff(VglImage* img_sum, VglImage* img_disp, VglImage* img_best, float disparity){
 
   vglCheckContext(img_sum, VGL_GL_CONTEXT);
 
@@ -313,7 +313,7 @@ void vglFindDisparityDiff(VglImage*  img_sum, VglImage*  img_disp, VglImage*  im
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_sum->ipl->width, img_sum->ipl->height);
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
 
-  glViewport(0, 0, 2*img_disp->shape[VGL_WIDTH], 2*img_disp->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_disp->getWidth(), 2*img_disp->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -366,7 +366,7 @@ void vglFindDisparityDiff(VglImage*  img_sum, VglImage*  img_disp, VglImage*  im
     The four differences are stored in the RGBA image dst.
 
   */
-void vglGreenDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst, float  disparity){
+void vglGreenDiffDisparity(VglImage* img_ref, VglImage* img_2, VglImage* dst, float disparity){
 
   vglCheckContext(img_ref, VGL_GL_CONTEXT);
 
@@ -406,7 +406,7 @@ void vglGreenDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst,
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_ref->ipl->width, img_ref->ipl->height);
   glUniform1f(glGetUniformLocation(_f, "disparity"),  disparity);
 
-  glViewport(0, 0, 2*dst->shape[VGL_WIDTH], 2*dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*dst->getWidth(), 2*dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -466,7 +466,7 @@ void vglGreenDiffDisparity(VglImage*  img_ref, VglImage*  img_2, VglImage*  dst,
     tbe matrix before using it in OpenGL context.
 
   */
-void vglHomography(VglImage*  img_src, VglImage*  img_dst, float*  f_homo){
+void vglHomography(VglImage* img_src, VglImage* img_dst, float* f_homo){
 
   vglCheckContext(img_src, VGL_GL_CONTEXT);
 
@@ -496,10 +496,10 @@ void vglHomography(VglImage*  img_src, VglImage*  img_dst, float*  f_homo){
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
 
-  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->shape[VGL_WIDTH], img_src->shape[VGL_HEIGHT]);
+  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->getWidth(), img_src->getHeight());
   glUniformMatrix3fv(glGetUniformLocation(_f, "homo"), 1, 0,  f_homo);
 
-  glViewport(0, 0, 2*img_src->shape[VGL_WIDTH], 2*img_src->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_dst->getWidth(), 2*img_dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -552,7 +552,7 @@ void vglHomography(VglImage*  img_src, VglImage*  img_dst, float*  f_homo){
 
     h: height of camera in cm
  */
-void vglMapTo3D(VglImage*  img_map, VglImage*  img_3d, float  f, float  b, float  D, float  disp_k, float  h){
+void vglMapTo3D(VglImage* img_map, VglImage* img_3d, float f, float b, float D, float disp_k, float h){
 
   vglCheckContext(img_map, VGL_GL_CONTEXT);
 
@@ -595,7 +595,7 @@ void vglMapTo3D(VglImage*  img_map, VglImage*  img_3d, float  f, float  b, float
   glUniform1f(glGetUniformLocation(_f, "s_x"),  0.5);
   glUniform1f(glGetUniformLocation(_f, "s_y"),   390.0 / 480.0  /* thiagopx0, 1, ddantas0, 1*/);
 
-  glViewport(0, 0, 2*img_3d->shape[VGL_WIDTH], 2*img_3d->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_3d->getWidth(), 2*img_3d->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -630,7 +630,7 @@ void vglMapTo3D(VglImage*  img_map, VglImage*  img_3d, float  f, float  b, float
 
 
   */
-void vglMeanMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod){
+void vglMeanMipmap(VglImage* img_dif, VglImage* img_out, float max_lod){
 
   vglCheckContext(img_dif, VGL_GL_CONTEXT);
 
@@ -661,7 +661,7 @@ void vglMeanMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*img_out->shape[VGL_WIDTH], 2*img_out->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_out->getWidth(), 2*img_out->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -695,7 +695,7 @@ void vglMeanMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod){
 /** Mean filter with a 3x3 square mask.
 
   */
-void vglMeanSq3(VglImage*  img_dif, VglImage*  img_out){
+void vglMeanSq3(VglImage* img_dif, VglImage* img_out){
 
   vglCheckContext(img_dif, VGL_GL_CONTEXT);
 
@@ -727,7 +727,7 @@ void vglMeanSq3(VglImage*  img_dif, VglImage*  img_out){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_dif->ipl->width, img_dif->ipl->height);
 
-  glViewport(0, 0, 2*img_out->shape[VGL_WIDTH], 2*img_out->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_out->getWidth(), 2*img_out->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -788,7 +788,7 @@ void vglMeanSq3(VglImage*  img_dif, VglImage*  img_out){
     tbe matrix before using it in OpenGL context.
 
   */
-void vglRectify(VglImage*  img_src, VglImage*  img_dst, float*  f_dist, float*  f_proj, float*  f_homo){
+void vglRectify(VglImage* img_src, VglImage* img_dst, float* f_dist, float* f_proj, float* f_homo){
 
   vglCheckContext(img_src, VGL_GL_CONTEXT);
 
@@ -818,12 +818,12 @@ void vglRectify(VglImage*  img_src, VglImage*  img_dst, float*  f_dist, float*  
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
 
-  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->shape[VGL_WIDTH], img_src->shape[VGL_HEIGHT]);
+  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->getWidth(), img_src->getHeight());
   glUniform4f(glGetUniformLocation(_f, "dist"),  f_dist[0], f_dist[1], f_dist[2], f_dist[3]);
   glUniform4f(glGetUniformLocation(_f, "proj"),  f_proj[2],  f_proj[5], f_proj[0], f_proj[4]);
   glUniformMatrix3fv(glGetUniformLocation(_f, "homo"), 1, 0,  f_homo);
 
-  glViewport(0, 0, 2*img_dst->shape[VGL_WIDTH], 2*img_dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_dst->getWidth(), 2*img_dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -859,7 +859,7 @@ void vglRectify(VglImage*  img_src, VglImage*  img_dst, float*  f_dist, float*  
     Sum of differences
 
   */
-void vglSumDiff(VglImage*  img_dif, VglImage*  img_out){
+void vglSumDiff(VglImage* img_dif, VglImage* img_out){
 
   vglCheckContext(img_dif, VGL_GL_CONTEXT);
 
@@ -891,7 +891,7 @@ void vglSumDiff(VglImage*  img_dif, VglImage*  img_out){
 
   glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_dif->ipl->width, img_dif->ipl->height);
 
-  glViewport(0, 0, 2*img_out->shape[VGL_WIDTH], 2*img_out->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_out->getWidth(), 2*img_out->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -927,7 +927,7 @@ void vglSumDiff(VglImage*  img_dif, VglImage*  img_out){
     Sum of differences
 
   */
-void vglSumDiffMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod){
+void vglSumDiffMipmap(VglImage* img_dif, VglImage* img_out, float max_lod){
 
   vglCheckContext(img_dif, VGL_GL_CONTEXT);
 
@@ -958,7 +958,7 @@ void vglSumDiffMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod){
   ERRCHECK()
 
 
-  glViewport(0, 0, 2*img_out->shape[VGL_WIDTH], 2*img_out->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_out->getWidth(), 2*img_out->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -998,7 +998,7 @@ void vglSumDiffMipmap(VglImage*  img_dif, VglImage*  img_out, float  max_lod){
     http://www.cognotics.com/opencv/docs/1.0/ref/opencvref_cv.htm#cv_3d
 
   */
-void vglUndistort(VglImage*  img_src, VglImage*  img_dst, float*  f_dist, float*  f_proj){
+void vglUndistort(VglImage* img_src, VglImage* img_dst, float* f_dist, float* f_proj){
 
   vglCheckContext(img_src, VGL_GL_CONTEXT);
 
@@ -1028,11 +1028,11 @@ void vglUndistort(VglImage*  img_src, VglImage*  img_dst, float*  f_dist, float*
   CHECK_FRAMEBUFFER_STATUS()
   ERRCHECK()
 
-  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->shape[VGL_WIDTH], img_src->shape[VGL_HEIGHT]);
+  glUniform2f(glGetUniformLocation(_f, "tex_size"),  img_src->getWidth(), img_src->getHeight());
   glUniform4f(glGetUniformLocation(_f, "dist"),  f_dist[0], f_dist[1], f_dist[2], f_dist[3]);
   glUniform4f(glGetUniformLocation(_f, "proj"),  f_proj[2],  f_proj[5], f_proj[0], f_proj[4]);
 
-  glViewport(0, 0, 2*img_dst->shape[VGL_WIDTH], 2*img_dst->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*img_dst->getWidth(), 2*img_dst->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);

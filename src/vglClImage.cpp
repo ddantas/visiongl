@@ -495,12 +495,12 @@ void vglClUpload(VglImage* img)
 
             if (img->ndim == 2)
             {
-                img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, NULL, &err);
+                img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->getWidth(), img->getHeight(), 0, NULL, &err);
                 vglClCheckError( err, (char*) "clCreateImage2D" );
             }
             else if(img->ndim == 3)
             {
-                img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], img->shape[VGL_LENGTH], 0, 0, NULL, &err);
+                img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->getWidth(), img->getHeight(), img->getLength(), 0, 0, NULL, &err);
                 vglClCheckError( err, (char*) "clCreateImage3D" );
             }
             else
@@ -513,8 +513,8 @@ void vglClUpload(VglImage* img)
             if (img->ndim == 2)
             {
                 desc.image_type = CL_MEM_OBJECT_IMAGE2D;
-                desc.image_width = img->shape[VGL_WIDTH];
-                desc.image_height = img->shape[VGL_HEIGHT];
+                desc.image_width = img->getWidth();
+                desc.image_height = img->getHeight();
                 desc.image_depth = 0;
                 desc.image_array_size = 1;
                 desc.image_row_pitch = 0;
@@ -526,9 +526,9 @@ void vglClUpload(VglImage* img)
             else
             {
                 desc.image_type = CL_MEM_OBJECT_IMAGE3D;
-                desc.image_width = img->shape[VGL_WIDTH];
-                desc.image_height = img->shape[VGL_HEIGHT];
-                desc.image_depth = img->shape[VGL_LENGTH];
+                desc.image_width = img->getWidth();
+                desc.image_height = img->getHeight();
+                desc.image_depth = img->getLength();
                 desc.image_array_size = 0;
                 desc.image_row_pitch = 0;
                 desc.image_slice_pitch = 0;
@@ -547,7 +547,7 @@ void vglClUpload(VglImage* img)
             int nFrames = 1;
             if(img->ndim == 3)
             {
-                nFrames = img->shape[VGL_LENGTH];
+                nFrames = img->getLength();
             }
 
             void* imageData = img->getImageData();
@@ -559,7 +559,7 @@ void vglClUpload(VglImage* img)
    
             if ( (img->ndim == 2) || (img->ndim == 3) )
             {
-                size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
+                size_t Size3d[3] = {img->getWidth(), img->getHeight(), nFrames};
                 err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, (char*)imageData, 0, NULL, NULL );
                 vglClCheckError( err, (char*) "clEnqueueWriteImage" );
                 clFinish(cl.commandQueue);
@@ -701,7 +701,7 @@ void vglClDownload(VglImage* img)
         int nFrames = 1;
         if(img->ndim == 3)
         {
-          nFrames = img->shape[VGL_LENGTH];
+          nFrames = img->getLength();
         }
 
         void* imageData = img->getImageData();
@@ -713,7 +713,7 @@ void vglClDownload(VglImage* img)
    
         if ( (img->ndim == 2) || (img->ndim == 3) )
         {
-            size_t Size3d[3] = {img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], nFrames};
+            size_t Size3d[3] = {img->getWidth(), img->getHeight(), nFrames};
             cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, imageData, 0, NULL, NULL );
             vglClCheckError( err_cl, (char*) "clEnqueueReadImage" );
         }
@@ -785,11 +785,11 @@ int vglClMpIsZero(VglImage* num_a){
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
   if (num_a->ndim <= 2){
-    size_t worksize[] = { num_a->shape[VGL_WIDTH], num_a->shape[VGL_HEIGHT], 1 };
+    size_t worksize[] = { num_a->getWidth(), num_a->getHeight(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (num_a->ndim == 3){
-    size_t worksize[] = { num_a->shape[VGL_WIDTH], num_a->shape[VGL_HEIGHT], num_a->shape[VGL_LENGTH] };
+    size_t worksize[] = { num_a->getWidth(), num_a->getHeight(), num_a->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{

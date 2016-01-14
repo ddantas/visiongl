@@ -6,7 +6,7 @@
 // (IN_TEX: VglImage* src, OUT_FBO: VglImage* dst)
 
 uniform sampler2D sampler0;
-uniform int width; // src->shape[VGL_WIDTH]
+uniform int width; // src->getWidth()
 
 void main(void){
   vec4 pix = texture2D(sampler0, vec2(gl_TexCoord[0].s / 3.0, gl_TexCoord[0].t / 3.0)); 

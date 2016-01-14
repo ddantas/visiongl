@@ -15,7 +15,7 @@
 /** Detects foreground pixels.
 
   */
-void vglDetectFGSimpleBGModel(VglImage*  img_in, VglImage*  average, VglImage*  variance, VglImage*  foreground, float  std_thresh){
+void vglDetectFGSimpleBGModel(VglImage* img_in, VglImage* average, VglImage* variance, VglImage* foreground, float std_thresh){
 
   vglCheckContext(img_in, VGL_GL_CONTEXT);
 
@@ -61,7 +61,7 @@ void vglDetectFGSimpleBGModel(VglImage*  img_in, VglImage*  average, VglImage*  
 
   glUniform1f(glGetUniformLocation(_f, "std_thresh"), std_thresh);
 
-  glViewport(0, 0, 2*foreground->shape[VGL_WIDTH], 2*foreground->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*foreground->getWidth(), 2*foreground->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -103,7 +103,7 @@ void vglDetectFGSimpleBGModel(VglImage*  img_in, VglImage*  average, VglImage*  
 /** Updates average and variance of background model.
 
   */
-void vglTrainSimpleBGModel(VglImage*  img_in, VglImage*  average, VglImage*  variance, float  weight){
+void vglTrainSimpleBGModel(VglImage* img_in, VglImage* average, VglImage* variance, float weight){
 
   vglCheckContext(img_in, VGL_GL_CONTEXT);
 
@@ -159,7 +159,7 @@ void vglTrainSimpleBGModel(VglImage*  img_in, VglImage*  average, VglImage*  var
 
   glUniform1f(glGetUniformLocation(_f, "weight"), weight);
 
-  glViewport(0, 0, 2*average->shape[VGL_WIDTH], 2*average->shape[VGL_WIDTH]);
+  glViewport(0, 0, 2*average->getWidth(), 2*average->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
@@ -210,7 +210,7 @@ void vglTrainSimpleBGModel(VglImage*  img_in, VglImage*  average, VglImage*  var
 /** Updates average and variance of background model only in pixels that are classified as background.
 
   */
-void vglUpdatePartialSimpleBGModel(VglImage*  img_in, VglImage*  foregorundClose, VglImage*  average, VglImage*  variance, float  weight){
+void vglUpdatePartialSimpleBGModel(VglImage* img_in, VglImage* foregorundClose, VglImage* average, VglImage* variance, float weight){
 
   vglCheckContext(img_in, VGL_GL_CONTEXT);
 
@@ -273,7 +273,7 @@ void vglUpdatePartialSimpleBGModel(VglImage*  img_in, VglImage*  foregorundClose
 
   glUniform1f(glGetUniformLocation(_f, "weight"), weight);
 
-  glViewport(0, 0, 2*average->shape[VGL_WIDTH], 2*average->shape[VGL_HEIGHT]);
+  glViewport(0, 0, 2*average->getWidth(), 2*average->getHeight() );
 
       glBegin(GL_QUADS);
           glTexCoord2f( 0.0,  0.0);
