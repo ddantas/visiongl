@@ -4,8 +4,8 @@
     Copy of image in cuda context.
 */
 
-// <<<input->shape[VGL_HEIGHT],384>>> (IO_PBO: VglImage* input, IO_PBO: VglImage* output)
-// (input->cudaPtr, output->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels)
+// <<<input->getHeight(),384>>> (IO_PBO: VglImage* input, IO_PBO: VglImage* output)
+// (input->cudaPtr, output->cudaPtr, input->getWidth(), input->getHeight(), input->nChannels)
 
 template<typename T> 
 __global__ void global_Copy(T* input, T* output, int w, int h, int nChannels){

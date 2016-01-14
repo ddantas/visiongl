@@ -25,7 +25,7 @@ int* vglClHistogram(VglImage* img_input){
     partial_hist = vglCl3dPartialHistogram(img_input);
   }
 
-  int* hist = vglClSumPartialHistogram(partial_hist,img_input->shape[VGL_WIDTH], img_input->nChannels);
+  int* hist = vglClSumPartialHistogram(partial_hist,img_input->getWidth(), img_input->nChannels);
 
   cl_int err = clReleaseMemObject( partial_hist );
   vglClCheckError(err, (char*) "clReleaseMemObject partial_hist");
@@ -114,7 +114,7 @@ cl_mem vglClPartialHistogram(VglImage* img_input)
   cl_int err;
 
   cl_mem mobj_histogram = NULL;
-  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img_input->nChannels*256*img_input->shape[VGL_WIDTH]*sizeof(unsigned int), NULL, &err);
+  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img_input->nChannels*256*img_input->getWidth()*sizeof(unsigned int), NULL, &err);
   vglClCheckError( err, (char*) "clCreateBuffer histogram" );
 
   static cl_program program = NULL;
@@ -157,7 +157,7 @@ cl_mem vglClPartialHistogram(VglImage* img_input)
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], 1, 1 };
+    size_t worksize[] = { img_input->getWidth(), 1, 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 1, NULL, worksize, 0, 0, 0, 0 );
     vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
   }
@@ -176,7 +176,7 @@ cl_mem vglCl3dPartialHistogram(VglImage* img_input)
   cl_int err;
 
   cl_mem mobj_histogram = NULL;
-  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img_input->nChannels*256*img_input->shape[VGL_WIDTH]*sizeof(unsigned int), NULL, &err);
+  mobj_histogram = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img_input->nChannels*256*img_input->getWidth()*sizeof(unsigned int), NULL, &err);
   vglClCheckError( err, (char*) "clCreateBuffer histogram" );
 
   static cl_program program = NULL;
@@ -219,7 +219,7 @@ cl_mem vglCl3dPartialHistogram(VglImage* img_input)
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
   if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], 1, 1 };
+    size_t worksize[] = { img_input->getWidth(), 1, 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 1, NULL, worksize, 0, 0, 0, 0 );
     vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
   }
@@ -356,7 +356,7 @@ int* vglClCumulativeSumNorm(int* arr, int size, int norm_total)
 void vglClHistogramEq(VglImage* input, VglImage* output)
 {
   int* hist = vglClHistogram(input);
-  int* cumsum = vglClCumulativeSumNorm(hist,input->shape[VGL_WIDTH],input->shape[VGL_WIDTH]*input->shape[VGL_HEIGHT]);
+  int* cumsum = vglClCumulativeSumNorm(hist,input->getWidth(),input->getWidth()*input->getHeight());
 
   vglClGrayLevelTransform(input,output,cumsum);
 
@@ -366,7 +366,7 @@ void vglCl3dHistogramEq(VglImage* input, VglImage* output)
 {
   int* hist = vglClHistogram(input);
 
-  int* cumsum = vglClCumulativeSumNorm(hist,input->shape[VGL_WIDTH],input->shape[VGL_WIDTH]*input->shape[VGL_HEIGHT]*input->shape[VGL_LENGTH]);
+  int* cumsum = vglClCumulativeSumNorm(hist,input->getWidth(),input->getWidth()*input->getHeight()*input->getLength());
 
   vglCl3dGrayLevelTransform(input,output,cumsum);
 }
@@ -429,7 +429,7 @@ void vglClGrayLevelTransform(VglImage* input, VglImage* output, int* transformat
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_arr);
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], 1 };
+  size_t worksize[] = { input->getWidth(), input->getHeight(), 1 };
 
   err = clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
@@ -498,7 +498,7 @@ void vglCl3dGrayLevelTransform(VglImage* input, VglImage* output, int* transform
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_arr);
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->shape[VGL_LENGTH] };
+  size_t worksize[] = { input->getWidth(), input->getHeight(), input->getLength() };
 
   err = clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
@@ -768,7 +768,7 @@ bool vglCl3dEqual(VglImage* input1, VglImage* input2)
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_equal );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { input1->shape[VGL_WIDTH], input1->shape[VGL_HEIGHT], input1->shape[VGL_LENGTH] };
+  size_t worksize[] = { input1->getWidth(), input1->getHeight(), input1->getLength() };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
   
@@ -836,7 +836,7 @@ bool vglClEqual(VglImage* input1, VglImage* input2)
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_equal );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { input1->shape[VGL_WIDTH], input1->shape[VGL_HEIGHT], 0 };
+  size_t worksize[] = { input1->getWidth(), input1->getHeight(), 0 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
   

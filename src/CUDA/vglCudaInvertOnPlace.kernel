@@ -6,8 +6,8 @@
     Inverts image, stored in cuda context, on place.
 */
 
-// <<<input->shape[VGL_HEIGHT],384>>> (IO_PBO: VglImage* input)
-// (input->cudaPtr, input->shape[VGL_WIDTH], input->shape[VGL_HEIGHT], input->nChannels)
+// <<<input->getHeight(),384>>> (IO_PBO: VglImage* input)
+// (input->cudaPtr, input->getWidth(), input->getHeight(), input->nChannels)
 
   template<typename T> 
   __global__ void global_InvertOnPlace(T* input, int w, int h, int nChannels){

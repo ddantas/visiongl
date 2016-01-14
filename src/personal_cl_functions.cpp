@@ -58,7 +58,7 @@ void vglCl3dMergeZByMean(VglImage* img_input, VglImage* img_output, int number_o
     printf("2D images not supported by this operation\n");
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -122,7 +122,7 @@ void vglCl3dMergeZByMax(VglImage* img_input, VglImage* img_output, int number_of
     printf("2D images not supported by this operation\n");
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->shape[VGL_WIDTH], img_input->shape[VGL_HEIGHT], img_input->shape[VGL_LENGTH] };
+    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{

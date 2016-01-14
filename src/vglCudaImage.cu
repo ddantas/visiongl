@@ -36,7 +36,7 @@ int vglCudaAllocPbo(VglImage* img){
 
     if (dbg) printf("vglCudaAllocPbo: allocated cudaPbo = %d\n", img->cudaPbo);
 
-    glBufferData(GL_PIXEL_PACK_BUFFER, img->shape[VGL_WIDTH] * img->shape[VGL_HEIGHT] * img->nChannels, 0, GL_STREAM_DRAW);
+    glBufferData(GL_PIXEL_PACK_BUFFER, img->getWidth() * img->getHeight() * img->nChannels, 0, GL_STREAM_DRAW);
     ERRCHECK()
   }
   else{
@@ -197,7 +197,7 @@ int vglGlToCuda(VglImage* img){
   if (dbg) printf("vglGlToCuda: img->cudaPbo = %d\n", img->cudaPbo);
 
   if (dbg) printf("vglGlToCuda: vgl = %p\n", img);
-  if (dbg) printf("vglGlToCuda: vgl w x h: %dx%d\n", img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT]);
+  if (dbg) printf("vglGlToCuda: vgl w x h: %dx%d\n", img->getWidth(), img->getHeight());
   // FBO -> PBO (2ms)
   // glBufferData(w*h*3) <-> glReadPixels(GL_RGB)
   // glBufferData(w*h*4) <-> glReadPixels(GL_RGBA)
@@ -206,7 +206,7 @@ int vglGlToCuda(VglImage* img){
   //GLvoid* lixo = (GLvoid*)malloc(640*480*4);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, img->fbo);
   ERRCHECK()
-  glReadPixels(0, 0, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*) 0);
+  glReadPixels(0, 0, img->getWidth(), img->getHeight(), GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*) 0);
   ERRCHECK()
   //SavePPM("/tmp/lixo.ppm", 640, 480, lixo);
 
@@ -253,7 +253,7 @@ int vglCudaToGl(VglImage* img){
   ERRCHECK()
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, img->cudaPbo);
   ERRCHECK()
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->shape[VGL_WIDTH], img->shape[VGL_HEIGHT], 0, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*) 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->getWidth(), img->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*) 0);
   ERRCHECK()
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
   ERRCHECK()

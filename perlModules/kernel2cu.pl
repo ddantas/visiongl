@@ -100,7 +100,7 @@ sub LineStartExpression { # ($line) {
 sub LineStartExecution { # ($line) {
   my $line = $_[0];
 
-  $line =~ s#^\s*(<<<\s*[\w->\[\]]+\s*(,\s*[\w->\[\]]*\s*){0,2}>>>)##;
+  $line =~ s#^\s*(<<<\s*[\w->\[\]\(\)]+\s*(,\s*[\w->\[\]\(\)]*\s*){0,2}>>>)##;
   return ($1, $line);
 }
 
