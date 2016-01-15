@@ -94,9 +94,9 @@ int vglCreateHeaderGdcm(VglImage* imagevgl, gdcm::Image* img)
   img->SetPixelFormat(pixelFormat);
   
   int dim[3] = {};
-  dim[0] = imagevgl->shape[VGL_WIDTH];
-  dim[1] = imagevgl->shape[VGL_HEIGHT];
-  dim[2] = imagevgl->shape[VGL_LENGTH];
+  dim[0] = imagevgl->getWidth();
+  dim[1] = imagevgl->getHeight();
+  dim[2] = imagevgl->getLength();
   img->SetNumberOfDimensions(3);
   
   img->SetDimension(0, dim[0]); 
@@ -104,9 +104,9 @@ int vglCreateHeaderGdcm(VglImage* imagevgl, gdcm::Image* img)
   img->SetDimension(2, dim[2]);
   
   int dcmDepth = convertDepthVglToDcm(imagevgl->depth);
-  int pixelsPerFrame = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT];
+  int pixelsPerFrame = imagevgl->getWidth()*imagevgl->getHeight();
   int bytesPerFrame = pixelsPerFrame*imagevgl->nChannels;
-  int totalBytes = bytesPerFrame*imagevgl->shape[VGL_LENGTH];
+  int totalBytes = bytesPerFrame*imagevgl->getLength();
   if(imagevgl->depth == IPL_DEPTH_16U)
     totalBytes = totalBytes*2;
 
@@ -149,7 +149,7 @@ VglImage* vglGdcmLoadDicom(char* inFilename)
     imagevgl = vglCreate3dImage(cvSize(width,height), iplDepth, nChannels, layers);
     imagevgl->filename = filename;
 
-    int ndarraySize = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->shape[VGL_LENGTH]*imagevgl->nChannels;
+    int ndarraySize = imagevgl->getWidth()*imagevgl->getHeight()*imagevgl->getLength()*imagevgl->nChannels;
     if(pixelformat.GetBitsAllocated() == 16)
         ndarraySize = ndarraySize*2;
     else if(pixelformat.GetBitsAllocated() == 32)
@@ -161,7 +161,7 @@ VglImage* vglGdcmLoadDicom(char* inFilename)
 
     printf("%s:%s: getbitsallocated = %d\n", __FILE__, __FUNCTION__, pixelformat.GetBitsAllocated());
        
-    /*printf("\n\nColumns: %d\nRows: %d\nFrames: %d\nDepth: %d\nChannels: %d\nndim: %d\n\n", imagevgl->shape[VGL_WIDTH], imagevgl->shape[VGL_HEIGHT], imagevgl->shape[VGL_LENGTH], imagevgl->depth, imagevgl->nChannels, imagevgl->ndim);*/
+    /*printf("\n\nColumns: %d\nRows: %d\nFrames: %d\nDepth: %d\nChannels: %d\nndim: %d\n\n", imagevgl->getWidth(), imagevgl->getHeight(), imagevgl->getLength(), imagevgl->depth, imagevgl->nChannels, imagevgl->ndim);*/
 
     gdcm::PhotometricInterpretation PI;
     PI = image.GetPhotometricInterpretation();
@@ -210,7 +210,7 @@ int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
   }
   
 
-  int ndarraySize = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->shape[VGL_LENGTH]*imagevgl->nChannels;
+  int ndarraySize = imagevgl->getWidth()*imagevgl->getHeight()*imagevgl->getLength()*imagevgl->nChannels;
 
   if(imagevgl->depth == IPL_DEPTH_16U)
      ndarraySize = ndarraySize*2;
@@ -327,13 +327,14 @@ VglImage*  vglGdcmLoad4dDicom(char* filename, int lStart, int lEnd, bool has_mip
   VglImage* tmp = vglGdcmLoadDicom(tempFilename);
 
   int n = lEnd-lStart+1;
-  int shape[10];
-  shape[0] = tmp->shape[0];
-  shape[1] = tmp->shape[1];
-  shape[2] = tmp->shape[2];
+  int shape[VGL_MAX_DIM+1];
+  shape[0] = tmp->nChannels;
+  shape[1] = tmp->getWidth();
+  shape[1] = tmp->getHeight();
+  shape[2] = tmp->getLength();
   shape[3] = n;
 
-  VglImage* img = vglCreateNdImage(4, shape, tmp->depth, tmp->nChannels);
+  VglImage* img = vglCreateNdImage(4, shape, tmp->depth);
   //vglPrintImageInfo(img, "4D image");
 
   int delta = tmp->getTotalSizeInBytes();
@@ -369,7 +370,7 @@ int vglGdcmSave4dDicom(VglImage* image, char* filename, int lStart, int lEnd, in
   int c = 0;
   for(int i = lStart; i <= lEnd; i++)
   {
-    VglImage* temp_image = vglCreate3dImage(cvSize(image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT]), image->depth, image->nChannels, image->shape[VGL_LENGTH]);
+    VglImage* temp_image = vglCreate3dImage(cvSize(image->getWidth(), image->getHeight()), image->depth, image->nChannels, image->getLength());
     temp_image->ndarray = (char*)malloc(temp_image->getTotalSizeInBytes());
     memcpy((char*)temp_image->ndarray,((char*)image->ndarray)+c,temp_image->getTotalSizeInBytes());
     sprintf(temp_filename, filename, i);

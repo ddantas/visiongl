@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 
     //REMEMBER, LOAD A GRAY LEVEL IMAGE
     VglImage* img = vglDcmtkLoadDicom(image_path);
-    VglImage* out = vglCreate3dImage(cvSize(img->shape[VGL_WIDTH],img->shape[VGL_HEIGHT]),img->depth,img->nChannels,img->shape[VGL_LENGTH]);
+    VglImage* out = vglCreate3dImage(cvSize(img->getWidth(),img->getHeight()),img->depth,img->nChannels,img->getLength());
 	
     int* eq = (int*) malloc(256*sizeof(int));
     for(int i = 0; i < 256; i++)
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 
     unsigned char* pixels = (unsigned char*) img->ndarray;
 
-    for(int i = 0; i < img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT]*img->shape[VGL_LENGTH];i++)
+    for(int i = 0; i < img->getWidth()*img->getHeight()*img->getLength();i++)
     {
       histogram_cpu_r[pixels[i]]++;
     }

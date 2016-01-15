@@ -22,8 +22,8 @@
 #define min(a, b) (a < b ? a : b)
 
 VglSimpleBGModel::VglSimpleBGModel(VglImage* img_in, float std_thresh, int window_size, int num_training_images){
-    this->width     = img_in->shape[VGL_WIDTH];
-    this->height    = img_in->shape[VGL_HEIGHT];
+    this->width     = img_in->getWidth();
+    this->height    = img_in->getHeight();
     this->nChannels = img_in->nChannels;
     this->depth     = img_in->depth;
     

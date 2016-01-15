@@ -292,7 +292,7 @@ VglImage* vglLoadTiff(char* inFilename)
 
   img = vglCreate3dImage(cvSize(width,height), iplDepth, nChannels, layers, 0);
 
-  int pixelsPerFrame = img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT]*img->nChannels;
+  int pixelsPerFrame = img->getWidth()*img->getHeight()*img->nChannels;
   int bytesPerFrame = pixelsPerFrame*depth;
   int j = 0;
   do{
@@ -408,13 +408,14 @@ VglImage* vglLoad4dTiff(char* filename, int lStart, int lEnd, bool has_mipmap /*
   VglImage* tmp = vglLoadTiff(tempFilename);
 
   int n = lEnd-lStart+1;
-  int shape[10];
-  shape[0] = tmp->shape[0];
-  shape[1] = tmp->shape[1];
-  shape[2] = tmp->shape[2];
-  shape[3] = n;
+  int shape[VGL_MAX_DIM+1];
+  shape[0] = tmp->nChannels;
+  shape[1] = tmp->getWidth();
+  shape[2] = tmp->getHeight();
+  shape[3] = tmp->getLength();
+  shape[4] = n;
 
-  VglImage* img = vglCreateNdImage(4, shape, tmp->depth, tmp->nChannels);
+  VglImage* img = vglCreateNdImage(4, shape, tmp->depth);
   //vglPrintImageInfo(img, "4D image");
 
   int delta = tmp->getTotalSizeInBytes();
@@ -441,10 +442,10 @@ int vglSaveTiff(VglImage* image, char* outFilename)
   buff = image->getImageData();
 
   int c = image->getBytesPerPixel();
-  for(int z = 0; z < image->shape[VGL_LENGTH]; z++)
+  for(int z = 0; z < image->getLength(); z++)
   {
-    TIFFSetField(out, TIFFTAG_IMAGEWIDTH, image->shape[VGL_WIDTH]);
-    TIFFSetField(out, TIFFTAG_IMAGELENGTH, image->shape[VGL_HEIGHT]);
+    TIFFSetField(out, TIFFTAG_IMAGEWIDTH, image->getWidth());
+    TIFFSetField(out, TIFFTAG_IMAGELENGTH, image->getHeight());
     TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, image->depth);
     TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
     TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, image->nChannels);
@@ -452,10 +453,10 @@ int vglSaveTiff(VglImage* image, char* outFilename)
     TIFFSetField(out, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
    
     TIFFSetField(out, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
-    TIFFSetField(out, TIFFTAG_PAGENUMBER, z, image->shape[VGL_LENGTH]);
+    TIFFSetField(out, TIFFTAG_PAGENUMBER, z, image->getLength());
     
-    for(int y = 0; y < image->shape[VGL_HEIGHT]; y++)
-      TIFFWriteScanline(out, &buff[c*(  (z*image->shape[VGL_WIDTH]*image->shape[VGL_HEIGHT])+(y*image->shape[VGL_WIDTH])  )], y, 0);
+    for(int y = 0; y < image->getHeight(); y++)
+      TIFFWriteScanline(out, &buff[c*(  (z*image->getWidth()*image->getHeight())+(y*image->getWidth())  )], y, 0);
     
     TIFFWriteDirectory(out);
   }
@@ -475,7 +476,7 @@ int vglSave4dTiff(VglImage* image, char* filename, int lStart, int lEnd)
   int c = 0;
   for(int i = lStart; i <= lEnd; i++)
   {
-    VglImage* temp_image = vglCreate3dImage(cvSize(image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT]), image->depth, image->nChannels, image->shape[VGL_LENGTH]);
+    VglImage* temp_image = vglCreate3dImage(cvSize(image->getWidth(), image->getHeight()), image->depth, image->nChannels, image->getLength());
     temp_image->ndarray = (char*)malloc(temp_image->getTotalSizeInBytes());
     memcpy((char*)temp_image->ndarray,((char*)image->ndarray)+c,temp_image->getTotalSizeInBytes());
     sprintf(temp_filename, filename, i);

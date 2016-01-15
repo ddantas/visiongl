@@ -65,9 +65,9 @@ int vglCreateHeaderDcmtk(VglImage* imagevgl, DcmFileFormat *fileformat)
     char* highbit = (char*)malloc(10);
     int i, dcmDepth =  convertDepthDcmtkToVgl(imagevgl->depth);
     int hbit = dcmDepth-1;
-    i = sprintf(columns, "%d", imagevgl->shape[VGL_WIDTH]); // width/columns
-    i = sprintf(rows, "%d", imagevgl->shape[VGL_HEIGHT]);    // height/rows
-    i = sprintf(frames, "%d", imagevgl->shape[VGL_LENGTH]);  // number of Frames
+    i = sprintf(columns, "%d", imagevgl->getWidth()); // width/columns
+    i = sprintf(rows, "%d", imagevgl->getHeight());    // height/rows
+    i = sprintf(frames, "%d", imagevgl->getLength());  // number of Frames
     i = sprintf(depth, "%d", dcmDepth);
     i = sprintf(highbit, "%d", hbit);
 
@@ -181,9 +181,9 @@ VglImage* vglDcmtkLoadDicom(char* inFilename)
     imagevgl = vglCreate3dImage(cvSize(width,height), iplDepth, nChannels, layers);
     imagevgl->filename = filename;
 
-    int pixelsPerFrame = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->nChannels;
+    int pixelsPerFrame = imagevgl->getWidth()*imagevgl->getHeight()*imagevgl->nChannels;
     int bytesPerFrame = pixelsPerFrame*(depth/8);
-    int totalBytes = bytesPerFrame*imagevgl->shape[VGL_LENGTH];
+    int totalBytes = bytesPerFrame*imagevgl->getLength();
 
     printf("%s:%s: dims = [%d, %d, %d], nchannels = %d, bytes/pix = %d, totalBytes = %d\n", __FILE__, __FUNCTION__, width, height, layers, nChannels, depth/8, totalBytes);
 	
@@ -314,9 +314,9 @@ int vglDcmtkSaveDicom(VglImage* imagevgl, char* opt_ofname, int compress)
 
     DcmDataset *dataset = fileformat->getDataset();
     
-    int nPixels = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->nChannels;
+    int nPixels = imagevgl->getWidth()*imagevgl->getHeight()*imagevgl->nChannels;
     int dcmDepth = convertDepthVglToDcmtk(imagevgl->depth); 
-    int totalPixels = imagevgl->shape[VGL_WIDTH]*imagevgl->shape[VGL_HEIGHT]*imagevgl->shape[VGL_LENGTH]*imagevgl->nChannels;
+    int totalPixels = imagevgl->getWidth()*imagevgl->getHeight()*imagevgl->getLength()*imagevgl->nChannels;
 
     if(compress == 1)
     {
@@ -454,13 +454,14 @@ VglImage*  vglDcmtkLoad4dDicom(char* filename, int lStart, int lEnd, bool has_mi
   VglImage* tmp = vglDcmtkLoadDicom(tempFilename);
 
   int n = lEnd-lStart+1;
-  int shape[10];
-  shape[0] = tmp->shape[0];
-  shape[1] = tmp->shape[1];
-  shape[2] = tmp->shape[2];
-  shape[3] = n;
+  int shape[VGL_MAX_DIM+1];
+  shape[0] = tmp->nChannels;
+  shape[1] = tmp->getWidth();
+  shape[2] = tmp->getHeight();
+  shape[3] = tmp->getLength();
+  shape[4] = n;
 
-  VglImage* img = vglCreateNdImage(4, shape, tmp->depth, tmp->nChannels);
+  VglImage* img = vglCreateNdImage(4, shape, tmp->depth);
   //vglPrintImageInfo(img, "4D image");
 
   int delta = tmp->getTotalSizeInBytes();
@@ -495,7 +496,7 @@ int vglDcmtkSave4dDicom(VglImage* image, char* filename, int lStart, int lEnd, i
   int c = 0;
   for(int i = lStart; i <= lEnd; i++)
   {
-    VglImage* temp_image = vglCreate3dImage(cvSize(image->shape[VGL_WIDTH], image->shape[VGL_HEIGHT]), image->depth, image->nChannels, image->shape[VGL_LENGTH]);
+    VglImage* temp_image = vglCreate3dImage(cvSize(image->getWidth(), image->getHeight()), image->depth, image->nChannels, image->getLength());
     temp_image->ndarray = (char*)malloc(temp_image->getTotalSizeInBytes());
     memcpy((char*)temp_image->ndarray,((char*)image->ndarray)+c,temp_image->getTotalSizeInBytes());
     sprintf(temp_filename, filename, i);

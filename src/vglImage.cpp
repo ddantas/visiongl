@@ -493,7 +493,7 @@ VglImage* vglCreateImage(VglImage* img_in)
     return vglCreate3dImage(cvSize(img_in->getWidth(), img_in->getHeight()), img_in->depth, img_in->nChannels, img_in->getLength(), img_in->has_mipmap);
   }
   */
-  return vglCreateImage(img_in->shape, img_in->depth, img_in->ndim, img_in->has_mipmap); 
+  return vglCreateImage(img_in->vglShape->shape, img_in->depth, img_in->ndim, img_in->has_mipmap); 
 }
 
 
@@ -735,6 +735,11 @@ void vglNdarray3To4Channels(VglImage* img)
     free(img->ndarray);
     printf("freeing ndarray inside 3to4 channels OK\n");
 
+    img->vglShape->shape[0] = 4;
+    VglShape* vglShape = new VglShape(img->vglShape->shape, img->vglShape->ndim);
+    delete(img->vglShape);
+    img->vglShape = vglShape;
+
     img->ndarray = newndarray;
     img->nChannels = 4;
 }
@@ -787,6 +792,11 @@ void vglNdarray4To3Channels(VglImage* img)
 
     free(img->ndarray);
 
+    img->vglShape->shape[0] = 3;
+    VglShape* vglShape = new VglShape(img->vglShape->shape, img->vglShape->ndim);
+    delete(img->vglShape);
+    img->vglShape = vglShape;
+
     img->ndarray = newndarray;
     img->nChannels = 3;
 }
@@ -815,6 +825,13 @@ void vglIpl3To4Channels(VglImage* img)
     cvReleaseImage(&(img->ipl));
     img->ipl = iplRGBA;
     img->nChannels = 4;
+
+    img->vglShape->shape[0] = 4;
+    VglShape* vglShape = new VglShape(img->vglShape->shape, img->vglShape->ndim);
+    vglShape->print();
+    delete(img->vglShape);
+    img->vglShape = vglShape;
+    img->vglShape->print();
 }
 
 /** Convert ipl field of VglImage from 4 to 3 channels
@@ -840,6 +857,11 @@ void vglIpl4To3Channels(VglImage* img)
     cvReleaseImage(&(img->ipl));
     img->ipl = iplRGB;
     img->nChannels = 3;
+
+    img->vglShape->shape[0] = 3;
+    VglShape* vglShape = new VglShape(img->vglShape->shape, img->vglShape->ndim);
+    delete(img->vglShape);
+    img->vglShape = vglShape;
 }
 
 /** Convert VglImage from 3 to 4 channels
@@ -1272,16 +1294,17 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
     width = ipl->widthStep / bpp;
   }
 
-  int shape[VGL_MAX_DIM];
+  int shape[VGL_MAX_DIM+1];
   int ndim = 3;
   for (int i = 0; i < VGL_MAX_DIM; i++)
   {
-    shape[i] = 0;
+    shape[i] = 1;
   }
-  shape[0] = width;
-  shape[1] = height;
-  shape[2] = n;
-  img = vglCreateImage((int*)shape, ipl->depth, ipl->nChannels, ndim);
+  shape[0] = ipl->nChannels;
+  shape[1] = width;
+  shape[2] = height;
+  shape[3] = n;
+  img = vglCreateImage((int*)shape, ipl->depth, ndim);
   free(img->ndarray);
   img->ndarray = (char*)malloc(img->getTotalSizeInBytes());
 
@@ -1400,8 +1423,8 @@ void vglPrintImageData(VglImage* image, char* msg /*= NULL*/, char* format /*= "
     {
         printf("====== vglPrintImageData:\n");
     }
-    int w = image->shape[0] * image->nChannels * image->getBytesPerPixel();
-    int h = image->shape[1];
+    int w = image->getWidth() * image->nChannels * image->getBytesPerPixel();
+    int h = image->getHeight();
     int ndarraySize = image->getTotalSizeInBytes();
     char* ptr = image->getImageData();
 

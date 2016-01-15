@@ -23,21 +23,21 @@ float getColor(VglImage* image, int x, int y)
 { 
   x = (x > 0) ? x : 0;
   y = (y > 0) ? y : 0;
-  x = (x < image->shape[VGL_WIDTH]-1) ? x : image->shape[VGL_WIDTH]-1;
-  y = (y < image->shape[VGL_HEIGHT]-1) ? y : image->shape[VGL_HEIGHT]-1;
-  unsigned char color = image->ipl->imageData[x + y*image->shape[VGL_WIDTH]];
+  x = (x < image->getWidth()-1) ? x : image->getWidth()-1;
+  y = (y < image->getHeight()-1) ? y : image->getHeight()-1;
+  unsigned char color = image->ipl->imageData[x + y*image->getWidth()];
   return ((float)color)/255.0f;
 }
 
 float getColor(VglImage* image, int x, int y, int z)
 {
-  x = max(min(x, 0), image->shape[VGL_WIDTH]);
-  y = max(min(y, 0), image->shape[VGL_HEIGHT]);
-  z = max(min(z, 0), image->shape[VGL_LENGTH]);
-  x = (x < image->shape[VGL_WIDTH] - 1) ? x : image->shape[VGL_WIDTH] - 1;
-  y = (y < image->shape[VGL_HEIGHT] - 1) ? y : image->shape[VGL_HEIGHT] - 1;
-  z = (z < image->shape[VGL_LENGTH] - 1) ? z : image->shape[VGL_LENGTH] - 1;
-  unsigned char result = ((unsigned char*)image->ndarray)[x + y*image->shape[VGL_WIDTH] + z*image->shape[VGL_WIDTH] * image->shape[VGL_HEIGHT]];
+  x = max(min(x, 0), image->getWidth());
+  y = max(min(y, 0), image->getHeight());
+  z = max(min(z, 0), image->getLength());
+  x = (x < image->getWidth() - 1) ? x : image->getWidth() - 1;
+  y = (y < image->getHeight() - 1) ? y : image->getHeight() - 1;
+  z = (z < image->getLength() - 1) ? z : image->getLength() - 1;
+  unsigned char result = ((unsigned char*)image->ndarray)[x + y*image->getWidth() + z*image->getWidth() * image->getHeight()];
   /*if (result > 100)
   {
     printf("getColor value = %d\n", result);
@@ -48,7 +48,7 @@ float getColor(VglImage* image, int x, int y, int z)
 void setColor(VglImage* image, int x, int y, float value)
 {
   unsigned char result_value = value * 255;
-  image->ipl->imageData[x + y*image->shape[VGL_WIDTH]] = result_value;
+  image->ipl->imageData[x + y*image->getWidth()] = result_value;
 }
 
 void setColor(VglImage* image, int x, int y, int z, float value)
@@ -58,7 +58,7 @@ void setColor(VglImage* image, int x, int y, int z, float value)
   {
     printf("setColor value = %d\n", result_value);
   }*/
-  ((unsigned char*)image->ndarray)[x + y*image->shape[VGL_WIDTH] + z*image->shape[VGL_WIDTH] * image->shape[VGL_HEIGHT]] = result_value;
+  ((unsigned char*)image->ndarray)[x + y*image->getWidth() + z*image->getWidth() * image->getHeight()] = result_value;
 }
 
 enum ConvoluteType
@@ -214,9 +214,9 @@ void CONVOLUTE(VglImage* image_in, VglImage* image_out, float* mask, int* mask_s
   {
     int factorx = floor((float)mask_size[0] / 2.0f);
     int factory = floor((float)mask_size[1] / 2.0f);
-    for (int x = 0; x < image_in->shape[VGL_WIDTH]; x++)
+    for (int x = 0; x < image_in->getWidth(); x++)
     {
-      for (int y = 0; y < image_in->shape[VGL_HEIGHT]; y++)
+      for (int y = 0; y < image_in->getHeight(); y++)
       {
         float color = (type == DILATE) ? 0.0f : 1.0f;
         
@@ -238,11 +238,11 @@ void CONVOLUTE(VglImage* image_in, VglImage* image_out, float* mask, int* mask_s
     int factorx = floor((float)mask_size[0] / 2.0f);
     int factory = floor((float)mask_size[1] / 2.0f);
     int factorz = floor((float)mask_size[2] / 2.0f);
-    for (int x = 0; x < image_in->shape[VGL_WIDTH]; x++)
+    for (int x = 0; x < image_in->getWidth(); x++)
     {
-      for (int y = 0; y < image_in->shape[VGL_HEIGHT]; y++)
+      for (int y = 0; y < image_in->getHeight(); y++)
       {
-        for (int z = 0; z < image_in->shape[VGL_LENGTH]; z++)
+        for (int z = 0; z < image_in->getLength(); z++)
         {
           float color = (type == DILATE) ? 0.0f : 1.0f;
           for (int mx = 0; mx < mask_size[0]; mx++)

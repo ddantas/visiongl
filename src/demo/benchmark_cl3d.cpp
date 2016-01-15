@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
         str.append(inFilename);
         printf("%s", str.c_str());
     }
-    VglImage* out = vglCreate3dImage(cvSize(img->shape[VGL_WIDTH],img->shape[VGL_HEIGHT]), img->depth, img->nChannels, img->shape[VGL_LENGTH], 0);
+    VglImage* out = vglCreate3dImage(cvSize(img->getWidth(),img->getHeight()), img->depth, img->nChannels, img->getLength(), 0);
 
     printf("IMAGE CREATED\n");
     vglPrintImageInfo(img, (char*) "IMG");

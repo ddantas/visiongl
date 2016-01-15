@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
       if (i < 96)
         eq[i] = 0;
       else if (i < 200)
-        eq[i] = floor((i/256.0f)*img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT]);
+        eq[i] = floor((i/256.0f)*img->getWidth()*img->getHeight());
       else
         eq[i] = 0;
     }
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 
     unsigned char* pixels = (unsigned char*) img->ipl->imageData;
 
-    for(int i = 0; i < img->shape[VGL_WIDTH]*img->shape[VGL_HEIGHT];i++)
+    for(int i = 0; i < img->getWidth()*img->getHeight();i++)
     {
       histogram_cpu[pixels[i]]++;
     }

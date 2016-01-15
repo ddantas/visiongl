@@ -54,6 +54,9 @@ int main(int argc, char* argv[])
         }
     }
 
+    img->vglShape->print();
+    iplPrintImageInfo(img->ipl);
+
     printf("CHECKING IF IS NULL\n");
     if (img == NULL)
     {

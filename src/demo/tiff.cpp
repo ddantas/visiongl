@@ -25,7 +25,7 @@ demo_tiff <input file> <output file>\n\
   
   if(vgltiff)
   {
-    printf("\nwidth = %d\nheight = %d\nlayers = %d\ndepth = %d\nnChannels = %d\n\n", vgltiff->shape[VGL_WIDTH], vgltiff->shape[VGL_HEIGHT], vgltiff->shape[VGL_LENGTH], vgltiff->depth, vgltiff->nChannels);
+    printf("\nwidth = %d\nheight = %d\nlayers = %d\ndepth = %d\nnChannels = %d\n\n", vgltiff->getWidth(), vgltiff->getHeight(), vgltiff->getLength(), vgltiff->depth, vgltiff->nChannels);
 
   int r = vglGdcmSaveDicomUncompressed(vgltiff, outFilename); 
   return 0;
