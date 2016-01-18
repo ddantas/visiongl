@@ -2,6 +2,8 @@
 #ifndef __VGLCLSTREL_H__
 #define __VGLCLSTREL_H__
 
+#ifdef __OPENCL__
+
 #include <vglConst.h>
 
 #ifdef __OPENCL_VERSION__
@@ -22,6 +24,8 @@ typedef struct VglClStrEl{
   cl_int offset[11];
   cl_int size;
 } VglClStrEl;
+#endif
+
 #endif
 
 #endif

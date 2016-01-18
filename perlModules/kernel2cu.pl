@@ -87,7 +87,7 @@ sub LineStartSemantics { # ($line) {
 sub LineStartExpression { # ($line) {
   my $line = $_[0];
 
-  $line =~ s#^\s*([^,\(\)]*)\s*##;
+  $line =~ s#^\s*([^,\(\)]*(\(\))?)\s*##;
   return ($1, $line);
 }
 

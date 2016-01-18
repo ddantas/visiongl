@@ -441,8 +441,10 @@ VglImage* vglCloneImage(IplImage* img_in, int ndim /*=2* /, int has_mipmap /*=0*
   vglImage->has_mipmap = has_mipmap;
   vglImage->fbo = -1;
   vglImage->tex = -1;
+#ifdef __CUDA__
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
+#endif
   fprintf(stderr, "vglCloneImage: ndim = %d\n", vglImage->ndim);
 
   vglSetContext(vglImage, VGL_RAM_CONTEXT);
@@ -544,8 +546,10 @@ VglImage* vglCreateImage(int* shape, int depth, int ndim /*=2*/, int has_mipmap 
   vglImage->has_mipmap = has_mipmap;
   vglImage->fbo = -1;
   vglImage->tex = -1;
+#ifdef __CUDA__
   vglImage->cudaPtr = NULL;
   vglImage->cudaPbo = -1;
+#endif
 #ifdef __OPENCL__
   vglImage->oclPtr = NULL;
 #endif
@@ -1406,6 +1410,10 @@ void vglPrintImageInfo(VglImage* image, char* msg){
     printf("\n");
     printf("TEX = %d\n", image->tex);
     printf("FBO = %d\n", image->fbo);
+#ifdef __CUDA__
+    printf("CUDAPtr @ %p\n", image->cudaPtr);
+    printf("CUDAPtr = %d\n", image->cudaPbo);
+#endif
 #ifdef __OPENCL__
     printf("OCL @ %p\n", image->oclPtr);
 #endif

@@ -54,8 +54,10 @@ class VglImage{
   int       has_mipmap;
   GLuint    fbo;
   GLuint    tex;
+#ifdef __CUDA__
   void*     cudaPtr;
   GLuint    cudaPbo;
+#endif
 #ifdef __OPENCL__
   cl_mem    oclPtr;
 #endif
@@ -112,6 +114,19 @@ class VglImage{
       fprintf(stderr, "%s: %s: Error: no pointer to raster image data available.\n", __FILE__, __FUNCTION__);
       return NULL;
     }     
+  }
+
+  int getNChannels()
+  {
+    if (this->vglShape == NULL)
+    {
+      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape is NULL\n", __FILE__, __FUNCTION__);
+    }
+    else if (this->vglShape->shape == NULL)
+    {
+      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape->shape is NULL\n", __FILE__, __FUNCTION__);
+    }
+    return this->vglShape->shape[VGL_SHAPE_NCHANNELS];
   }
 
   int getWidth()

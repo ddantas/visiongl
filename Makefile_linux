@@ -7,7 +7,7 @@
 #
 
 BINARY_NAME          = visiongl
-CUDA_NAME            = vglcuda
+CUDA_NAME            = cuda
 FRACTAL_NAME         = fractal
 CAM_NAME             = cam
 GDCM_NAME            = gdcm
@@ -43,8 +43,8 @@ OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
 OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
 
 
-WITH_CUDA = 0
-WITH_OPENCL = 1
+WITH_CUDA = 1
+WITH_OPENCL = 0
 WITH_GDCM = 0
 WITH_DCMTK = 0
 WITH_TIFF = 0
@@ -61,11 +61,11 @@ ifeq ($(WITH_CUDA), 1)
 	CUDA_INCLUDEDIR  = -I $(CUDA_INCLUDEPATH)
 	CUDA_LIBDIR      = -L $(CUDA_LIBPATH)
 	CUDA_LIBRARIES   = -lcudart
-	CUDA_OPTIONS     = -Xcompiler
+	CUDA_OPTIONS     = --compiler-bindir=/usr/bin/gcc-4.6 -Xcompiler
 	CUDA_FILES       = src/*.cu     
 	CC               = $(CUDA_PATH)/bin/nvcc 
 else
-	CC              = g++
+	CC               = g++
 endif
 
 ifeq ($(WITH_OPENCL), 1)
@@ -181,6 +181,12 @@ LINUXAMD64_DEMO_CAM = $(CC) $(COMPILER_FLAGS) \
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS)
 
+LINUXAMD64_DEMO_CUDA = $(CC) $(COMPILER_FLAGS) -D__CUDA__ \
+                         -o $(OUTPUT_BINPATH)/demo_$(CUDA_NAME) \
+                          src/demo/$(CUDA_NAME).cpp \
+                         -lvisiongl \
+                          $(LINUXAMD64_DIRS_LIBS) \
+
 LINUXAMD64_DEMO_GDCM = $(CC) $(COMPILER_FLAGS) -D__GDCM__ \
                          -o $(OUTPUT_BINPATH)/demo_$(GDCM_NAME) \
                           src/demo/$(GDCM_NAME).cpp \
@@ -277,6 +283,9 @@ demofrac:
 democam:
 	$(LINUXAMD64_DEMO_CAM)
 
+democuda:
+	$(LINUXAMD64_DEMO_CUDA)
+
 demogdcm:
 	$(LINUXAMD64_DEMO_GDCM)
 
@@ -311,6 +320,9 @@ rundemofrac:
 
 rundemocam:
 	cd $(OUTPUT_BINPATH); ./demo_$(CAM_NAME)
+
+rundemocuda:
+	cd $(OUTPUT_BINPATH); ./demo_$(CUDA_NAME) ../images/lena_std.tif /tmp/outputcuda.pgm
 
 rundemogdcm:
 	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm  

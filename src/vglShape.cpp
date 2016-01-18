@@ -1,7 +1,10 @@
 
 #include <vglConst.h>
 #include <vglShape.h>
+
+#ifdef __OPENCL__
 #include <vglClShape.h>
+#endif
 
 //printf
 #include <stdio.h>
@@ -262,6 +265,7 @@ void VglShape::print(char* msg)
   this->printInfo();
 }
 
+#ifdef __OPENCL__
 /** Return shape as VglClShape
 
     Return shape as VglClShape, type suitable for passing shape as parameter
@@ -281,3 +285,4 @@ VglClShape* VglShape::asVglClShape()
   }
   return result;
 }
+#endif

@@ -61,7 +61,7 @@ void vglCudaCopy(VglImage* input, VglImage* output){
 
     switch (input->depth){
       case (IPL_DEPTH_8U):
-        global_Copy<<<input->getHeight(),384>>>((unsigned char*)input->cudaPtr, (unsigned char*)output->cudaPtr, input->getWidth, , );
+        global_Copy<<<input->getHeight(),384>>>((unsigned char*)input->cudaPtr, (unsigned char*)output->cudaPtr, input->getWidth(), input->getHeight(), input->nChannels);
         break;
       default:
         printf("vglCudaCopy: Error: unsupported img->depth = %d in file '%s' in line %i.\n",
@@ -79,8 +79,8 @@ void vglCudaCopy(VglImage* input, VglImage* output){
     Inverts image stored in cuda context.
 */
 
-// <<<input->vglGetWidth(),384>>> (IN_PBO: VglImage* input, OUT_PBO: VglImage* output)
-// (input->cudaPtr, output->cudaPtr, input->vglGetWidth(), input->vglGetHeight(), input->nChannels)
+// <<<input->getWidth(),384>>> (IN_PBO: VglImage* input, OUT_PBO: VglImage* output)
+// (input->cudaPtr, output->cudaPtr, input->getWidth(), input->getHeight(), input->nChannels)
 
 template<typename T> 
 __global__ void global_Invert(T* input, T* output, int w, int h, int nChannels){
@@ -120,7 +120,7 @@ void vglCudaInvert(VglImage* input, VglImage* output){
 
     switch (input->depth){
       case (IPL_DEPTH_8U):
-        global_Invert<<<input->vglGetWidth(),384>>>((unsigned char*)input->cudaPtr, (unsigned char*)output->cudaPtr, input->vglGetWidth, , );
+        global_Invert<<<input->getWidth(),384>>>((unsigned char*)input->cudaPtr, (unsigned char*)output->cudaPtr, input->getWidth(), input->getHeight(), input->nChannels);
         break;
       default:
         printf("vglCudaInvert: Error: unsupported img->depth = %d in file '%s' in line %i.\n",
@@ -166,7 +166,7 @@ void vglCudaInvertOnPlace(VglImage* input){
 
     switch (input->depth){
       case (IPL_DEPTH_8U):
-        global_InvertOnPlace<<<input->getHeight(),384>>>((unsigned char*)input->cudaPtr, input->getWidth, , );
+        global_InvertOnPlace<<<input->getHeight(),384>>>((unsigned char*)input->cudaPtr, input->getWidth(), input->getHeight(), input->nChannels);
         break;
       default:
         printf("vglCudaInvertOnPlace: Error: unsupported img->depth = %d in file '%s' in line %i.\n",

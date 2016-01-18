@@ -41,7 +41,7 @@ class VglShape{
   void vglCreateShape(int* shape, int ndim);
   void printArray(int* arr, int ndim);
   void printInfo();
-  void print(char* msg = NULL);
+  void print(char* msg = (char*)"");
 
   int getIndexFromCoord(int* coord);
   void getCoordFromIndex(int index, int* coord);
@@ -52,7 +52,9 @@ class VglShape{
   int* getShape();
   int* getOffset();
 
+#ifdef __OPENCL__
   VglClShape* asVglClShape();
+#endif
  
 };
 

@@ -41,7 +41,9 @@ class VglStrEl{
   int* getShape();
   int* getOffset();
 
+#ifdef __OPENCL__
   VglClStrEl* asVglClStrEl();
+#endif
 
 };
 

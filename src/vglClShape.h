@@ -1,6 +1,7 @@
 #ifndef __VGLCLSHAPE_H__
 #define __VGLCLSHAPE_H__
 
+#ifdef __OPENCL__
 
 #ifdef __OPENCL_VERSION__
 // OpenCL
@@ -20,5 +21,6 @@ typedef struct VglClShape{
 } VglClShape;
 #endif
 
+#endif
 
 #endif
