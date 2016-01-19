@@ -61,11 +61,13 @@ ifeq ($(WITH_CUDA), 1)
 	CUDA_INCLUDEDIR  = -I $(CUDA_INCLUDEPATH)
 	CUDA_LIBDIR      = -L $(CUDA_LIBPATH)
 	CUDA_LIBRARIES   = -lcudart
-	CUDA_OPTIONS     = --compiler-bindir=/usr/bin/gcc-4.6 -Xcompiler
+	CUDA_OPTIONS     = 
 	CUDA_FILES       = src/*.cu     
 	CC               = $(CUDA_PATH)/bin/nvcc 
+	FPIC             = -Xcompiler -fPIC 
 else
 	CC               = g++
+	FPIC             = -fPIC 
 endif
 
 ifeq ($(WITH_OPENCL), 1)
@@ -158,7 +160,7 @@ LINUXAMD64_DIRS_LIBS =  $(INCLUDE_DIR) \
 
 
 LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
-                        -shared $(CUDA_OPTIONS) -fPIC \
+                        -shared $(CUDA_OPTIONS) $(FPIC) \
                         -o $(OUTPUT_LIBPATH)/lib$(BINARY_NAME).so \
                           $(CUDA_FILES) $(VGL_FILES) $(OPENCL_FILES) \
                          $(LINUXAMD64_DIRS_LIBS) $(CUDA_DIRS_LIBS) 
