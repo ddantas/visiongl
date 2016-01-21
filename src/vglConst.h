@@ -21,6 +21,7 @@
 #define VGL_MAX_WINDOWS      (VGL_MAX_WINDOW_SPLIT * VGL_MAX_WINDOW_SPLIT)
 
 #define VGL_MAX_DIM 10
+#define VGL_ARR_SHAPE_SIZE (VGL_MAX_DIM+1)
 #define VGL_WIDTH 0
 #define VGL_HEIGHT 1
 #define VGL_LENGTH 2
@@ -38,7 +39,7 @@
 
 //CL
 //#ifdef __OPENCL__
-#define VGL_MAX_CLSTREL_SIZE 200
+#define VGL_ARR_CLSTREL_SIZE 200
 //#endif
 
 #endif

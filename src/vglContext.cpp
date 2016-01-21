@@ -191,6 +191,7 @@ int vglCheckContextForOutput(VglImage* img, int context){
     #if DEBUG_VGLCONTEXT
     printf("vglCheckContextForOutput: img not null\n");
     #endif
+    #ifdef __CUDA__
     if (context == VGL_CUDA_CONTEXT){
       #if DEBUG_VGLCONTEXT
       printf("vglCheckContextForOutput: context is cuda, pbo = %d ptr = %x\n", img->cudaPbo, img->cudaPtr);
@@ -199,14 +200,12 @@ int vglCheckContextForOutput(VglImage* img, int context){
         #if DEBUG_VGLCONTEXT
         printf("vglCheckContextForOutput: pbo == -1 so will allocate\n");
         #endif
-        #ifdef __CUDA__
         return vglCudaAlloc(img);
-        #else
-        return 0;
-        #endif
       }
     }
+    #endif
   }
+  return 0;
 }
 
 

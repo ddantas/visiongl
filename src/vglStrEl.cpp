@@ -60,7 +60,7 @@ VglStrEl::VglStrEl(int type, int ndim)
   {
     case(VGL_STREL_CROSS):
     {
-      int coord[VGL_MAX_DIM+1];
+      int coord[VGL_ARR_SHAPE_SIZE];
       coord[0] = 0;
       for (int i = 0; i < size; i++)
       {
@@ -91,7 +91,7 @@ VglStrEl::VglStrEl(int type, int ndim)
     case(VGL_STREL_GAUSS):
     {
       printf("STREL GAUSS entrou\n");
-      int coord[VGL_MAX_DIM+1];
+      int coord[VGL_ARR_SHAPE_SIZE];
       coord[0] = 0;
       int size = vglShape->getSize();
       printf("STREL GAUSS size = %d\n", size);
@@ -259,9 +259,9 @@ VglClStrEl* VglStrEl::asVglClStrEl()
   VglClStrEl* result = new VglClStrEl;
 
   int size = this->getSize();
-  if (size > VGL_MAX_CLSTREL_SIZE)
+  if (size > VGL_ARR_CLSTREL_SIZE)
   {
-    fprintf(stderr, "%s: %s: Error: structuring element size = %d > %d = VGL_MAX_CLSTREL_SIZE. Change this value in vglClStrEl.h to a greater one.\n", __FILE__, __FUNCTION__, size, VGL_MAX_CLSTREL_SIZE);
+    fprintf(stderr, "%s: %s: Error: structuring element size = %d > %d = VGL_ARR_CLSTREL_SIZE. Change this value in vglClStrEl.h to a greater one.\n", __FILE__, __FUNCTION__, size, VGL_ARR_CLSTREL_SIZE);
   }
 
   int ndim = this->getNdim();
