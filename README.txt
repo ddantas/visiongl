@@ -171,7 +171,14 @@ demobenchmark: This demo is composed by three programs.
 
 References
 
-[1] Daniel Oliveira Dantas, Junior Barrera
+
+[1] Daniel Oliveira Dantas, Helton Danilo Passos Leal, Davy Oliveira Barros Sousa
+Fast 2D and 3D image processing with OpenCL
+International Conference on Image Processing (ICIP), 2015, IEEE, Quebec City
+http://dx.doi.org/10.1109/ICIP.2015.7351730
+http://ieeexplore.ieee.org/xpl/articleDetails.jsp?reload=true&arnumber=7351730
+
+[2] Daniel Oliveira Dantas, Junior Barrera
 Automatic generation of wrapper code for video processing functions
 Learning and Nonlinear models, Vol 9, Num 2, 2011
 https://www.academia.edu/4367451/Automatic_generation_of_wrapper_code_for_video_processing_functions

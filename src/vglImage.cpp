@@ -531,12 +531,10 @@ VglImage* vglCreateImage(int* shape, int depth, int ndim /*=2*/, int has_mipmap 
     {
       vglImage->shape[i] = 1;
     }
-    printf("shp[%d] = %d\n", i, vglImage->shape[i]);
   }
   if ( (ndim == 1) && (shape[VGL_HEIGHT] > 1) )
   {
     vglImage->shape[VGL_SHAPE_HEIGHT] = shape[VGL_SHAPE_HEIGHT];
-    printf("shp[%d] = %d\n", VGL_SHAPE_HEIGHT, vglImage->shape[VGL_SHAPE_HEIGHT]);
   }
   vglImage->vglShape = new VglShape(vglImage->shape, ndim);
 
@@ -578,11 +576,6 @@ VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int ha
   shape[0] = nChannels;
   shape[1] = size.width;
   shape[2] = size.height;
-
-  printf("DEBUGGIN ndim = %d\n", ndim);
-  printf("DEBUGGIN s0 = %d\n", shape[0]);
-  printf("DEBUGGIN s1 = %d\n", shape[1]);
-  printf("DEBUGGIN s2 = %d\n", shape[2]);
 
   VglImage* vglImage = vglCreateImage(shape, depth, ndim, has_mipmap);
 
@@ -1412,7 +1405,7 @@ void vglPrintImageInfo(VglImage* image, char* msg){
     printf("FBO = %d\n", image->fbo);
 #ifdef __CUDA__
     printf("CUDAPtr @ %p\n", image->cudaPtr);
-    printf("CUDAPtr = %d\n", image->cudaPbo);
+    printf("CUDAPbo = %d\n", image->cudaPbo);
 #endif
 #ifdef __OPENCL__
     printf("OCL @ %p\n", image->oclPtr);

@@ -34,24 +34,15 @@ demo_cuda <input file> <output file>\n\
   img_in  = vglLoadImage(filename); 
   img_out = vglCreateImage(img_in); 
   
-  vglPrintImageInfo(img_in, (char*)"img_in");
-  vglPrintImageInfo(img_out, (char*)"img_out");
-
-  vglCheckContext(img_in, VGL_GL_CONTEXT);
-
-  vglPrintImageInfo(img_in, (char*)"img_in GL");
-  vglPrintImageInfo(img_out, (char*)"img_out GL");
-
-  vglCheckContext(img_in, VGL_CUDA_CONTEXT);
-
-  vglPrintImageInfo(img_in, (char*)"img_in CUDA");
-  vglPrintImageInfo(img_out, (char*)"img_out CUDA");
-
-
-
+  printf("Calling CudaInvertOnPlace\n");
   vglCudaInvertOnPlace(img_in); 
+  printf("Calling CudaCopy\n");
   vglCudaCopy(img_in, img_out);
-  vglCheckContext(img_out, VGL_RAM_CONTEXT);
+
+  //vglSaveImage calls vglCheckContext to transfer image to RAM.
+  //vglCheckContext(img_out, VGL_RAM_CONTEXT);
+
+  printf("Saving result to %s\n", outfilename);
   vglSaveImage(img_out, outfilename);
 
   return 0;

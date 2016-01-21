@@ -81,14 +81,14 @@ int vglCheckContext(VglImage* img, int context){
         //printf("%s: case 1\n", __FUNCTION__);
         vglAddContext(img, VGL_RAM_CONTEXT);
       }
-      else
 #ifdef __OPENCL__
+      else
       if (vglIsInContext(img, VGL_CL_CONTEXT)){
         //printf("%s: case 2\n", __FUNCTION__);
         vglClDownload(img);
       }
-      else
 #endif
+      else
       if (!vglIsInContext(img, VGL_RAM_CONTEXT))
       {
         //printf("%s: case 3\n", __FUNCTION__);
@@ -106,8 +106,8 @@ int vglCheckContext(VglImage* img, int context){
         //printf("%s: case 1\n", __FUNCTION__);
         vglAddContext(img, VGL_RAM_CONTEXT);
       }
-      else
 #ifdef __OPENCL__
+      else
       if (vglIsInContext(img, VGL_CL_CONTEXT)){
         vglClDownload(img);        
         //if (!ok){
