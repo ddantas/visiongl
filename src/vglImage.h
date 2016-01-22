@@ -73,8 +73,9 @@ class VglImage{
     return bytesPerPixel;    
   }
 
-  size_t getTotalSizeInPixels()
+  size_t getTotalSizeInPixelsChannels()
   {
+    /*
     size_t totalSize = 1;
     for(int i = 1; i <= this->ndim; i++)
     {
@@ -83,18 +84,20 @@ class VglImage{
     totalSize *= this->nChannels;
 
     // 1D images may be stored as 2d images.
-    if ( (this->ndim == 1) && (this->getHeight() > 1) )
+    if ( (this->ndim == 1) && (this->getHeightIn() > 1) )
     {
-      totalSize *= this->getHeight();
+      totalSize *= this->getHeightIn();
     }
     return totalSize;
+    */
+    return this->vglShape->getSize();
   }
 
   size_t getTotalSizeInBytes()
   {
     size_t bytesPerPixel = this->getBytesPerPixel();
 
-    size_t totalSize = this->getTotalSizeInPixels() * bytesPerPixel;
+    size_t totalSize = this->getTotalSizeInPixelsChannels() * bytesPerPixel;
 
     return totalSize;
   }
@@ -118,57 +121,33 @@ class VglImage{
 
   int getNChannels()
   {
-    if (this->vglShape == NULL)
-    {
-      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape is NULL\n", __FILE__, __FUNCTION__);
-    }
-    else if (this->vglShape->shape == NULL)
-    {
-      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape->shape is NULL\n", __FILE__, __FUNCTION__);
-    }
     return this->vglShape->shape[VGL_SHAPE_NCHANNELS];
   }
 
   int getWidth()
   {
-    if (this->vglShape == NULL)
-    {
-      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape is NULL\n", __FILE__, __FUNCTION__);
-    }
-    else if (this->vglShape->shape == NULL)
-    {
-      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape->shape is NULL\n", __FILE__, __FUNCTION__);
-    }
-    return this->vglShape->shape[VGL_SHAPE_WIDTH];
+    return this->vglShape->getWidth();
   }
 
   int getHeight()
   {
-    if (this->vglShape == NULL)
-    {
-      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape is NULL\n", __FILE__, __FUNCTION__);
-    }
-    else if (this->vglShape->shape == NULL)
-    {
-      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape->shape is NULL\n", __FILE__, __FUNCTION__);
-    }
-    return this->vglShape->shape[VGL_SHAPE_HEIGHT];
+    return this->vglShape->getHeight();
   }
 
   int getLength()
   {
-    if (this->vglShape == NULL)
-    {
-      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape is NULL\n", __FILE__, __FUNCTION__);
-    }
-    else if (this->vglShape->shape == NULL)
-    {
-      fprintf(stderr, "%s: %s: Internal Error: vglImage->vglShape->shape is NULL\n", __FILE__, __FUNCTION__);
-    }
-    return this->vglShape->shape[VGL_SHAPE_D3];
+    return this->vglShape->getLength();
   }
 
+  int getWidthIn()
+  {
+    return this->vglShape->getWidthIn();
+  }
 
+  int getHeightIn()
+  {
+    return this->vglShape->getHeightIn();
+  }
 
 
 };

@@ -109,11 +109,11 @@ void vglClNdDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window){
 
   printf("CHK 400 \n");
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
+    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
+    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{
@@ -175,11 +175,11 @@ void vglClNdNot(VglImage* img_input, VglImage* img_output){
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
   if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
+    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
+    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{

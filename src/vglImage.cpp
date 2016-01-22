@@ -465,7 +465,7 @@ VglImage* vglCloneImage(IplImage* img_in, int ndim /*=2* /, int has_mipmap /*=0*
  */
 VglImage* vglCopyCreateImage(VglImage* img_in)
 {
-  VglImage* retval = vglCreateImage(cvSize(img_in->getWidth(), img_in->getHeight()), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
+  VglImage* retval = vglCreateImage(cvSize(img_in->getWidthIn(), img_in->getHeightIn()), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
   vglCopy(img_in, retval);
   return retval;
 }

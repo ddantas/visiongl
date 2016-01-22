@@ -699,11 +699,11 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
  
   print CPP "
   if ($var_worksize->ndim <= 2){
-    size_t worksize[] = { $var_worksize->getWidth(), $var_worksize->getHeight(), 1 };
+    size_t worksize[] = { $var_worksize->getWidthIn(), $var_worksize->getHeightIn(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if ($var_worksize->ndim == 3){
-    size_t worksize[] = { $var_worksize->getWidth(), $var_worksize->getHeight(), $var_worksize->getLength() };
+    size_t worksize[] = { $var_worksize->getWidthIn(), $var_worksize->getHeightIn(), $var_worksize->getLength() };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   }
   else{

@@ -265,6 +265,47 @@ void VglShape::print(char* msg)
   this->printInfo();
 }
 
+int VglShape::getNChannels()
+{
+  return this->shape[VGL_SHAPE_NCHANNELS];
+}
+
+int VglShape::getWidth()
+{
+  if (this->ndim == 1)
+  {
+    return this->shape[VGL_SHAPE_WIDTH] * this->shape[VGL_SHAPE_HEIGHT];
+  }
+  return this->shape[VGL_SHAPE_WIDTH];
+}
+
+int VglShape::getHeight()
+{
+  if (this->ndim == 1)
+  {
+    return 1;
+  }
+  return this->shape[VGL_SHAPE_HEIGHT];
+}
+
+int VglShape::getLength()
+{
+  return this->shape[VGL_SHAPE_LENGTH];
+}
+
+int VglShape::getWidthIn()
+{
+  return this->shape[VGL_SHAPE_WIDTH];
+}
+
+int VglShape::getHeightIn()
+{
+  return this->shape[VGL_SHAPE_HEIGHT];
+}
+
+
+
+
 #ifdef __OPENCL__
 /** Return shape as VglClShape
 
@@ -283,6 +324,8 @@ VglClShape* VglShape::asVglClShape()
     result->shape[i] = this->shape[i];
     result->offset[i] = this->offset[i];
   }
+  result->shape[VGL_SHAPE_WIDTH]  = this->getWidth();
+  result->shape[VGL_SHAPE_HEIGHT] = this->getHeight();
   return result;
 }
 #endif

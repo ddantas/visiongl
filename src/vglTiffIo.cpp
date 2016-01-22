@@ -438,7 +438,7 @@ VglImage* vglLoad4dTiff(char* filename, int lStart, int lEnd, bool has_mipmap /*
 int vglSaveTiff(VglImage* image, char* outFilename)
 {
   TIFF *out = TIFFOpen(outFilename,"w");
-  char *buff = new char[image->getTotalSizeInPixels()];
+  char *buff = new char[image->getTotalSizeInPixelsChannels()];
   buff = image->getImageData();
 
   int c = image->getBytesPerPixel();

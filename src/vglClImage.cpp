@@ -785,7 +785,7 @@ int vglClMpIsZero(VglImage* num_a){
   vglClCheckError( err, (char*) "clSetKernelArg 1" );
 
   if (num_a->ndim <= 2){
-    size_t worksize[] = { num_a->getWidth(), num_a->getHeight(), 1 };
+    size_t worksize[] = { num_a->getWidthIn(), num_a->getHeightIn(), 1 };
     clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   }
   else if (num_a->ndim == 3){

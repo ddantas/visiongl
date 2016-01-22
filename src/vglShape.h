@@ -52,6 +52,14 @@ class VglShape{
   int* getShape();
   int* getOffset();
 
+  int getNChannels();
+  int getWidth();
+  int getHeight();
+  int getLength();
+
+  int getWidthIn();
+  int getHeightIn();
+
 #ifdef __OPENCL__
   VglClShape* asVglClShape();
 #endif
