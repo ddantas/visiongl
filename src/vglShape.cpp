@@ -324,8 +324,24 @@ VglClShape* VglShape::asVglClShape()
     result->shape[i] = this->shape[i];
     result->offset[i] = this->offset[i];
   }
-  result->shape[VGL_SHAPE_WIDTH]  = this->getWidth();
-  result->shape[VGL_SHAPE_HEIGHT] = this->getHeight();
+  if (this->ndim == 1)
+  {
+    result->shape[VGL_SHAPE_WIDTH]  = this->getWidth();
+    result->offset[VGL_SHAPE_WIDTH]  = result->shape[VGL_SHAPE_WIDTH-1] * result->offset[VGL_SHAPE_WIDTH-1];
+    result->shape[VGL_SHAPE_HEIGHT] = this->getHeight();
+    result->offset[VGL_SHAPE_HEIGHT]  = result->shape[VGL_SHAPE_HEIGHT-1] * result->offset[VGL_SHAPE_HEIGHT-1];
+  }
+  
+  printf("VglClShape===============\n");
+  printf("ndim    = %d\n", result->ndim);
+  printf("shape   = ");
+  this->printArray(result->shape, result->ndim);
+  printf("\n");
+  printf("offset  = ");
+  this->printArray(result->offset, result->ndim);
+  printf("\n");
+  printf("size    = %d\n", result->size);
+
   return result;
 }
 #endif

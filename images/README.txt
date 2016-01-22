@@ -20,7 +20,8 @@ TIF
 
 2d (512x512)     RGB   8bit  Uncompr.  lena_std.tif -> http://sipi.usc.edu/database/database.php?volume=misc
 2d (512x512)     Gray  8bit  Uncompr.  lena_gray.tif -> From lena_std.tif
-2d (512x512)     Gray  8bit  Uncompr.  lena_1024.tif -> From lena_std.tif
+2d (1024x1024)   Gray  8bit  Uncompr.  lena_1024.tif -> From lena_std.tif
+2d (1024x1024)   Gray  8bit  Uncompr.  lena_gray_1024.tif -> From lena_std.tif
 2d (512x512)     Gray  8bit  Uncompr.  retina.tif -> http://www.isi.uu.nl/Research/Databases/DRIVE/
 2d (512x512)     RGB   8bit  Uncompr.  01_test.tif -> http://www.isi.uu.nl/Research/Databases/DRIVE/
 2d (512x512)     Gray  16bit Uncompr.  E1154S7I-%03d.dcm -> from E1154S7I.dcm

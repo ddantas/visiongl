@@ -498,7 +498,7 @@ void vglCl3dGrayLevelTransform(VglImage* input, VglImage* output, int* transform
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_arr);
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { input->getWidth(), input->getHeight(), input->getLength() };
+  size_t worksize[] = { input->getWidthIn(), input->getHeightIn(), input->getLength() };
 
   err = clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
@@ -768,7 +768,7 @@ bool vglCl3dEqual(VglImage* input1, VglImage* input2)
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_equal );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { input1->getWidth(), input1->getHeight(), input1->getLength() };
+  size_t worksize[] = { input1->getWidthIn(), input1->getHeightIn(), input1->getLength() };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
   
@@ -836,7 +836,7 @@ bool vglClEqual(VglImage* input1, VglImage* input2)
   err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &mobj_equal );
   vglClCheckError( err, (char*) "clSetKernelArg 2" );
 
-  size_t worksize[] = { input1->getWidth(), input1->getHeight(), 0 };
+  size_t worksize[] = { input1->getWidthIn(), input1->getHeightIn(), 0 };
   clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
   vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
   

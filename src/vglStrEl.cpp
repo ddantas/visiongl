@@ -90,14 +90,11 @@ VglStrEl::VglStrEl(int type, int ndim)
     break;
     case(VGL_STREL_GAUSS):
     {
-      printf("STREL GAUSS entrou\n");
       int coord[VGL_ARR_SHAPE_SIZE];
       coord[0] = 0;
       int size = vglShape->getSize();
-      printf("STREL GAUSS size = %d\n", size);
       for (int i = 0; i < size; i++)
       {
-        printf("STREL GAUSS i = %d\n", i);
         float val = 1.0;
         vglShape->getCoordFromIndex(i, coord);
         for (int d = 1; d <= ndim; d++)
@@ -111,7 +108,6 @@ VglStrEl::VglStrEl(int type, int ndim)
             val *= .25;
 	  }        
 	}
-        printf("STREL GAUSS i = %d, val = %f\n", i, val);
         data[i] = val;
       }
     }
@@ -257,6 +253,7 @@ int* VglStrEl::getOffset()
 VglClStrEl* VglStrEl::asVglClStrEl()
 {
   VglClStrEl* result = new VglClStrEl;
+  VglClShape* shape = this->vglShape->asVglClShape();
 
   int size = this->getSize();
   if (size > VGL_ARR_CLSTREL_SIZE)
@@ -264,22 +261,17 @@ VglClStrEl* VglStrEl::asVglClStrEl()
     fprintf(stderr, "%s: %s: Error: structuring element size = %d > %d = VGL_ARR_CLSTREL_SIZE. Change this value in vglClStrEl.h to a greater one.\n", __FILE__, __FUNCTION__, size, VGL_ARR_CLSTREL_SIZE);
   }
 
-  int ndim = this->getNdim();
-  int* shape = this->getShape();
-  int* offset = this->getOffset();
-  float* data = this->getData();
-
-  result->ndim = ndim;
-  result->size = size;
+  result->ndim = this->vglShape->getNdim();
+  result->size = this->vglShape->getSize();
   
   for (int i = 0; i <= VGL_MAX_DIM; i++)
   {
-    result->shape[i] = shape[i];
-    result->offset[i] = offset[i];
+    result->shape[i] = shape->shape[i];
+    result->offset[i] = shape->offset[i];
   }
   for (int i = 0; i < size; i++)
   {
-    result->data[i] = data[i];
+    result->data[i] = this->data[i];
   }
 
   return result;

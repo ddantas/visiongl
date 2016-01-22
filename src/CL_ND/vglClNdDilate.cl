@@ -4,18 +4,6 @@
     SCALAR directive passes an scalar given by the expression that follows it. Parameter does not appear in wrapper parameter list.
     ARRAY directive passes an array sized as the expression between brackets.
     
-
-typedef 
-struct 
-VglClShape{ 
-  cl_int ndim;
-  cl_int shape[11];
-  cl_int offset[11];
-  cl_int size;
-} VglClShape;
-
-
-
   */
 
 //SHAPE shape img_input->shape
@@ -26,8 +14,8 @@ VglClShape{
 #include "vglClShape.h"
 #include "vglClStrEl.h"
 
-__kernel void vglClNdDilate(__global char* img_input, 
-                            __global char* img_output,  
+__kernel void vglClNdDilate(__global unsigned char* img_input, 
+                            __global unsigned char* img_output,  
                             __constant VglClShape* img_shape,
                             __constant VglClStrEl* window)
 {
@@ -36,13 +24,14 @@ __kernel void vglClNdDilate(__global char* img_input,
   int w = get_global_size(0);
   int coord = y*w+x;
 
-  char pmax = 0;
-
-  int ires = coord;
+  int ires;
   int idim;
-  int img_coord[VGL_MAX_DIM+1];
-  int win_coord[VGL_MAX_DIM+1];
-  for(int d = 1; d <= window->ndim; d++)
+  ires = coord;
+  unsigned char pmax = 0;
+  int img_coord[VGL_ARR_SHAPE_SIZE];
+  int win_coord[VGL_ARR_SHAPE_SIZE];
+
+  for(int d = img_shape->ndim; d >= 1; d--)
   {
     int off = img_shape->offset[d];
     idim = ires / off;
@@ -57,7 +46,7 @@ __kernel void vglClNdDilate(__global char* img_input,
     {
       ires = i;
       conv_coord = 0;
-      for(int d = 1; d <= window->ndim; d++)
+      for(int d = window->ndim; d >= 1; d--)
       {
         int off = window->offset[d];
         idim = ires / off;
@@ -66,22 +55,10 @@ __kernel void vglClNdDilate(__global char* img_input,
         win_coord[d] = max(win_coord[d], 0);
         win_coord[d] = min(win_coord[d], img_shape->shape[d]);
 
-        conv_coord += win_coord[d] * img_shape->offset[d];
+        conv_coord += img_shape->offset[d] * win_coord[d];
       }
       pmax = max(pmax, img_input[conv_coord]);
-      pmax = conv_coord;
     }
   }
-
-  img_output[coord] = img_input[img_shape->size - coord];
-  img_output[coord] = img_input[coord];
+  img_output[coord] = pmax;
 }
-
-
-/*
-__kernel void vglClNdNot(__read_only image3d_t img_input, __write_only image3d_t img_output)
-{
-  int4 coords = (int4)(get_global_id(0), get_global_id(1), get_global_id(2), 0);
-  write_imagef(img_output, coords, get_global_id(2) /17.0);
-}
-*/
