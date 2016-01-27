@@ -329,6 +329,11 @@ rundemocl3d:
 
 rundemoclnd:
 	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 2 24 7
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 2 168
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 336
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016 -1d
 
 rundemofrac:
 	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)

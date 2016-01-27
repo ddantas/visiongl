@@ -667,17 +667,18 @@ void vglSaveNdImage(VglImage* image, char* filename, int lStart)
   int d = image->depth / 8;
   if (d < 1) d = 1; //d is the byte size of the depth color format
 
+  char* ptr = image->getImageData();
   char* temp_image =   (char*)malloc(image->getHeight() * image->getWidth() * image->nChannels * d);
-  memcpy(temp_image, image->ndarray, image->getHeight() * image->getWidth() * image->nChannels * d);
+  memcpy(temp_image, ptr, image->getHeight() * image->getWidth() * image->nChannels * d);
 
-  IplImage* ipl = cvCreateImage(cvSize(image->getWidth(), image->getHeight()), image->depth, image->nChannels);
+  IplImage* ipl = cvCreateImage(cvSize(image->getWidthIn(), image->getHeightIn()), image->depth, image->nChannels);
   ipl->imageData = temp_image;
 
   cvSaveImage(temp_filename,  ipl);
   int c = image->getHeight()*image->getWidth()*d*image->nChannels;
   for(int i = lStart+1; i <= lEnd; i++)
   {
-    memcpy(temp_image,((char*)image->ndarray)+c,image->getHeight()*image->getWidth()*image->nChannels*d);
+    memcpy(temp_image,((char*)ptr)+c,image->getHeight()*image->getWidth()*image->nChannels*d);
     ipl->imageData = temp_image;
     sprintf(temp_filename, filename, i);
     cvSaveImage(temp_filename, ipl);
@@ -1358,7 +1359,7 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
 
     Filename must have a printf compatible integer format specifier, like %d or %03d.
 */
-VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, VglShape* vglShape, bool has_mipmap /*=0*/)
+VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, int* shape, int ndim, bool has_mipmap /*=0*/)
 {
   VglImage* img;
   char* tempFilename = (char*)malloc(strlen(filename) + 256);
@@ -1383,26 +1384,36 @@ VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, VglShape* vglShap
     width = ipl->widthStep / bpp;
   }
 
-  vglShape->shape[0] = ipl->nChannels;
-  vglShape->shape[1] = width;
-  vglShape->shape[2] = height;
-  int ndim = vglShape->getNdim();
-  int shapeFrames = vglShape->getNFrames();
-
-  if (n != shapeFrames)
+  shape[VGL_SHAPE_NCHANNELS] = ipl->nChannels;
+  if (shape[VGL_SHAPE_WIDTH] <= 0)
   {
-    fprintf(stderr, "%s: %s: Error: number of frames in stack = %d != %d = number of frames in shape\n", __FILE__, __FUNCTION__, n, shapeFrames);
+    shape[VGL_SHAPE_WIDTH] = width;
+  }
+  if (shape[VGL_SHAPE_HEIGHT] <= 0)
+  {
+    shape[VGL_SHAPE_HEIGHT] = height;
+  }
+  VglShape* vglShape = new VglShape(shape, ndim);
+  int shapeSize = vglShape->getSize();
+
+  VglImage* tmp = vglCreateImage(ipl);
+  int imgSize = tmp->vglShape->getSize() * n;  
+  vglReleaseImage(&tmp);
+
+  if (imgSize != shapeSize)
+  {
+    fprintf(stderr, "%s: %s: Error: stack size = %d != %d = given shape size\n", __FILE__, __FUNCTION__, imgSize, shapeSize);
     return 0;
   }
 
-  img = vglCreateImage((int*)vglShape->shape, ipl->depth, ndim);
-  //free(img->ndarray);
-  //img->ndarray = (char*)malloc(img->getTotalSizeInBytes());
+  img = vglCreateImage(shape, ipl->depth, ndim);
 
   int delta = ipl->height*ipl->width*ipl->nChannels*bpp;
-  int offset = delta;  
-  memcpy(img->ndarray, (void*)ipl->imageData, delta);
-	cvReleaseImage(&ipl);
+  int offset = delta;
+  char* ptr = img->getImageData();
+  memcpy(ptr, (void*)ipl->imageData, delta);
+  cvReleaseImage(&ipl);
+
   for(int i = lStart+1; i <= lEnd; i++)
   {
     sprintf(tempFilename,filename,i);
@@ -1413,15 +1424,33 @@ VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, VglShape* vglShap
       return 0;
     }
 
-    memcpy(((char*)img->ndarray) + offset, (void*) ipl->imageData, delta);
+    memcpy(((char*)ptr) + offset, (void*) ipl->imageData, delta);
     offset += delta;
     cvReleaseImage(&ipl);
   }
-
   vglSetContext(img, VGL_RAM_CONTEXT);
   //vglUpload(img); //must be fixed before enabling
 
   return img;
+}
+
+/** /brief Reshape image to given shape.
+
+    Reshape image to given shape. Size of original and new shape must be the same.
+*/
+int vglReshape(VglImage* img, VglShape* newShape)
+{
+  VglShape* origShape = img->vglShape;
+  int origSize = origShape->getSize();
+  int newSize = newShape->getSize();
+  if (origSize != newSize)
+  {
+    fprintf(stderr, "%s: %s: Error: original shape size = %d != %d = new shape size\n", __FILE__, __FUNCTION__, origSize, newSize);
+    return 1;
+  }
+  img->vglShape = new VglShape(newShape);
+  delete(origShape);
+  return 0;
 }
 
 /** Print information about image.

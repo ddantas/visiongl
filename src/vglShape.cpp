@@ -172,7 +172,7 @@ void VglShape::getCoordFromIndex(int index, int* coord)
 /** /brief Get size.
 
     Get total size of shape. Is the product of all shape array positions, including
-    number of channels. Total size of shape in bytes is getSize*sizeof(type).
+    number of channels. Total size of shape in bytes is getSize()*sizeof(type).
  */
 int VglShape::getSize()
 {

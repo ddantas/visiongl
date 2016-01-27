@@ -41,56 +41,100 @@ from index 0 to index n\n\
   //vglInit(500,500);
   vglClInit();
 
-  int shape[VGL_ARR_SHAPE_SIZE] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  int shape[VGL_ARR_SHAPE_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   int ndim = 3;
   if (argc == 5)
   {
     shape[VGL_SHAPE_D3] = i_n - i_0 + 1;
   }
-  else
+  else if ( (argc == 8) && (strcmp(argv[7], "-1d") == 0) )
   {
-    ndim = argc - 5;
-    for (int i = 0; i < ndim; i ++)
+    ndim = 1;
+    for (int i = 0; i < 2; i++)
     {
       shape[1 + i] = atoi(argv[5 + i]);
     }
   }
-  ndim = 3;
-  shape[3] = 336;
-  //shape[4] = 24;
-  //shape[5] = 7;
+  else
+  {
+    ndim = argc - 5;
+    for (int i = 0; i < ndim; i++)
+    {
+      shape[1 + i] = atoi(argv[5 + i]);
+    }
+  }
 
-  VglShape* vglShape = new VglShape(shape, ndim);
+  // start: Saving original shape
+  char* tmpfilename = (char*) malloc(strlen(infilename) + 256);
+  sprintf(tmpfilename, infilename, i_0);
+  VglImage* imgSingle = vglLoadImage((char*) tmpfilename);
+  int origShape[VGL_ARR_SHAPE_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  origShape[VGL_SHAPE_NCHANNELS] = imgSingle->getNChannels();
+  origShape[VGL_SHAPE_WIDTH] = imgSingle->getWidth();
+  origShape[VGL_SHAPE_HEIGHT] = imgSingle->getHeight();
+  origShape[VGL_SHAPE_LENGTH] = i_n - i_0 + 1;
+  VglShape* origVglShape = new VglShape(origShape, 3);
+  // end: Saving original shape
 
-  VglImage* img = vglLoadNdImage((char*) infilename, i_0, i_n, vglShape);
+  VglImage* img = vglLoadNdImage((char*) infilename, i_0, i_n, shape, ndim);
 
-  // This call makes img to be treated as buffer instead of image even if it has 2 or 3 dimensions. 
-  // N-dimensional data must be stored as buffer.
-  // Must call right after img creation, and before creating out image from img in order to propagate the clForceAsBuf property.
+  vglPrintImageInfo(img);
+
+  // This call to vglClForceAsBuf makes img to be treated in OpenCL context as buffer instead of image even if it has 2 or 3 dimensions. 
+  // N-dimensional data must be stored as buffer in order to use vglClNd* functions.
+  // Must call vglClForceAsBuf right after img creation, and before creating out image from img in order to propagate the clForceAsBuf property.
   vglClForceAsBuf(img);
   VglImage* out = vglCreateImage(img);
   vglPrintImageInfo(img, (char*)"Input image");
-  delete(vglShape);
 
   VglStrEl* vglStrEl = new VglStrEl(VGL_STREL_MEAN, ndim);
   vglStrEl->print();
 
-  if (1)
+  /* Choose option:
+    1 - N-dimensional mean filter
+    2 - Dilation n-dimensional by hypercube
+    3 - Dilation n-dimensional by hypercross
+    4 - Negation
+    5 - Threshold
+    6 - Copy
+  */    
+  int option = 1;
+  
+  switch (option):
   {
-    //vglClNdNot(img, out);
-    //vglClNdCopy(img, out);
-    printf("CHK100 \n");
-    vglClNdThreshold(img, out, 30);
-    printf("CHK200 \n");
+    case 1:
+      vglStrEl = new VglStrEl(VGL_STREL_MEAN, ndim);
+      vglClNdConvolution(img, out, vglStrEl);
+      break;
+    case 2:
+      vglStrEl = new VglStrEl(VGL_STREL_CUBE, ndim);
+      vglClNdDilation(img, out, vglStrEl);
+      break;
+    case 3:
+      vglStrEl = new VglStrEl(VGL_STREL_CROSS, ndim);
+      vglClNdDilation(img, out, vglStrEl);
+      break;
+    case 4:
+      vglClNdNot(img, out);
+      break;
+    case 5:
+      char thresh = 30;
+      vglClNdThreshold(img, out, thresh);
+      break;
+    case 6:
+    default:
+      vglClNdCopy(img, out);
+      break;
   }
-  else
-    vglClNdConvolution(img, out, vglStrEl);
 
-  printf("CHK300 \n");
   vglClDownload(out);
-  printf("CHK400 \n");
 
-  vglSaveNdImage(out, (char*) "/tmp/clnd%04d.tif", 0);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+
+  vglSaveNdImage(out, (char*) "/tmp/clnd_%04d.tif", 0);
   printf("CHK500 \n");
 
   return 0;

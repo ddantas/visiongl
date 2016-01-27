@@ -26,6 +26,7 @@ TIF
 2d (512x512)     RGB   8bit  Uncompr.  01_test.tif -> http://www.isi.uu.nl/Research/Databases/DRIVE/
 2d (512x512)     Gray  16bit Uncompr.  E1154S7I-%03d.dcm -> from E1154S7I.dcm
 3d (512x512x7)   Gray  16bit Uncompr.  E1154S7I_3d.dcm -> from E1154S7I.dcm
+5d (256x256x2x24x7) Gray  8bit Uncompr.  mitosis/mitosis-5d*.tif -> from http://imagej.nih.gov/ij/images/5d.zip
 
 JPG 
 

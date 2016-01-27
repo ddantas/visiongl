@@ -222,7 +222,8 @@ void vglDownloadFBO(VglImage* image);
 void vglDownloadFaster(VglImage* image/*, VglImage* buf*/);
 VglImage* vglLoadImage(char* filename, int iscolor = -1, int has_mipmap = 0); // -1 = CV_LOAD_IMAGE_UNCHANGED
 VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
-VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, VglShape* vglShape, bool has_mipmap = 0);
+VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, int* shape, int ndim, bool has_mipmap = 0);
+int vglReshape(VglImage* img, VglShape* newShape);
 void vglPrintImageData(VglImage* image, char* msg = NULL, char* format = (char*) "%c");
 void vglPrintImageInfo(VglImage* image, char* msg = NULL);
 void iplPrintImageInfo(IplImage* ipl, char* msg = NULL);
