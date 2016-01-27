@@ -21,6 +21,7 @@
 #define VGL_STREL_CUBE   1
 #define VGL_STREL_CROSS  2
 #define VGL_STREL_GAUSS  3
+#define VGL_STREL_MEAN   4
 
 class VglStrEl{
  public:

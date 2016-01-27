@@ -328,7 +328,7 @@ rundemocl3d:
 	cd $(OUTPUT_BINPATH); ./demo_$(CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 /tmp
 
 rundemoclnd:
-	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp
 
 rundemofrac:
 	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)

@@ -27,8 +27,8 @@ extern VglClContext cl;
     #pragma OPENCL EXTENSION cl_khr_3d_image_writes : enable
 
   */
-void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output){
-
+void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -85,8 +85,8 @@ void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output){
 /** Convolution of src image by mask. Result is stored in dst image.
 
   */
-void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z){
-
+void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -164,8 +164,8 @@ void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convol
 /** Direct copy from src to dst.
 
   */
-void vglCl3dCopy(VglImage* img_input, VglImage* img_output){
-
+void vglCl3dCopy(VglImage* img_input, VglImage* img_output)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -222,8 +222,8 @@ void vglCl3dCopy(VglImage* img_input, VglImage* img_output){
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z){
-
+void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -301,8 +301,8 @@ void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z){
-
+void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -380,8 +380,8 @@ void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_
 /** Direct copy from src to dst.
 
   */
-void vglCl3dMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
-
+void vglCl3dMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
   vglCheckContext(img_input1, VGL_CL_CONTEXT);
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -442,8 +442,8 @@ void vglCl3dMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
 /** Direct copy from src to dst.
 
   */
-void vglCl3dMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
-
+void vglCl3dMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
   vglCheckContext(img_input1, VGL_CL_CONTEXT);
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -504,8 +504,8 @@ void vglCl3dMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
 /** Direct copy from src to dst.
 
   */
-void vglCl3dNot(VglImage* img_input, VglImage* img_output){
-
+void vglCl3dNot(VglImage* img_input, VglImage* img_output)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -562,8 +562,8 @@ void vglCl3dNot(VglImage* img_input, VglImage* img_output){
 /** Direct copy from src to dst.
 
   */
-void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
-
+void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
   vglCheckContext(img_input1, VGL_CL_CONTEXT);
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -624,8 +624,8 @@ void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
 /** Direct copy from src to dst.
 
   */
-void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
-
+void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
   vglCheckContext(img_input1, VGL_CL_CONTEXT);
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -686,8 +686,8 @@ void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
 /** Threshold of src image by float parameter. if the pixel is below thresh,
     the output is 0, else, the output is top. Result is stored in dst image.
   */
-void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top){
-
+void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top)
+{
   vglCheckContext(src, VGL_CL_CONTEXT);
   vglCheckContext(dst, VGL_CL_CONTEXT);
 
@@ -750,8 +750,8 @@ void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top){
 /** Convolution of src image by mask. Result is stored in dst image.
 
   */
-void vglClBlurSq3(VglImage* img_input, VglImage* img_output){
-
+void vglClBlurSq3(VglImage* img_input, VglImage* img_output)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -808,8 +808,8 @@ void vglClBlurSq3(VglImage* img_input, VglImage* img_output){
 /** Convolution of src image by mask. Result is stored in dst image.
 
   */
-void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y){
-
+void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -884,8 +884,8 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
 /** Direct copy from src to dst.
 
   */
-void vglClCopy(VglImage* img_input, VglImage* img_output){
-
+void vglClCopy(VglImage* img_input, VglImage* img_output)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -942,8 +942,8 @@ void vglClCopy(VglImage* img_input, VglImage* img_output){
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y){
-
+void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -1018,8 +1018,8 @@ void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_w
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */
-void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y){
-
+void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -1094,8 +1094,8 @@ void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_wi
 /** Negative of src image. Result is stored in dst image.
 
   */
-void vglClInvert(VglImage* img_input, VglImage* img_output){
-
+void vglClInvert(VglImage* img_input, VglImage* img_output)
+{
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -1152,8 +1152,8 @@ void vglClInvert(VglImage* img_input, VglImage* img_output){
 /** Direct copy from src to dst.
 
   */
-void vglClMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
-
+void vglClMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
   vglCheckContext(img_input1, VGL_CL_CONTEXT);
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -1214,8 +1214,8 @@ void vglClMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
 /** Direct copy from src to dst.
 
   */
-void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
-
+void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
   vglCheckContext(img_input1, VGL_CL_CONTEXT);
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -1276,8 +1276,8 @@ void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
 /** Direct copy from src to dst.
 
   */
-void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
-
+void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
   vglCheckContext(img_input1, VGL_CL_CONTEXT);
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -1338,8 +1338,8 @@ void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
 /** Direct copy from src to dst.
 
   */
-void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
-
+void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
   vglCheckContext(img_input1, VGL_CL_CONTEXT);
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
@@ -1400,8 +1400,8 @@ void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
 /** Threshold of src image by float parameter. if the pixel is below thresh,
     the output is 0, else, the output is top. Result is stored in dst image.
   */
-void vglClThreshold(VglImage* src, VglImage* dst, float thresh, float top){
-
+void vglClThreshold(VglImage* src, VglImage* dst, float thresh, float top)
+{
   vglCheckContext(src, VGL_CL_CONTEXT);
   vglCheckContext(dst, VGL_CL_CONTEXT);
 

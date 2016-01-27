@@ -112,6 +112,14 @@ VglStrEl::VglStrEl(int type, int ndim)
       }
     }
     break;
+    case(VGL_STREL_MEAN):
+    {
+      for (int i = 0; i < size; i++)
+      {
+        data[i] = 1.0 / (float) size;
+      }
+    }
+    break;
     case(VGL_STREL_CUBE):
     default:
     {

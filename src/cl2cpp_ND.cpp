@@ -26,8 +26,18 @@ extern VglClContext cl;
     SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
     
   */
-void vglClNdConvolution(VglImage* img_input, VglImage* img_output, VglStrEl* window){
-
+void vglClNdConvolution(VglImage* img_input, VglImage* img_output, VglStrEl* window)
+{
+  if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -110,8 +120,18 @@ void vglClNdConvolution(VglImage* img_input, VglImage* img_output, VglStrEl* win
 /** Copy N-dimensional image.
 
   */
-void vglClNdCopy(VglImage* img_input, VglImage* img_output){
-
+void vglClNdCopy(VglImage* img_input, VglImage* img_output)
+{
+  if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -172,8 +192,18 @@ void vglClNdCopy(VglImage* img_input, VglImage* img_output){
     SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
     
   */
-void vglClNdDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window){
-
+void vglClNdDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window)
+{
+  if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -258,8 +288,18 @@ void vglClNdDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window){
     SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
     
   */
-void vglClNdErode(VglImage* img_input, VglImage* img_output, VglStrEl* window){
-
+void vglClNdErode(VglImage* img_input, VglImage* img_output, VglStrEl* window)
+{
+  if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -342,8 +382,18 @@ void vglClNdErode(VglImage* img_input, VglImage* img_output, VglStrEl* window){
 /** Invert N-dimensional image.
 
   */
-void vglClNdNot(VglImage* img_input, VglImage* img_output){
-
+void vglClNdNot(VglImage* img_input, VglImage* img_output)
+{
+  if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
@@ -402,8 +452,18 @@ void vglClNdNot(VglImage* img_input, VglImage* img_output){
 /** Threshold of img_input by parameter. if the pixel is below thresh,
     the output is 0, else, the output is top. Result is stored in img_output.
   */
-void vglClNdThreshold(VglImage* img_input, VglImage* img_output, unsigned char thresh, unsigned char top){
-
+void vglClNdThreshold(VglImage* img_input, VglImage* img_output, unsigned char thresh, unsigned char top)
+{
+  if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 

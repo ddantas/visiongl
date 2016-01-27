@@ -1473,6 +1473,7 @@ void vglPrintImageInfo(VglImage* image, char* msg){
     printf("Image @ %p: w x h x l = %d x %d x %d\n", 
     image, image->getWidth(), image->getHeight(), image->getLength());
     printf("ndim = %d\n", image->ndim);
+    printf("size = %d\n", image->vglShape->getSize());
     printf("shape = {");
     for(int i = 0; i <= VGL_MAX_DIM; i++)
     {

@@ -667,8 +667,20 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
       print HEAD ", ";
     } 
   }
-  print CPP "){\n";
+  print CPP ")\n{";
   print HEAD ");\n\n";
+
+  for ($i = 0; $i <= $#type; $i++){
+    if ($semantics[$i] eq "__global"){
+        $var = $variable[$i];
+        print CPP "
+  if (  ( ($var->ndim == 2) || ($var->ndim == 3) )  &&  !($var->clForceAsBuf)  )
+  {
+    fprintf(stderr, \"%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating $var.\\n\", __FILE__, __FUNCTION__);
+    exit(1);
+  }";
+    }
+  }
 
   for ($i = 0; $i <= $#type; $i++){
     if ($semantics[$i] eq "__read_only" or $semantics[$i] eq "__write_only" or $semantics[$i] eq "__read_write" or $semantics[$i] eq "__global"){
