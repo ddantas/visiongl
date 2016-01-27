@@ -19,6 +19,7 @@ BENCHMARK_CV_NAME    = benchmark_cv
 BENCHMARK_CVOCL_NAME = benchmark_cvocl
 BENCHMARK_CL_NAME    = benchmark_cl
 BENCHMARK_CL3D_NAME  = benchmark_cl3d
+BENCHMARK_CLND_NAME  = benchmark_clnd
 BENCHMARK_MM_NAME    = benchmark_MM
 BENCHMARK_FUZZYTOPHAT_NAME    = benchmark_FuzzyTophat
 BENCHMARK_MP_NAME    = benchmark_MP
@@ -228,6 +229,12 @@ ifeq ($(WITH_OPENCL), 1)
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS) \
 
+        LINUXAMD64_DEMO_BENCHMARK_CLND = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_CLND_NAME) \
+                         src/demo/$(BENCHMARK_CLND_NAME).cpp src/demo/timer.cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS) \
+
         LINUXAMD64_DEMO_BENCHMARK_MM = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_MM_NAME) \
                          src/demo/$(BENCHMARK_MM_NAME).cpp src/demo/timer.cpp \
@@ -318,6 +325,9 @@ demobenchmark:
 	$(LINUXAMD64_DEMO_BENCHMARK_MM)
 	$(LINUXAMD64_DEMO_BENCHMARK_FUZZYTOPHAT)
 
+demobenchmarkclnd:
+	$(LINUXAMD64_DEMO_BENCHMARK_CLND)
+
 democolordeconv:
 	$(LINUXAMD64_DEMO_COLORDECONV)
 
@@ -328,12 +338,12 @@ rundemocl3d:
 	cd $(OUTPUT_BINPATH); ./demo_$(CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 /tmp
 
 rundemoclnd:
-	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 2 24 7
-	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 2 168
-	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 336
-	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016
-	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) /home/ddantas/Downloads/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016 -1d
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016 -1d
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp
+	#cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 336
+	#cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 2 168
+	#cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 2 24 7
 
 rundemofrac:
 	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)
@@ -372,6 +382,13 @@ rundemobenchmark:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 1 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/01_test.tif 10 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_FUZZYTOPHAT_NAME) ../images/01_test.tif 10 /tmp
+
+rundemobenchmarkclnd:
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 256 86016 -1d
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 256 86016
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 0 0 336
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 0 0 2 168
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 0 0 2 24 7
 
 rundemobenchmark16:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/E1154S7I_001.tif 10 /tmp

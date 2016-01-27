@@ -30,12 +30,12 @@ void vglClNdConvolution(VglImage* img_input, VglImage* img_output, VglStrEl* win
 {
   if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
@@ -124,12 +124,12 @@ void vglClNdCopy(VglImage* img_input, VglImage* img_output)
 {
   if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
@@ -196,12 +196,12 @@ void vglClNdDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window)
 {
   if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
@@ -292,12 +292,12 @@ void vglClNdErode(VglImage* img_input, VglImage* img_output, VglStrEl* window)
 {
   if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
@@ -386,12 +386,12 @@ void vglClNdNot(VglImage* img_input, VglImage* img_output)
 {
   if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   vglCheckContext(img_input, VGL_CL_CONTEXT);
@@ -456,12 +456,12 @@ void vglClNdThreshold(VglImage* img_input, VglImage* img_output, unsigned char t
 {
   if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
   {
-    fprintf(stderr, "%s: %s: Error: this operator supports only data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
     exit(1);
   }
   vglCheckContext(img_input, VGL_CL_CONTEXT);

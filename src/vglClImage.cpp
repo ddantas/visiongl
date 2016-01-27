@@ -719,7 +719,6 @@ void vglClDownload(VglImage* img)
         }
         else
         {
-            vglPrintImageInfo(img, (char*) "inside vglClDownload");
             cl_int err = clEnqueueReadBuffer(cl.commandQueue, img->oclPtr, CL_TRUE, 0, img->getTotalSizeInBytes(), imageData, 0, NULL, NULL);
             vglClCheckError( err, (char*) "clEnqueueReadBuffer" );
 	}

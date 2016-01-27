@@ -50,9 +50,6 @@ VglStrEl::VglStrEl(int type, int ndim)
   }
   VglShape* vglShape = new VglShape(shape, ndim);
 
-
-  printf("WILL PRINT SHAPE\n");
-  vglShape->print();
   int size = vglShape->getSize();
   float* data = (float*) malloc(sizeof(float) * size);
   int index;
