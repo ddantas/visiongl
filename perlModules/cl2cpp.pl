@@ -680,6 +680,9 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
     exit(1);
   }";
     }
+    elsif (  ($semantics[$i] eq "__read_only") or ($semantics[$i] eq "__write_only")  ){
+      #TODO: add code to check image compatibility.
+    }
   }
 
   for ($i = 0; $i <= $#type; $i++){
