@@ -93,7 +93,7 @@ sub LineStartSemantics { # ($line) {
 #
 # Returns the string after the directive
 # in start of $line, blank string if not found.
-# Valid directives are SCALAR and ARRAY
+# Valid directives are SCALAR, ARRAY and SHAPE
 # 
 sub LineStartDirective { # ($line) {
   my $line = $_[0];
@@ -129,6 +129,21 @@ sub LineStartSize { # ($line) {
 }
 
 #############################################################################
+# LineStartValue
+#
+# Returns the expression between () in
+# start of $line, blank string if not found.
+# 
+sub LineStartValue { # ($line) {
+  my $line = $_[0];
+
+  $line =~ s#^\s*\(\s*(.*)\s*\)##;
+  my $result = $1;
+  print "Found value >>>$result<<<\n";
+  return ($result, $line);
+}
+
+#############################################################################
 # LineStartMain
 #
 # Returns the string that contains the expression __kernel void.
@@ -149,6 +164,8 @@ sub LineStartMain { # ($line) {
 # a kernel. The size is needed by the wrapper to calculate the buffer size. The buffer
 # size is passed as parameter to clCreateBuffer and clEnqueueWriteBuffer.
 #
+sub foo{
+$bar = ' 
 sub ProcessClDirectives { # ($directives, $variable) {
   my $directives   = $_[0];
   my $variable     = $_[1];
@@ -198,7 +215,9 @@ sub ProcessClDirectives { # ($directives, $variable) {
       print "After eliminating variable name:\n$directives[$i]\n";
     }
 
-    print "3 Directive type = >>>$result_directive<<<\n";
+    print "3 CHECK Directive value = >>>$result_directive<<<\n";
+
+    print "3 Directive value = >>>$result_directive<<<\n";
     if ($result_directive eq "ARRAY"){
       print "Searching size of ARRAY type directive\n";
       ($result_size, $directives[$i]) = LineStartSize($directives[$i]);
@@ -207,6 +226,17 @@ sub ProcessClDirectives { # ($directives, $variable) {
       }
       else{
         print "After eliminating size value:\n$directives[$i]\n";
+      }
+    }
+    elsif ($result_directive eq "SHAPE"){
+      print "Searching value of SHAPE type directive\n";
+      ($result_val, $directives[$i]) = LineStartValue($directives[$i]);
+      print "SHAPE result value: $result_val\n\n";
+      if (!$result_val){
+        die "Error: Start-of-line value not found\n";
+      }
+      else{
+        print "After eliminating value:\n$directives[$i]\n";
       }
     }
 
@@ -232,6 +262,8 @@ sub ProcessClDirectives { # ($directives, $variable) {
   return ($is_array, $size);
 
 }
+';
+}
 
 #############################################################################
 # ProcessClDirective
@@ -252,6 +284,7 @@ sub ProcessClDirective { # ($directive) {
   my $result_variable;
   my $result_size;
   my $result_isarray;
+  my $result_isshape;
 
 
     print "ProcessingClDirective started###########################################################\n";
@@ -273,10 +306,11 @@ sub ProcessClDirective { # ($directive) {
       die "Error: Start-of-line variable name not found\n";
     }
     else{
-      print "After eliminating variable name:\n$directive\n";
+      print "After eliminating variable name:\n>>>$directive<<<\n";
     }
 
     print "3 Directive type = >>>$result_directive<<<\n";
+    #print "3 CHECK Directive type = >>>$result_directive<<<\n";
     if ($result_directive eq "ARRAY"){
       print "Searching size of ARRAY type directive\n";
       ($result_size, $directive) = LineStartSize($directive);
@@ -287,13 +321,30 @@ sub ProcessClDirective { # ($directive) {
         print "After eliminating size value:\n$directive\n";
       }
     }
+    elsif ($result_directive eq "SHAPE"){
+      print "Searching value of SHAPE type directive\n";
+      ($result_size, $directive) = LineStartValue($directive);
+      print "SHAPE result value: $result_val\n\n";
+      if (!$result_size){
+        die "Error: Start-of-line value not found\n";
+      }
+      else{
+        print "After eliminating value:\n$directives[$i]\n";
+      }
+    }
+
 
     $result_isarray = 0;
     if ($result_directive eq "ARRAY"){
       $result_isarray = 1;
     }
 
-  return ($result_isarray, $result_variable, $result_size);
+    $result_isshape = 0;
+    if ($result_directive eq "SHAPE"){
+      $result_isshape = 1;
+    }
+
+  return ($result_variable, $result_size, $result_isarray, $result_isshape);
 
 }
 
@@ -465,8 +516,8 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
     print "directive[$i] = >>$dircomment[$i]<< size = >>$#dircomment<<\n";
     if ($dircomment[$i]){
       print ("Found directive: $dircomment[$i]\n");
-      ($dirisarray[$i], $dirvar[$i], $dirsize[$i]) = ProcessClDirective($dircomment[$i]);
-      print ("ProcessClFile result = <$dirisarray[$i]> <$dirvar[$i]> <$dirsize[$i]>\n");
+      ($dirvar[$i], $dirsize[$i], $dirisarray[$i], $dirisshape[$i]) = ProcessClDirective($dircomment[$i]);
+      print ("ProcessClFile result = <$dirvar[$i]> <$dirsize[$i]> <$dirisarray[$i]> <$dirisshape[$i]>\n");
     }
     else{
       #print ("Directive not found\n");
@@ -479,7 +530,7 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
 
   print "Starting loop to print directives found\n";
   for($i = 0; $i <= $#dirvar; $i++){
-      print ("ProcessClFile result = <$dirisarray[$i]> <$dirvar[$i]> <$dirsize[$i]>\n");  
+      print ("ProcessClFile result = <$dirvar[$i]> <$dirsize[$i]> <$dirisarray[$i]> <$dirisshape[$i]>\n");  
   }
 
   print "Eliminating preamble (typedef|include)\n\n\n\n";
@@ -504,12 +555,12 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
   print "ProcessClFile dircomment size = $#dircomment\n";
 
 
-  print "FOR STARTING $#variable\n";
   for($i = 0; $i <= $#variable; $i++){
     $is_array[$i] = 0;
+    $is_shape[$i] = 0;
     $size[$i]     = 1;
   }
-  print "FOR STARTING $#variable\n";
+  print "Linking variables to directives:\n";
   for($i = 0; $i <= $#variable; $i++){
     for ($j = 0; $j <= $#dirvar; $j++){
        print ">>>$variable[$i]<<< == >>>$dirvar[$j]<<<\n";
@@ -518,6 +569,12 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
          $size[$i]     = $dirsize[$j];
          print "Is array [$i]: $is_array[$i]\n";
          print "Size     [$i]: $size[$i]\n";
+       }
+       if ($variable[$i] eq $dirvar[$j] && $dirisshape[$j]){
+         $is_shape[$i] = $dirisshape[$j];
+         $size[$i]     = $dirsize[$j];
+         print "Is shape [$i]: $is_shape[$i]\n";
+         print "Value    [$i]: $size[$i]\n";
        }
      }
    }
@@ -536,10 +593,11 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
     print "Variable [$i]: $variable[$i]\n";
     print "Default  [$i]: " . ($default[$i] or "") . "\n";
     print "Array?   [$i]: $is_array[$i]\n";
+    print "Shape?   [$i]: $is_shape[$i]\n";
     print "Size     [$i]: $size[$i]\n";
   }
 
-  return  ($comment, $semantics, $type, $variable, $is_array, $size);
+  return  ($comment, $semantics, $type, $variable, $is_array, $is_shape, $size);
 }
 
 #############################################################################
@@ -548,7 +606,7 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
 # Receives as input a CL filename and generates CPP wrapper function
 #
 #
-sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $default, $uniform, $output, $cpp_read_path) {
+sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $default, $is_array, $is_shape, $size, $output, $cpp_read_path) {
   my $basename      = $_[0];
   my $comment       = $_[1];
   my $semantics     = $_[2];
@@ -556,9 +614,10 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   my $variable      = $_[4];
   my $default       = $_[5];
   my $is_array      = $_[6];
-  my $size          = $_[7];
-  my $output        = $_[8];
-  my $cpp_read_path = $_[9];
+  my $is_shape      = $_[7];
+  my $size          = $_[8];
+  my $output        = $_[9];
+  my $cpp_read_path = $_[10];
 
   my $i;
   my $first_framebuffer = "";
@@ -581,15 +640,21 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
       }
     }
     else{
-      $type[$i] =~ s#^\s*([a-zA-Z_][a-zA-Z0-9_]*)##;
+      $type[$i] =~ s#^\s*((unsigned)?\s*[a-zA-Z_][a-zA-Z0-9_]*)##;
       $type[$i] = $1;
+    }
+    if ($type[$i] eq "VglClStrEl"){
+      $type[$i] = "VglStrEl";
     }
     print ">>>$type[$i]<<<\n";
   }
 
   for ($i = 0; $i <= $#type; $i++){
     my $p = "";
-    if ($is_array[$i]){
+    if ($is_shape[$i]){
+      next;
+    }
+    if ( ($is_array[$i]) or ($type[$i] eq "VglStrEl") ){
       $p = "*";
     }
     print CPP "$type[$i]$p $variable[$i]";
@@ -597,7 +662,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
     if ($default[$i]){
       print HEAD " $default[$i]";
     }
-    if ($i < $#type){
+    if ($i < $#type){ #TODO: Fix it. Potential bug when shape is last parameter.
       print CPP ", ";
       print HEAD ", ";
     } 
@@ -614,10 +679,13 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
 
   print CPP "
 
-  cl_int err;
+  cl_int _err;
 ";
 
   for ($i = 0; $i <= $#type; $i++){
+
+    print "TYPE = >>>$type[$i]<<< ISSHAPE = >>>$is_shape[$i]<<<\n";
+
     if ( ($type[$i] ne "VglImage*") and ($is_array[$i]) ){
         $var = $variable[$i];
         my $e = "&";
@@ -626,42 +694,63 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
 	}
         print CPP "
   cl_mem mobj_$var = NULL;
-  mobj_$var = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, ($size[$i])*sizeof($type[$i]), NULL, &err);
-  vglClCheckError( err, (char*) \"clCreateBuffer $var\" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_$var, CL_TRUE, 0, ($size[$i])*sizeof($type[$i]), $e$var, 0, NULL, NULL);
-  vglClCheckError( err, (char*) \"clEnqueueWriteBuffer $var\" );
+  mobj_$var = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, ($size[$i])*sizeof($type[$i]), NULL, &_err);
+  vglClCheckError( _err, (char*) \"clCreateBuffer $var\" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_$var, CL_TRUE, 0, ($size[$i])*sizeof($type[$i]), $e$var, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) \"clEnqueueWriteBuffer $var\" );
 ";
-    } 
+    }
+    elsif ( ($type[$i] eq "VglClShape") and ($is_shape[$i]) ){
+        $var = $variable[$i];
+        print CPP "
+  cl_mem mobj_$var = NULL;
+  mobj_$var = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof($type[$i]), NULL, &_err);
+  vglClCheckError( _err, (char*) \"clCreateBuffer $var\" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_$var, CL_TRUE, 0, sizeof($type[$i]), $size[$i], 0, NULL, NULL);
+  vglClCheckError( _err, (char*) \"clEnqueueWriteBuffer $var\" );
+";
+    }
+    elsif ($type[$i] eq "VglStrEl"){
+        $var = $variable[$i];
+        $t = "VglClStrEl";
+        print CPP "
+  cl_mem mobj_$var = NULL;
+  mobj_$var = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof($t), NULL, &_err);
+  vglClCheckError( _err, (char*) \"clCreateBuffer $var\" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_$var, CL_TRUE, 0, sizeof($t), $var->asVglClStrEl(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) \"clEnqueueWriteBuffer $var\" );
+";
+    }
   }  
 
         print CPP "
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) \"$cpp_read_path$basename\.cl\";
-    printf(\"Compiling %s\\n\", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) \"$cpp_read_path$basename\.cl\";
+    printf(\"Compiling %s\\n\", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, \"%s:%s: Error: File %s not found.\\n\", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, \"%s:%s: Error: File %s not found.\\n\", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf(\"Kernel to be compiled:\\n%s\\n\", source_str);
+    printf(\"Kernel to be compiled:\\n%s\\n\", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) \"clCreateProgramWithSource\" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) \"clCreateProgramWithSource\" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, \"-I $cpp_read_path\", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, \"$basename\", &err ); 
-    vglClCheckError(err, (char*) \"clCreateKernel\" );
+    _kernel = clCreateKernel( _program, \"$basename\", &_err ); 
+    vglClCheckError(_err, (char*) \"clCreateKernel\" );
   }
 
 ";
@@ -670,13 +759,16 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
     if ($type[$i] eq "VglImage*"){
       $addr = "(void*) &$variable[$i]->oclPtr";
     }
+    elsif ( ($type[$i] eq "VglStrEl") or ($is_shape[$i]) ){
+      $addr = "(void*) &mobj_$variable[$i]";
+    }
     elsif ($is_array[$i]){
       $addr = "($type[$i]*) &mobj_$variable[$i]";
     }
     else{
       $addr = "&$variable[$i]";
     }
-    if ( ($type[$i] eq "VglImage*") or ($is_array[$i]) ){
+    if ( ($type[$i] eq "VglImage*") or ($is_array[$i]) or ($type[$i] eq "VglStrEl") or ($is_shape[$i]) ){
       $sizeof = "cl_mem";
     }
     else{
@@ -685,8 +777,8 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
 
 
     print CPP "
-  err = clSetKernelArg( kernel, $i, sizeof( $sizeof ), $addr );
-  vglClCheckError( err, (char*) \"clSetKernelArg $i\" );
+  _err = clSetKernelArg( _kernel, $i, sizeof( $sizeof ), $addr );
+  vglClCheckError( _err, (char*) \"clSetKernelArg $i\" );
 ";
   }
 
@@ -698,26 +790,22 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   }
  
   print CPP "
-  if ($var_worksize->ndim <= 2){
-    size_t worksize[] = { $var_worksize->getWidthIn(), $var_worksize->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if ($var_worksize->ndim > 2){
+    _ndim = 3;
   }
-  else if ($var_worksize->ndim == 3){
-    size_t worksize[] = { $var_worksize->getWidthIn(), $var_worksize->getHeightIn(), $var_worksize->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf(\"More than 3 dimensions not yet supported\\n\");
-  }
+  size_t worksize[] = { $var_worksize->getWidthIn(), $var_worksize->getHeightIn(),  $var_worksize->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) \"clEnqueueNDRangeKernel\" );
+  vglClCheckError( _err, (char*) \"clEnqueueNDRangeKernel\" );
 ";
 
   for ($i = 0; $i <= $#type; $i++){
-    if (($type[$i] ne "VglImage*") && ($semantics[$i] ne "__write_only") && ($is_array[$i] != 0)){
+    if (    ( ($type[$i] ne "VglImage*") && ($semantics[$i] ne "__write_only") && ($is_array[$i] != 0) ) or
+            ($type[$i] eq "VglStrEl")    or     ($is_shape[$i])    ){
       print CPP "
-  err = clReleaseMemObject( mobj_$variable[$i] );
-  vglClCheckError(err, (char*) \"clReleaseMemObject mobj_$variable[$i]\");
+  _err = clReleaseMemObject( mobj_$variable[$i] );
+  vglClCheckError(_err, (char*) \"clReleaseMemObject mobj_$variable[$i]\");
 "; 
     }
   }
@@ -820,14 +908,26 @@ $topMsg = "
 ";
 open HEAD, ">>", "$output.h";
 print HEAD $topMsg;
-print HEAD "#include \"vglImage.h\"\n";
+print HEAD "#include \"vglImage.h\"
+
+#include \"vglShape.h\"
+
+#include \"vglStrEl.h\"
+
+";
 close HEAD;
 open CPP, ">>", "$output.cpp";
 print CPP $topMsg;
 print CPP "
 #include \"vglImage.h\"
 #include \"vglClImage.h\"
-#include \"vglContext.h\"\n
+#include \"vglContext.h\"
+
+#include \"vglShape.h\"
+#include \"vglClShape.h\"
+
+#include \"vglStrEl.h\"
+#include \"vglClStrEl.h\"
 
 #include <fstream>
 
@@ -864,7 +964,7 @@ for ($i=0; $i<=$#files; $i++) {
 
     ($comment, $semantics, $type, $variable, $default, $uniform) = ProcessClFile($fullname);
 
-    PrintCppFile($basename, $comment, $semantics, $type, $variable, $default, $is_array, $size, $output, $cpp_read_path);
+    PrintCppFile($basename, $comment, $semantics, $type, $variable, $default, $is_array, $is_shape, $size, $output, $cpp_read_path);
 
 }
 

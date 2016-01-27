@@ -330,9 +330,9 @@ VglImage*  vglGdcmLoad4dDicom(char* filename, int lStart, int lEnd, bool has_mip
   int shape[VGL_MAX_DIM+1];
   shape[0] = tmp->nChannels;
   shape[1] = tmp->getWidth();
-  shape[1] = tmp->getHeight();
-  shape[2] = tmp->getLength();
-  shape[3] = n;
+  shape[2] = tmp->getHeight();
+  shape[3] = tmp->getLength();
+  shape[4] = n;
 
   VglImage* img = vglCreateNdImage(4, shape, tmp->depth);
   //vglPrintImageInfo(img, "4D image");

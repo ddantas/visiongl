@@ -9,34 +9,42 @@
 #include "vglImage.h"
 
 #include "vglShape.h"
-#include "vglClShape.h"
 
 #include "vglStrEl.h"
-#include "vglClStrEl.h"
+
+/** N-dimensional convolution
+
+    SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
+    
+  */
+void vglClNdConvolution(VglImage* img_input, VglImage* img_output, VglStrEl* window);
+
+/** Copy N-dimensional image.
+
+  */
+void vglClNdCopy(VglImage* img_input, VglImage* img_output);
 
 /** N-dimensional dilation
 
-    SHAPE directive passes an array sized 2*VGL_MAX_DIM. Parameter does not appear in wrapper parameter list
-    SCALAR directive passes an scalar given by the expression that follows it. Parameter does not appear in wrapper parameter list.
-    ARRAY directive passes an array sized as the expression between brackets.
+    SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
     
-
-typedef 
-struct 
-VglClShape{ 
-  cl_int ndim;
-  cl_int shape[11];
-  cl_int offset[11];
-  cl_int size;
-} VglClShape;
-
-
-
   */
 void vglClNdDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window);
 
-/** Direct copy from src to dst.
+/** N-dimensional erosion
+
+    SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
+    
+  */
+void vglClNdErode(VglImage* img_input, VglImage* img_output, VglStrEl* window);
+
+/** Invert N-dimensional image.
 
   */
 void vglClNdNot(VglImage* img_input, VglImage* img_output);
+
+/** Threshold of img_input by parameter. if the pixel is below thresh,
+    the output is 0, else, the output is top. Result is stored in img_output.
+  */
+void vglClNdThreshold(VglImage* img_input, VglImage* img_output, unsigned char thresh, unsigned char top = 255);
 

@@ -40,7 +40,7 @@
 
 //CL
 //#ifdef __OPENCL__
-#define VGL_ARR_CLSTREL_SIZE 200
+#define VGL_ARR_CLSTREL_SIZE 256
 //#endif
 
 #endif

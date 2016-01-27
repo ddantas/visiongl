@@ -11,6 +11,11 @@
 #include "vglClImage.h"
 #include "vglContext.h"
 
+#include "vglShape.h"
+#include "vglClShape.h"
+
+#include "vglStrEl.h"
+#include "vglClStrEl.h"
 
 #include <fstream>
 
@@ -27,57 +32,52 @@ void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output){
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dBlurSq3.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dBlurSq3.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dBlurSq3", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dBlurSq3", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -90,78 +90,73 @@ void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convol
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dConvolution.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dConvolution.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dConvolution", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dConvolution", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -174,57 +169,52 @@ void vglCl3dCopy(VglImage* img_input, VglImage* img_output){
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dCopy.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dCopy.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dCopy", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dCopy", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -237,78 +227,73 @@ void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -321,78 +306,73 @@ void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -406,60 +386,55 @@ void vglCl3dMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dMax.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dMax.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dMax", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dMax", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), img_input1->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -473,60 +448,55 @@ void vglCl3dMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dMin.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dMin.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dMin", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dMin", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), img_input1->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -539,57 +509,52 @@ void vglCl3dNot(VglImage* img_input, VglImage* img_output){
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dNot.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dNot.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dNot", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dNot", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -603,60 +568,55 @@ void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dSub.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dSub.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dSub", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dSub", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), img_input1->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -670,60 +630,55 @@ void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dSum.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dSum.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dSum", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dSum", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), img_input1->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -736,63 +691,58 @@ void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top){
   vglCheckContext(src, VGL_CL_CONTEXT);
   vglCheckContext(dst, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglCl3dThreshold.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglCl3dThreshold.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dThreshold", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dThreshold", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &src->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &src->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &dst->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &dst->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( float ), &thresh );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( float ), &thresh );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( float ), &top );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( float ), &top );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  if (src->ndim <= 2){
-    size_t worksize[] = { src->getWidthIn(), src->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (src->ndim > 2){
+    _ndim = 3;
   }
-  else if (src->ndim == 3){
-    size_t worksize[] = { src->getWidthIn(), src->getHeightIn(), src->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { src->getWidthIn(), src->getHeightIn(),  src->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(dst, VGL_CL_CONTEXT);
 }
@@ -805,57 +755,52 @@ void vglClBlurSq3(VglImage* img_input, VglImage* img_output){
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClBlurSq3.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClBlurSq3.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClBlurSq3", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClBlurSq3", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -868,75 +813,70 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClConvolution.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClConvolution.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClConvolution", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClConvolution", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -949,57 +889,52 @@ void vglClCopy(VglImage* img_input, VglImage* img_output){
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClCopy.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClCopy.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClCopy", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClCopy", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1012,75 +947,70 @@ void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_w
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1093,75 +1023,70 @@ void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_wi
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1174,57 +1099,52 @@ void vglClInvert(VglImage* img_input, VglImage* img_output){
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClInvert.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClInvert.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClInvert", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClInvert", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1238,60 +1158,55 @@ void vglClMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClMax.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClMax.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClMax", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClMax", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), img_input1->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1305,60 +1220,55 @@ void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClMin.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClMin.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClMin", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClMin", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), img_input1->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1372,60 +1282,55 @@ void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClSub.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClSub.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClSub", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClSub", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), img_input1->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1439,60 +1344,55 @@ void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output){
   vglCheckContext(img_input2, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClSum.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClSum.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClSum", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClSum", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  if (img_input1->ndim <= 2){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input1->ndim == 3){
-    size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(), img_input1->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input1->getWidthIn(), img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1505,63 +1405,58 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh, float top){
   vglCheckContext(src, VGL_CL_CONTEXT);
   vglCheckContext(dst, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL/vglClThreshold.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL/vglClThreshold.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClThreshold", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClThreshold", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &src->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &src->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &dst->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &dst->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( float ), &thresh );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( float ), &thresh );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( float ), &top );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( float ), &top );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  if (src->ndim <= 2){
-    size_t worksize[] = { src->getWidthIn(), src->getHeightIn(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (src->ndim > 2){
+    _ndim = 3;
   }
-  else if (src->ndim == 3){
-    size_t worksize[] = { src->getWidthIn(), src->getHeightIn(), src->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { src->getWidthIn(), src->getHeightIn(),  src->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
   vglSetContext(dst, VGL_CL_CONTEXT);
 }

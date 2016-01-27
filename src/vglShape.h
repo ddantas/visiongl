@@ -59,6 +59,7 @@ class VglShape{
 
   int getWidthIn();
   int getHeightIn();
+  int getNFrames();
 
 #ifdef __OPENCL__
   VglClShape* asVglClShape();

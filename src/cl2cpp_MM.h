@@ -7,6 +7,11 @@
 ***                                                                 ***
 *********************************************************************/
 #include "vglImage.h"
+
+#include "vglShape.h"
+
+#include "vglStrEl.h"
+
 /** Erosion of src image by mask. Result is stored in dst image.
 
   */

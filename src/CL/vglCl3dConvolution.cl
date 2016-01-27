@@ -12,7 +12,7 @@ __kernel void vglCl3dConvolution(__read_only image3d_t img_input,
                           __constant float* convolution_window, 
                           int window_size_x, 
                           int window_size_y,
-			              int window_size_z)
+                          int window_size_z)
 {
 	int4 coords = (int4)(get_global_id(0), get_global_id(1), get_global_id(2), 0);
 	const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates

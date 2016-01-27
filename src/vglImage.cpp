@@ -416,57 +416,50 @@ void vglUpload(VglImage* image, int swapRGB){
 
 }
 
-/* * Clones image with same contents and dimensions as parameter
-
-    Same as vglCopyCreateImage
- */
-/*
-VglImage* vglCloneImage(IplImage* img_in, int ndim /*=2* /, int has_mipmap /*=0* /)
-{
-  VglImage* vglImage = new VglImage;
-  if (!img_in){
-    fprintf(stderr, "vglCloneImage: Error: img_in is null\n");
-    return 0;
-  }
-  vglImage->ipl = cvCloneImage(img_in);
-  if (!vglImage->ipl){
-    fprintf(stderr, "vglCloneImage: Error allocating memory for vglImage->ipl field\n");
-    return 0;
-  }
-  vglImage->width     = img_in->width;
-  vglImage->height    = img_in->height;
-  vglImage->ndim      = ndim;
-  vglImage->depth     = img_in->depth;
-  vglImage->nChannels = img_in->nChannels;
-  vglImage->has_mipmap = has_mipmap;
-  vglImage->fbo = -1;
-  vglImage->tex = -1;
-#ifdef __CUDA__
-  vglImage->cudaPtr = NULL;
-  vglImage->cudaPbo = -1;
-#endif
-  fprintf(stderr, "vglCloneImage: ndim = %d\n", vglImage->ndim);
-
-  vglSetContext(vglImage, VGL_RAM_CONTEXT);
-  vglUpload(vglImage);
-
-  if (vglImage->ipl){
-    return vglImage;
-  }
-  else{
-    free(vglImage);
-    return 0;
-  }
-}
-*/
-
 /** Create image with same format and data as img_in.
 
  */
 VglImage* vglCopyCreateImage(VglImage* img_in)
 {
   VglImage* retval = vglCreateImage(cvSize(img_in->getWidthIn(), img_in->getHeightIn()), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
-  vglCopy(img_in, retval);
+  #ifdef __OPENCL__
+  if (img_in->clForceAsBuf)
+  {
+    vglClForceAsBuf(retval);
+  }
+  #endif
+
+  if (vglIsInContext(img_in, VGL_GL_CONTEXT))
+  {
+    vglCopy(img_in, retval);
+  }
+
+//TODO: Finish this function
+/*
+  if !(vglIsInContext(img_in, VGL_BLANK_CONTEXT))
+  {
+    if (vglIsInContext(img_in, VGL_RAM_CONTEXT))
+    {
+      //TODO: Function to copy image from RAM to RAM
+    }
+    if (vglIsInContext(img_in, VGL_GL_CONTEXT))
+    {
+      vglCopy(img_in, retval);
+    }
+#ifdef __CUDA__
+    if (vglIsInContext(img_in, VGL_CUDA_CONTEXT))
+    {
+      vglCudaCopy(img_in, retval);
+    }
+#endif
+#ifdef __OPENCL__
+    if (vglIsInContext(img_in, VGL_CL_CONTEXT))
+    {
+      vglClCopy(img_in, retval);
+    }
+#endif
+  }
+*/
   return retval;
 }
 
@@ -485,17 +478,14 @@ VglImage* vglCopyCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /
  */
 VglImage* vglCreateImage(VglImage* img_in)
 {
-  /*
-  if (img_in->ndim == 2)
+  VglImage* retval = vglCreateImage(img_in->vglShape->shape, img_in->depth, img_in->ndim, img_in->has_mipmap); 
+  #ifdef __OPENCL__
+  if (img_in->clForceAsBuf)
   {
-    return vglCreateImage(cvSize(img_in->getWidth(), img_in->getHeight()), img_in->depth, img_in->nChannels, img_in->ndim, img_in->has_mipmap);
+    vglClForceAsBuf(retval);
   }
-  else
-  {
-    return vglCreate3dImage(cvSize(img_in->getWidth(), img_in->getHeight()), img_in->depth, img_in->nChannels, img_in->getLength(), img_in->has_mipmap);
-  }
-  */
-  return vglCreateImage(img_in->vglShape->shape, img_in->depth, img_in->ndim, img_in->has_mipmap); 
+  #endif
+  return retval;
 }
 
 
@@ -503,8 +493,8 @@ VglImage* vglCreateImage(VglImage* img_in)
  */
 VglImage* vglCreateImage(IplImage* img_in, int ndim /*=2*/, int has_mipmap /*=0*/)
 {
-  return vglCreateImage(cvGetSize(img_in), img_in->depth, img_in->nChannels, ndim, has_mipmap);
-
+  VglImage* retval = vglCreateImage(cvGetSize(img_in), img_in->depth, img_in->nChannels, ndim, has_mipmap);
+  return retval;
 }
 
 /** Create image as described by the parameters
@@ -550,6 +540,7 @@ VglImage* vglCreateImage(int* shape, int depth, int ndim /*=2*/, int has_mipmap 
 #endif
 #ifdef __OPENCL__
   vglImage->oclPtr = NULL;
+  vglImage->clForceAsBuf = 0;
 #endif
   vglImage->filename = NULL;
 
@@ -661,6 +652,39 @@ void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
         }
 	cvReleaseImage(&ipl);
 	free(temp_image);
+}                
+
+void vglSaveNdImage(VglImage* image, char* filename, int lStart)
+{
+  vglCheckContext(image, VGL_RAM_CONTEXT);
+
+  int ndim = image->vglShape->getNdim();
+  int shapeFrames = image->getNFrames();
+  int lEnd = shapeFrames + lStart - 1;
+
+  char* temp_filename = (char*)malloc(strlen(filename)+256);
+  sprintf(temp_filename, filename, lStart);
+  int d = image->depth / 8;
+  if (d < 1) d = 1; //d is the byte size of the depth color format
+
+  char* temp_image =   (char*)malloc(image->getHeight() * image->getWidth() * image->nChannels * d);
+  memcpy(temp_image, image->ndarray, image->getHeight() * image->getWidth() * image->nChannels * d);
+
+  IplImage* ipl = cvCreateImage(cvSize(image->getWidth(), image->getHeight()), image->depth, image->nChannels);
+  ipl->imageData = temp_image;
+
+  cvSaveImage(temp_filename,  ipl);
+  int c = image->getHeight()*image->getWidth()*d*image->nChannels;
+  for(int i = lStart+1; i <= lEnd; i++)
+  {
+    memcpy(temp_image,((char*)image->ndarray)+c,image->getHeight()*image->getWidth()*image->nChannels*d);
+    ipl->imageData = temp_image;
+    sprintf(temp_filename, filename, i);
+    cvSaveImage(temp_filename, ipl);
+    c += image->getHeight()*image->getWidth()*image->nChannels*d;
+  }
+  cvReleaseImage(&ipl);
+  free(temp_image);
 }                
 
 /** Converts ndarray from 3 channels to 4 channels
@@ -1293,7 +1317,7 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
 
   int shape[VGL_MAX_DIM+1];
   int ndim = 3;
-  for (int i = 0; i < VGL_MAX_DIM; i++)
+  for (int i = 0; i <= VGL_MAX_DIM; i++)
   {
     shape[i] = 1;
   }
@@ -1322,6 +1346,76 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
     memcpy(((char*)img->ndarray) + offset, (void*) ipl->imageData, delta);
     offset += delta;
 		cvReleaseImage(&ipl);
+  }
+
+  vglSetContext(img, VGL_RAM_CONTEXT);
+  //vglUpload(img); //must be fixed before enabling
+
+  return img;
+}
+
+/** /brief Load sequence of images as n-dimensional image.
+
+    Filename must have a printf compatible integer format specifier, like %d or %03d.
+*/
+VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, VglShape* vglShape, bool has_mipmap /*=0*/)
+{
+  VglImage* img;
+  char* tempFilename = (char*)malloc(strlen(filename) + 256);
+  sprintf(tempFilename, filename, lStart);
+  IplImage* ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
+
+  if (!ipl){
+    fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
+    return 0;
+  }
+
+  int bpp = (ipl->depth & 255) / 8;
+  if (bpp == 0)
+    bpp = 1;
+
+  int width = ipl->width;
+  int height = ipl->height;
+  int n = lEnd - lStart + 1;
+  if (ipl->nChannels == 1 && ipl->widthStep != (ipl->width * bpp))
+  {
+    fprintf(stderr,"%s: %s: Warning: OpenCV added %d px of padding to the image\n", __FILE__, __FUNCTION__, ipl->widthStep - (ipl->width * bpp));
+    width = ipl->widthStep / bpp;
+  }
+
+  vglShape->shape[0] = ipl->nChannels;
+  vglShape->shape[1] = width;
+  vglShape->shape[2] = height;
+  int ndim = vglShape->getNdim();
+  int shapeFrames = vglShape->getNFrames();
+
+  if (n != shapeFrames)
+  {
+    fprintf(stderr, "%s: %s: Error: number of frames in stack = %d != %d = number of frames in shape\n", __FILE__, __FUNCTION__, n, shapeFrames);
+    return 0;
+  }
+
+  img = vglCreateImage((int*)vglShape->shape, ipl->depth, ndim);
+  //free(img->ndarray);
+  //img->ndarray = (char*)malloc(img->getTotalSizeInBytes());
+
+  int delta = ipl->height*ipl->width*ipl->nChannels*bpp;
+  int offset = delta;  
+  memcpy(img->ndarray, (void*)ipl->imageData, delta);
+	cvReleaseImage(&ipl);
+  for(int i = lStart+1; i <= lEnd; i++)
+  {
+    sprintf(tempFilename,filename,i);
+    ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
+    if (!ipl){
+      fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
+      vglReleaseImage(&img);
+      return 0;
+    }
+
+    memcpy(((char*)img->ndarray) + offset, (void*) ipl->imageData, delta);
+    offset += delta;
+    cvReleaseImage(&ipl);
   }
 
   vglSetContext(img, VGL_RAM_CONTEXT);
@@ -1380,10 +1474,10 @@ void vglPrintImageInfo(VglImage* image, char* msg){
     image, image->getWidth(), image->getHeight(), image->getLength());
     printf("ndim = %d\n", image->ndim);
     printf("shape = {");
-    for(int i = 0; i < VGL_MAX_DIM; i++)
+    for(int i = 0; i <= VGL_MAX_DIM; i++)
     {
       if (i > 0) printf(", ");
-      printf("%d", image->shape[i]);
+      printf("%d", image->vglShape->shape[i]);
     }
     printf("}\n");
     printf("Ipl @ %p\n", image->ipl);
@@ -1409,6 +1503,7 @@ void vglPrintImageInfo(VglImage* image, char* msg){
 #endif
 #ifdef __OPENCL__
     printf("OCL @ %p\n", image->oclPtr);
+    printf("clForceAsBuf = %d\n", image->clForceAsBuf);
 #endif
     printf("Context = %d\n", image->inContext);
 }
@@ -2202,6 +2297,34 @@ void vglBaricenterVga(VglImage* src, double* x_avg /*= NULL*/, double* y_avg /*=
   }
 
 }
+
+
+/** Force image to be traated as buffer
+
+    Data with 2 and 3 dimensions are, by default, treated as images, i.e. are created 
+    and transferred by the API functions
+    clCreate2DImage, clCreate3DImage, clEnqueueWriteImage, clEnqueueReadImage.
+
+    To treat data as images has as advantage the possibility of automatic clamping to edge
+    in window operations.
+
+    Data with 1, 4 or more dimensions are always treated as buffers, i.e. are created 
+    and transferred by the API functions
+    clCreateBuffer, clEnqueueWriteBuffer, clEnqueueReadBuffer.
+
+    Use this function to force 2 and 3 dimensions data to be treated as buffers.
+
+*/
+void vglClForceAsBuf(VglImage*  img)
+{
+#ifdef __OPENCL__
+  img->clForceAsBuf = 1;
+#else
+  fprintf(stderr, "%s: %s: OpenCL not supported. Please recompile setting WITH_OPENCL to true in the Makefile.\n", __FILE__, __FUNCTION__);
+#endif
+}
+
+
 
 /** Test and model for functions with multiple output images.
 

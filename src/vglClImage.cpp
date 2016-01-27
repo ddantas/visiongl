@@ -493,12 +493,12 @@ void vglClUpload(VglImage* img)
                 format.image_channel_data_type = CL_UNORM_INT8;
 	    }
 
-            if (img->ndim == 2)
+            if ( (img->ndim == 2) && !(img->clForceAsBuf) )
             {
                 img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->getWidth(), img->getHeight(), 0, NULL, &err);
                 vglClCheckError( err, (char*) "clCreateImage2D" );
             }
-            else if(img->ndim == 3)
+            else if ( (img->ndim == 3) && !(img->clForceAsBuf) )
             {
                 img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->getWidth(), img->getHeight(), img->getLength(), 0, 0, NULL, &err);
                 vglClCheckError( err, (char*) "clCreateImage3D" );
@@ -557,7 +557,7 @@ void vglClUpload(VglImage* img)
                 exit(1);
             }
    
-            if ( (img->ndim == 2) || (img->ndim == 3) )
+            if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  )
             {
                 size_t Size3d[3] = {img->getWidth(), img->getHeight(), nFrames};
                 err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, (char*)imageData, 0, NULL, NULL );
@@ -711,7 +711,7 @@ void vglClDownload(VglImage* img)
           exit(1);
         }
    
-        if ( (img->ndim == 2) || (img->ndim == 3) )
+        if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  )
         {
             size_t Size3d[3] = {img->getWidth(), img->getHeight(), nFrames};
             cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, imageData, 0, NULL, NULL );

@@ -1,4 +1,4 @@
-/** N-dimensional dilation
+/** N-dimensional convolution
 
     SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
     
@@ -9,7 +9,7 @@
 #include "vglClShape.h"
 #include "vglClStrEl.h"
 
-__kernel void vglClNdDilate(__global unsigned char* img_input, 
+__kernel void vglClNdConvolution(__global unsigned char* img_input, 
                             __global unsigned char* img_output,  
                             __constant VglClShape* img_shape,
                             __constant VglClStrEl* window)
@@ -26,7 +26,7 @@ __kernel void vglClNdDilate(__global unsigned char* img_input,
   int ires;
   int idim;
   ires = coord;
-  unsigned char pmax = 0;
+  float result = 0.0;
   int img_coord[VGL_ARR_SHAPE_SIZE];
   int win_coord[VGL_ARR_SHAPE_SIZE];
 
@@ -60,8 +60,8 @@ __kernel void vglClNdDilate(__global unsigned char* img_input,
 
         conv_coord += img_shape->offset[d] * win_coord[d];
       }
-      pmax = max(pmax, img_input[conv_coord]);
+      result += img_input[conv_coord] * window->data[i];
     }
   }
-  img_output[coord] = pmax;
+  img_output[coord] = result;
 }

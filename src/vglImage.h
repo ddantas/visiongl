@@ -60,6 +60,7 @@ class VglImage{
 #endif
 #ifdef __OPENCL__
   cl_mem    oclPtr;
+  int       clForceAsBuf;
 #endif
   int       inContext;
   char*     filename;
@@ -149,6 +150,11 @@ class VglImage{
     return this->vglShape->getHeightIn();
   }
 
+  int getNFrames()
+  {
+    return this->vglShape->getNFrames();
+  }
+
 
 };
 
@@ -206,6 +212,7 @@ VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, i
 VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int has_mipmap = 0);
 void vglSaveImage(VglImage* image, char* filename);
 void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd);
+void vglSaveNdImage(VglImage* image, char* filename, int lStart);
 VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 void vglReleaseImage(VglImage** p_image);
 void vglReplaceIpl(VglImage* image, IplImage* new_ipl);
@@ -215,6 +222,7 @@ void vglDownloadFBO(VglImage* image);
 void vglDownloadFaster(VglImage* image/*, VglImage* buf*/);
 VglImage* vglLoadImage(char* filename, int iscolor = -1, int has_mipmap = 0); // -1 = CV_LOAD_IMAGE_UNCHANGED
 VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
+VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, VglShape* vglShape, bool has_mipmap = 0);
 void vglPrintImageData(VglImage* image, char* msg = NULL, char* format = (char*) "%c");
 void vglPrintImageInfo(VglImage* image, char* msg = NULL);
 void iplPrintImageInfo(IplImage* ipl, char* msg = NULL);
@@ -255,6 +263,9 @@ void vglErodeSq5Sep(VglImage* src, VglImage* dst, VglImage* buf, int times = 1);
 void vglCErodeCross3(VglImage* src, VglImage* mask, VglImage* dst, VglImage* buf, int times);
 void vglGray2(VglImage*  src, VglImage*  dst, VglImage*  dst1);
 
+#ifdef __OPENCL__
+void vglClForceAsBuf(VglImage*  img);
+#endif
 
 void vglInOut_model(VglImage*  dst, VglImage*  dst1);
 

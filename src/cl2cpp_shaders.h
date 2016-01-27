@@ -7,6 +7,11 @@
 ***                                                                 ***
 *********************************************************************/
 #include "vglImage.h"
+
+#include "vglShape.h"
+
+#include "vglStrEl.h"
+
 /** Convolution of src image by mask. Result is stored in dst image.
     
     In some OpenCL versions, the next directive is required

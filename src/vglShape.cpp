@@ -303,6 +303,17 @@ int VglShape::getHeightIn()
   return this->shape[VGL_SHAPE_HEIGHT];
 }
 
+int VglShape::getNFrames()
+{
+  int nframes = 1;
+  int ndim = this->getNdim();
+  for (int i = 3; i <= ndim; i++)
+  {
+    nframes *= this->shape[i];
+  }
+  return nframes;
+}
+
 
 
 

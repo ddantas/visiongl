@@ -13,6 +13,7 @@ CAM_NAME             = cam
 GDCM_NAME            = gdcm
 DCMTK_NAME           = dcmtk
 CL3D_NAME            = cl3d
+CLND_NAME            = clnd
 TIFF_NAME            = tiff
 BENCHMARK_CV_NAME    = benchmark_cv
 BENCHMARK_CVOCL_NAME = benchmark_cvocl
@@ -171,6 +172,12 @@ LINUXAMD64_DEMO_CL3D = $(CC) $(COMPILER_FLAGS) \
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS)
 
+LINUXAMD64_DEMO_CLND = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(CLND_NAME) \
+                         src/demo/$(CLND_NAME).cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS)
+
 LINUXAMD64_DEMO_FRACTAL = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINPATH)/demo_$(FRACTAL_NAME) \
                          src/demo/$(FRACTAL_NAME).cpp \
@@ -300,6 +307,9 @@ demotiff:
 democl3d:
 	$(LINUXAMD64_DEMO_CL3D)
 
+democlnd:
+	$(LINUXAMD64_DEMO_CLND)
+
 demobenchmark:
 	$(LINUXAMD64_DEMO_BENCHMARK_CV)
 	#$(LINUXAMD64_DEMO_BENCHMARK_CVOCL)
@@ -316,6 +326,9 @@ democolordeconv:
 
 rundemocl3d:
 	cd $(OUTPUT_BINPATH); ./demo_$(CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 /tmp
+
+rundemoclnd:
+	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 /tmp
 
 rundemofrac:
 	cd $(OUTPUT_BINPATH); ./demo_$(FRACTAL_NAME)
@@ -385,7 +398,7 @@ cl:
 	./perlModules/cl2cpp.pl -o src/cl2cpp_shaders -p CL src/CL/*.cl
 
 cl_nd:
-	./perlModules/cl2cpp.pl -o src/cl2cpp_ND -p CL src/CL_ND/*.cl
+	./perlModules/cl2cpp.pl -o src/cl2cpp_ND -p CL_ND src/CL_ND/*.cl
 
 cloud_cl:
 	./perlModules/cl2cloud.pl -o src/cloud_CL src/CL/*.cl

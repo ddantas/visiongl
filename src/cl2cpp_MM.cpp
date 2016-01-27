@@ -11,6 +11,11 @@
 #include "vglClImage.h"
 #include "vglContext.h"
 
+#include "vglShape.h"
+#include "vglClShape.h"
+
+#include "vglStrEl.h"
+#include "vglClStrEl.h"
 
 #include <fstream>
 
@@ -24,78 +29,73 @@ void vglCl3dFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* con
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyAlgDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyAlgDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyAlgDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyAlgDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -108,78 +108,73 @@ void vglCl3dFuzzyAlgErode(VglImage* img_input, VglImage* img_output, float* conv
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyAlgErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyAlgErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyAlgErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyAlgErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -192,78 +187,73 @@ void vglCl3dFuzzyArithDilate(VglImage* img_input, VglImage* img_output, float* c
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyArithDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyArithDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyArithDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyArithDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -276,78 +266,73 @@ void vglCl3dFuzzyArithErode(VglImage* img_input, VglImage* img_output, float* co
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyArithErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyArithErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyArithErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyArithErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -360,78 +345,73 @@ void vglCl3dFuzzyBoundDilate(VglImage* img_input, VglImage* img_output, float* c
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyBoundDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyBoundDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyBoundDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyBoundDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -444,78 +424,73 @@ void vglCl3dFuzzyBoundErode(VglImage* img_input, VglImage* img_output, float* co
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyBoundErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyBoundErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyBoundErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyBoundErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -528,81 +503,76 @@ void vglCl3dFuzzyDaPDilate(VglImage* img_input, VglImage* img_output, float* con
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyDaPDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyDaPDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyDaPDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDaPDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  err = clSetKernelArg( kernel, 6, sizeof( float ), &gama );
-  vglClCheckError( err, (char*) "clSetKernelArg 6" );
+  _err = clSetKernelArg( _kernel, 6, sizeof( float ), &gama );
+  vglClCheckError( _err, (char*) "clSetKernelArg 6" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -615,81 +585,76 @@ void vglCl3dFuzzyDaPErode(VglImage* img_input, VglImage* img_output, float* conv
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyDaPErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyDaPErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyDaPErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDaPErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  err = clSetKernelArg( kernel, 6, sizeof( float ), &gama );
-  vglClCheckError( err, (char*) "clSetKernelArg 6" );
+  _err = clSetKernelArg( _kernel, 6, sizeof( float ), &gama );
+  vglClCheckError( _err, (char*) "clSetKernelArg 6" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -702,78 +667,73 @@ void vglCl3dFuzzyDrasticDilate(VglImage* img_input, VglImage* img_output, float*
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyDrasticDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyDrasticDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyDrasticDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDrasticDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -786,78 +746,73 @@ void vglCl3dFuzzyDrasticErode(VglImage* img_input, VglImage* img_output, float* 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyDrasticErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyDrasticErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyDrasticErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDrasticErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -870,78 +825,73 @@ void vglCl3dFuzzyGeoDilate(VglImage* img_input, VglImage* img_output, float* con
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyGeoDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyGeoDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyGeoDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyGeoDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -954,78 +904,73 @@ void vglCl3dFuzzyGeoErode(VglImage* img_input, VglImage* img_output, float* conv
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyGeoErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyGeoErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyGeoErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyGeoErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1038,81 +983,76 @@ void vglCl3dFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyHamacherDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyHamacherDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyHamacherDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyHamacherDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  err = clSetKernelArg( kernel, 6, sizeof( float ), &gama );
-  vglClCheckError( err, (char*) "clSetKernelArg 6" );
+  _err = clSetKernelArg( _kernel, 6, sizeof( float ), &gama );
+  vglClCheckError( _err, (char*) "clSetKernelArg 6" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1125,81 +1065,76 @@ void vglCl3dFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float*
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyHamacherErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyHamacherErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyHamacherErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyHamacherErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  err = clSetKernelArg( kernel, 6, sizeof( float ), &gama );
-  vglClCheckError( err, (char*) "clSetKernelArg 6" );
+  _err = clSetKernelArg( _kernel, 6, sizeof( float ), &gama );
+  vglClCheckError( _err, (char*) "clSetKernelArg 6" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1212,78 +1147,73 @@ void vglCl3dFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* con
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyStdDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyStdDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyStdDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyStdDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1296,78 +1226,73 @@ void vglCl3dFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* conv
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y*window_size_z)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y*window_size_z)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglCl3dFuzzyStdErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglCl3dFuzzyStdErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglCl3dFuzzyStdErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyStdErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( int ), &window_size_z );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( int ), &window_size_z );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1380,75 +1305,70 @@ void vglClFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* convo
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyAlgDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyAlgDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyAlgDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyAlgDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1461,75 +1381,70 @@ void vglClFuzzyAlgErode(VglImage* img_input, VglImage* img_output, float* convol
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyAlgErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyAlgErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyAlgErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyAlgErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1542,75 +1457,70 @@ void vglClFuzzyArithDilate(VglImage* img_input, VglImage* img_output, float* con
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyArithDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyArithDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyArithDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyArithDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1623,75 +1533,70 @@ void vglClFuzzyArithErode(VglImage* img_input, VglImage* img_output, float* conv
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyArithErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyArithErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyArithErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyArithErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1704,75 +1609,70 @@ void vglClFuzzyBoundDilate(VglImage* img_input, VglImage* img_output, float* con
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyBoundDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyBoundDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyBoundDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyBoundDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1785,75 +1685,70 @@ void vglClFuzzyBoundErode(VglImage* img_input, VglImage* img_output, float* conv
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyBoundErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyBoundErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyBoundErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyBoundErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1866,78 +1761,73 @@ void vglClFuzzyDaPDilate(VglImage* img_input, VglImage* img_output, float* convo
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyDaPDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyDaPDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyDaPDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyDaPDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( float ), &gama );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( float ), &gama );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -1950,78 +1840,73 @@ void vglClFuzzyDaPErode(VglImage* img_input, VglImage* img_output, float* convol
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyDaPErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyDaPErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyDaPErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyDaPErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( float ), &gama );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( float ), &gama );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -2034,75 +1919,70 @@ void vglClFuzzyDrasticDilate(VglImage* img_input, VglImage* img_output, float* c
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyDrasticDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyDrasticDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyDrasticDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyDrasticDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -2115,75 +1995,70 @@ void vglClFuzzyDrasticErode(VglImage* img_input, VglImage* img_output, float* co
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyDrasticErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyDrasticErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyDrasticErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyDrasticErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -2196,75 +2071,70 @@ void vglClFuzzyGeoDilate(VglImage* img_input, VglImage* img_output, float* convo
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyGeoDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyGeoDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyGeoDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyGeoDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -2277,75 +2147,70 @@ void vglClFuzzyGeoErode(VglImage* img_input, VglImage* img_output, float* convol
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyGeoErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyGeoErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyGeoErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyGeoErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -2358,78 +2223,73 @@ void vglClFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float* 
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyHamacherDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyHamacherDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyHamacherDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyHamacherDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( float ), &gama );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( float ), &gama );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -2442,78 +2302,73 @@ void vglClFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float* c
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyHamacherErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyHamacherErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyHamacherErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyHamacherErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  err = clSetKernelArg( kernel, 5, sizeof( float ), &gama );
-  vglClCheckError( err, (char*) "clSetKernelArg 5" );
+  _err = clSetKernelArg( _kernel, 5, sizeof( float ), &gama );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -2526,75 +2381,70 @@ void vglClFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* convo
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyStdDilate.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyStdDilate.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyStdDilate", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyStdDilate", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
@@ -2607,75 +2457,70 @@ void vglClFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* convol
   vglCheckContext(img_input, VGL_CL_CONTEXT);
   vglCheckContext(img_output, VGL_CL_CONTEXT);
 
-  cl_int err;
+  cl_int _err;
 
   cl_mem mobj_convolution_window = NULL;
-  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &err);
-  vglClCheckError( err, (char*) "clCreateBuffer convolution_window" );
-  err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
-  vglClCheckError( err, (char*) "clEnqueueWriteBuffer convolution_window" );
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
-  static cl_program program = NULL;
-  if (program == NULL)
+  static cl_program _program = NULL;
+  if (_program == NULL)
   {
-    char* file_path = (char*) "CL_MM/vglClFuzzyStdErode.cl";
-    printf("Compiling %s\n", file_path);
-    std::ifstream file(file_path);
-    if(file.fail())
+    char* _file_path = (char*) "CL_MM/vglClFuzzyStdErode.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
     {
-      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, file_path);
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
       exit(1);
     }
-    std::string prog( std::istreambuf_iterator<char>( file ), ( std::istreambuf_iterator<char>() ) );
-    const char *source_str = prog.c_str();
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
 #ifdef __DEBUG__
-    printf("Kernel to be compiled:\n%s\n", source_str);
+    printf("Kernel to be compiled:\n%s\n", _source_str);
 #endif
-    program = clCreateProgramWithSource(cl.context, 1, (const char **) &source_str, 0, &err );
-    vglClCheckError(err, (char*) "clCreateProgramWithSource" );
-    err = clBuildProgram(program, 1, cl.deviceId, NULL, NULL, NULL );
-    vglClBuildDebug(err, program);
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_MM/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
   }
 
-  static cl_kernel kernel = NULL;
-  if (kernel == NULL)
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
   {
-    kernel = clCreateKernel( program, "vglClFuzzyStdErode", &err ); 
-    vglClCheckError(err, (char*) "clCreateKernel" );
+    _kernel = clCreateKernel( _program, "vglClFuzzyStdErode", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
 
-  err = clSetKernelArg( kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 0" );
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
 
-  err = clSetKernelArg( kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
-  vglClCheckError( err, (char*) "clSetKernelArg 1" );
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
-  err = clSetKernelArg( kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
-  vglClCheckError( err, (char*) "clSetKernelArg 2" );
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
 
-  err = clSetKernelArg( kernel, 3, sizeof( int ), &window_size_x );
-  vglClCheckError( err, (char*) "clSetKernelArg 3" );
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
 
-  err = clSetKernelArg( kernel, 4, sizeof( int ), &window_size_y );
-  vglClCheckError( err, (char*) "clSetKernelArg 4" );
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
-  if (img_input->ndim <= 2){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), 1 };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 2, NULL, worksize, 0, 0, 0, 0 );
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
   }
-  else if (img_input->ndim == 3){
-    size_t worksize[] = { img_input->getWidth(), img_input->getHeight(), img_input->getLength() };
-    clEnqueueNDRangeKernel( cl.commandQueue, kernel, 3, NULL, worksize, 0, 0, 0, 0 );
-  }
-  else{
-    printf("More than 3 dimensions not yet supported\n");
-  }
+  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
-  vglClCheckError( err, (char*) "clEnqueueNDRangeKernel" );
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
 
-  err = clReleaseMemObject( mobj_convolution_window );
-  vglClCheckError(err, (char*) "clReleaseMemObject mobj_convolution_window");
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
