@@ -31,3 +31,9 @@ TIF
 JPG 
 
 2d (528x393)     RGB  8bit Compres.  Emphysema_H_and_E.jpg -> http://en.wikipedia.org/wiki/H%26E_stain
+
+
+Other references
+
+List of image databases:
+http://www.imageprocessingplace.com/root_files_V3/image_databases.htm

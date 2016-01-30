@@ -11,14 +11,25 @@
 
 #include "demo/timer.h"
 
+int saveResult(VglImage* out, char* outString, char* outPath, char* outFolder, int i_0)
+{
+  char *cmd         = (char*) malloc(strlen(outPath) + 255);
+  char* outFilename = (char*) malloc(strlen(outPath) + 255);
+
+  sprintf(cmd, "mkdir -p %s/%s", outPath, outFolder);
+  system(cmd);
+  sprintf(outFilename, outString, outPath, outFolder);
+  vglSaveNdImage(out, (char*) outFilename, i_0);
+}  
+
 
 int main(int argc, char *argv[])
 {
   char* usage = (char*) "\n\
     This program reads a stack of image files and saves \n\
-a copy after a 3d erosion. Usage is as follows:\n\
+the results after benchmarking some operations. Usage is as follows:\n\
 \n\
-demo_clnd <input file> <index 0> <index n> <output folder>\n\
+benchmark_clnd <input file> <index 0> <index n> <steps> <output folder>\n\
 \n\
 where both input and output files require a printf-like integer\
 format specifier (%d) which will be replaced by the integers\
@@ -27,7 +38,7 @@ from index 0 to index n\n\
     Optionally it's possible to define an alternative geometry\
 to the image by adding the dimension sizes after the output\
 folder as follows.\
-demo_clnd <input file> <index 0> <index n> <output folder> <d1> <d2> ... <dn>\n\
+demo_clnd <input file> <index 0> <index n> <steps> <output folder> <d1> <d2> ... <dn>\n\
 \n\
     Leave d1 and d2 as zero to use instead the image dimensions\
 obtained from the image file.\
@@ -47,10 +58,9 @@ obtained from the image file.\
   int i_n = atoi(argv[3]);
   int nSteps = atoi(argv[4]);
   char *outPath = argv[5]; // name of the output folder
-
-  char *outFilename = (char*) malloc(strlen(outPath));
-  sprintf(outFilename, "%s/%%05d.jpg", outPath);
-  printf("outFilename = %s\n", outFilename);
+  char* outFolder;
+  char* outString   = (char*) "%s/%s/%%05d.tif";
+  printf("outString = %s\n", outString);
 
   //vglInit(500,500);
   vglClInit();
@@ -97,13 +107,40 @@ obtained from the image file.\
   // N-dimensional data must be stored as buffer in order to use vglClNd* functions.
   // Must call vglClForceAsBuf right after img creation, and before creating out image from img in order to propagate the clForceAsBuf property.
   vglClForceAsBuf(img);
-  VglImage* out = vglCreateImage(img);
+  VglImage* out  = vglCreateImage(img);
+  VglImage* out2 = vglCreateImage(img);
   vglPrintImageInfo(img, (char*)"Input image");
 
   VglStrEl* seCross = new VglStrEl(VGL_STREL_CROSS, ndim);
   VglStrEl* seCube = new VglStrEl(VGL_STREL_CUBE, ndim);
   VglStrEl* seMean = new VglStrEl(VGL_STREL_MEAN, ndim);
-  seMean->print();
+  VglStrEl* seCube1 = new VglStrEl(VGL_STREL_CUBE, 1);
+  VglStrEl* seMean1 = new VglStrEl(VGL_STREL_MEAN, 1);
+  VglStrEl* seCubeArr[ndim+1];
+  VglStrEl* seMeanArr[ndim+1];
+  seMean->print((char*) "seMean");
+  float dataCube[3] = { 1.0,     1.0,     1.0     };
+  float dataMean[3] = { 1.0/3.0, 1.0/3.0, 1.0/3.0 };
+
+  int strelShape[VGL_ARR_SHAPE_SIZE];
+  for (int i = 0; i < VGL_ARR_SHAPE_SIZE; i++)
+  {
+    strelShape[i] = 1;
+    printf("strelshape[%d] = %d\n", i, strelShape[i]);
+  }
+  for (int i = 1; i <= ndim; i++)
+  {
+    printf("creating separated strel: ndim = %d\n", ndim);
+    strelShape[i] = 3;
+    VglShape* tmpShape = new VglShape(strelShape, ndim);
+    seCubeArr[i] = new VglStrEl(dataCube, tmpShape);
+    seCubeArr[i]->print();
+    seMeanArr[i] = new VglStrEl(dataMean, tmpShape);
+    seMeanArr[i]->print();
+    delete(tmpShape);
+    strelShape[i] = 1;
+  }
+  printf("creating separated strel: done\n");
 
   // Benchmarks:
   int p;
@@ -114,7 +151,7 @@ obtained from the image file.\
   vglClNdConvolution(img, out, seMean);
   vglClFlush();
   printf("First call to             Convolution nD:       %s\n", getTimeElapsedInSeconds());
-  //Total time spent on n operations Blur 3x3
+  //Total time spent on n operations n-dimensional mean
   p = 0;
   TimerStart();
   while (p < nSteps)
@@ -130,8 +167,37 @@ obtained from the image file.\
   {
     vglReshape(out, origVglShape);
   }
-  sprintf(outFilename, "%s%s", outPath, "/clnd_conv_mean_%04d.tif");
-  vglSaveNdImage(out, (char*) outFilename, i_0);
+  outFolder = (char*) "clnd_conv_mean";
+  saveResult(out, outString, outPath, outFolder, i_0);
+
+
+  //Total time spent on n operations n-dimensional sep. mean
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdConvolution(img, out2, seMeanArr[1]);
+    for(int i = 2; i <= ndim; i++)
+    {
+      if (i % 2 == 0)
+        vglClNdConvolution(out2, out, seMeanArr[i]);
+      else
+        vglClNdConvolution(out, out2, seMeanArr[i]);
+    }
+  }
+  vglClFlush();
+  printf("Time spent on %8d     Conv. nD sep.:       %s \n", nSteps, getTimeElapsedInSeconds());
+  if (ndim % 2 == 1)
+    vglClNdCopy(out2, out);
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_conv_sep";
+  saveResult(out, outString, outPath, outFolder, i_0);
 
 
   //First call to n-dimensional dilation
@@ -145,7 +211,7 @@ obtained from the image file.\
   while (p < nSteps)
   {
     p++;
-    vglClNdConvolution(img, out, seMean);
+    vglClNdDilate(img, out, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d  Dilation nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -155,8 +221,8 @@ obtained from the image file.\
   {
     vglReshape(out, origVglShape);
   }
-  sprintf(outFilename, "%s%s", outPath, "/clnd_dilate_cube_%04d.tif");
-  vglSaveNdImage(out, (char*) outFilename, i_0);
+  outFolder = (char*) "clnd_dilate_cube";
+  saveResult(out, outString, outPath, outFolder, i_0);
 
 
   //Total time spent on n operations n-dimensional dilation
@@ -165,7 +231,7 @@ obtained from the image file.\
   while (p < nSteps)
   {
     p++;
-    vglClNdConvolution(img, out, seMean);
+    vglClNdDilate(img, out, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d Dilation nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -175,8 +241,8 @@ obtained from the image file.\
   {
     vglReshape(out, origVglShape);
   }
-  sprintf(outFilename, "%s%s", outPath, "/clnd_dilate_cross_%04d.tif");
-  vglSaveNdImage(out, (char*) outFilename, i_0);
+  outFolder = (char*) "clnd_dilate_cross";
+  saveResult(out, outString, outPath, outFolder, i_0);
 
 
   //First call to n-dimensional negation
@@ -200,8 +266,8 @@ obtained from the image file.\
   {
     vglReshape(out, origVglShape);
   }
-  sprintf(outFilename, "%s%s", outPath, "/clnd_invert_%04d.tif");
-  vglSaveNdImage(out, (char*) outFilename, i_0);
+  outFolder = (char*) "clnd_invert";
+  saveResult(out, outString, outPath, outFolder, i_0);
 
 
   char thresh = 30;
@@ -226,8 +292,8 @@ obtained from the image file.\
   {
     vglReshape(out, origVglShape);
   }
-  sprintf(outFilename, "%s%s", outPath, "/clnd_invert_%04d.tif");
-  vglSaveNdImage(out, (char*) outFilename, i_0);
+  outFolder = (char*) "clnd_thresh";
+  saveResult(out, outString, outPath, outFolder, i_0);
 
 
   //First call to n-dimensional copy
@@ -251,8 +317,8 @@ obtained from the image file.\
   {
     vglReshape(out, origVglShape);
   }
-  sprintf(outFilename, "%s%s", outPath, "/clnd_invert_%04d.tif");
-  vglSaveNdImage(out, (char*) outFilename, i_0);
+  outFolder = (char*) "clnd_copy";
+  saveResult(out, outString, outPath, outFolder, i_0);
 
 
   //First call to n-dimensional Copy CPU->GPU
@@ -279,8 +345,8 @@ obtained from the image file.\
   {
     vglReshape(out, origVglShape);
   }
-  sprintf(outFilename, "%s%s", outPath, "/clnd_invert_%04d.tif");
-  vglSaveNdImage(out, (char*) outFilename, i_0);
+  outFolder = (char*) "clnd_upload";
+  saveResult(out, outString, outPath, outFolder, i_0);
 
 
   //First call to n-dimensional Copy GPU->CPU
@@ -307,53 +373,9 @@ obtained from the image file.\
   {
     vglReshape(out, origVglShape);
   }
-  sprintf(outFilename, "%s%s", outPath, "/clnd_invert_%04d.tif");
-  vglSaveNdImage(out, (char*) outFilename, i_0);
+  outFolder = (char*) "clnd_download";
+  saveResult(out, outString, outPath, outFolder, i_0);
 
-
-  /* Choose option:
-    1 - N-dimensional mean filter
-    2 - Dilation n-dimensional by hypercube
-    3 - Dilation n-dimensional by hypercross
-    4 - Negation
-    5 - Threshold
-    6 - Copy
-  */    
-  int option = 1;
-  
-  switch (option)
-  {
-    case 1:
-      vglClNdConvolution(img, out, seMean);
-      break;
-    case 2:
-      vglClNdDilate(img, out, seCube);
-      break;
-    case 3:
-      vglClNdDilate(img, out, seCross);
-      break;
-    case 4:
-      vglClNdNot(img, out);
-      break;
-    case 5:
-      {
-        char thresh = 30;
-        vglClNdThreshold(img, out, thresh);
-      }
-      break;
-    case 6:
-    default:
-      vglClNdCopy(img, out);
-      break;
-  }
-
-  vglClDownload(out);
-
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  vglSaveNdImage(out, (char*) "/tmp/clnd_%04d.tif", 0);
 
   return 0;
 }

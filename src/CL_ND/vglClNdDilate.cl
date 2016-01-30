@@ -39,6 +39,7 @@ __kernel void vglClNdDilate(__global unsigned char* img_input,
   }
 
   int conv_coord = 0;
+  //barrier(CLK_LOCAL_MEM_FENCE);
   for(int i = 0; i < window->size; i++)
   {
     if (!(window->data[i] == 0))
@@ -55,13 +56,13 @@ __kernel void vglClNdDilate(__global unsigned char* img_input,
         idim = ires / off;
         ires = ires - idim * off;
         win_coord[d] = idim + img_coord[d];
-        win_coord[d] = max(win_coord[d], 0);
-        win_coord[d] = min(win_coord[d], img_shape->shape[d]-1);
+        win_coord[d] = clamp(win_coord[d], 0, img_shape->shape[d]-1);
 
         conv_coord += img_shape->offset[d] * win_coord[d];
       }
       pmax = max(pmax, img_input[conv_coord]);
     }
+    //barrier(CLK_LOCAL_MEM_FENCE);
   }
   img_output[coord] = pmax;
 }

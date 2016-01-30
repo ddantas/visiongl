@@ -55,8 +55,7 @@ __kernel void vglClNdErode (__global unsigned char* img_input,
         idim = ires / off;
         ires = ires - idim * off;
         win_coord[d] = idim + img_coord[d];
-        win_coord[d] = max(win_coord[d], 0);
-        win_coord[d] = min(win_coord[d], img_shape->shape[d]-1);
+        win_coord[d] = clamp(win_coord[d], 0, img_shape->shape[d]-1);
 
         conv_coord += img_shape->offset[d] * win_coord[d];
       }

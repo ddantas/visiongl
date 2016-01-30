@@ -342,7 +342,7 @@ VglClShape* VglShape::asVglClShape()
     result->shape[VGL_SHAPE_HEIGHT] = this->getHeight();
     result->offset[VGL_SHAPE_HEIGHT]  = result->shape[VGL_SHAPE_HEIGHT-1] * result->offset[VGL_SHAPE_HEIGHT-1];
   }
-  
+
 #ifdef __DEBUG__
   printf("Inside VglShape::asVglClShape()===============\n");
   printf("ndim    = %d\n", result->ndim);

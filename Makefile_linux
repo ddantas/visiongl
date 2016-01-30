@@ -383,20 +383,21 @@ rundemobenchmark:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/01_test.tif 10 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_FUZZYTOPHAT_NAME) ../images/01_test.tif 10 /tmp
 
+STEPS=10
 rundemobenchmarkclnd:
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 256 86016 -1d
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 256 86016
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 0 0 336
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 0 0 2 168
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 10 /tmp 0 0 2 24 7
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 256 86016 -1d
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 256 86016
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 0 0 336
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 0 0 2 168
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 0 0 2 24 7
 
 rundemobenchmark16:
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/E1154S7I_001.tif 10 /tmp
-	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 10 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/E1154S7I_001.tif 10 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/E1154S7I_00%d.tif 1 7 10 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/E1154S7I_001.tif 10 /tmp
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_FUZZYTOPHAT_NAME) ../images/E1154S7I_001.tif 10 /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/E1154S7I_001.tif $(STEPS) /tmp
+	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif $(STEPS) /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/E1154S7I_001.tif $(STEPS)  /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/E1154S7I_00%d.tif 1 7 $(STEPS) /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/E1154S7I_001.tif $(STEPS) /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_FUZZYTOPHAT_NAME) ../images/E1154S7I_001.tif $(STEPS) /tmp
 
 rundemocolordeconv:
 	cd $(OUTPUT_BINPATH); ./demo_$(COLORDECONV_NAME) ../images/Emphysema_H_and_E.jpg 1 /tmp/image.%d.pgm 0.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 0.0
