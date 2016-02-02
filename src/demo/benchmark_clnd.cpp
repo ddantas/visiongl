@@ -62,7 +62,7 @@ obtained from the image file.\
   char* outString   = (char*) "%s/%s/%%05d.tif";
   printf("outString = %s\n", outString);
 
-  //vglInit(500,500);
+  vglInit(10,10);
   vglClInit();
 
   int shape[VGL_ARR_SHAPE_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -119,8 +119,10 @@ obtained from the image file.\
   VglStrEl* seCubeArr[ndim+1];
   VglStrEl* seMeanArr[ndim+1];
   seMean->print((char*) "seMean");
-  float dataCube[3] = { 1.0,     1.0,     1.0     };
-  float dataMean[3] = { 1.0/3.0, 1.0/3.0, 1.0/3.0 };
+  int diam = 3;
+  float diamf = (float)diam;
+  float dataCube[3] = { 1.0,       1.0,       1.0     };
+  float dataMean[3] = { 1.0/diamf, 1.0/diamf, 1.0/diamf };
 
   int strelShape[VGL_ARR_SHAPE_SIZE];
   for (int i = 0; i < VGL_ARR_SHAPE_SIZE; i++)
@@ -131,7 +133,7 @@ obtained from the image file.\
   for (int i = 1; i <= ndim; i++)
   {
     printf("creating separated strel: ndim = %d\n", ndim);
-    strelShape[i] = 3;
+    strelShape[i] = diam;
     VglShape* tmpShape = new VglShape(strelShape, ndim);
     seCubeArr[i] = new VglStrEl(dataCube, tmpShape);
     seCubeArr[i]->print();
@@ -142,8 +144,10 @@ obtained from the image file.\
   }
   printf("creating separated strel: done\n");
 
-  // Benchmarks:
   int p;
+
+if (img->clForceAsBuf){
+  // Benchmarks:
 
 
   //First call to n-dimensional mean
@@ -222,6 +226,35 @@ obtained from the image file.\
     vglReshape(out, origVglShape);
   }
   outFolder = (char*) "clnd_dilate_cube";
+  saveResult(out, outString, outPath, outFolder, i_0);
+
+
+  //Total time spent on n operations n-dimensional sep. dilation
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdDilate(img, out2, seCubeArr[1]);
+    for(int i = 2; i <= ndim; i++)
+    {
+      if (i % 2 == 0)
+        vglClNdDilate(out2, out, seCubeArr[i]);
+      else
+        vglClNdDilate(out, out2, seCubeArr[i]);
+    }
+  }
+  vglClFlush();
+  printf("Time spent on %8d  Dilation nD sep.:       %s \n", nSteps, getTimeElapsedInSeconds());
+  if (ndim % 2 == 1)
+    vglClNdCopy(out2, out);
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_conv_sep";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -319,8 +352,219 @@ obtained from the image file.\
   }
   outFolder = (char*) "clnd_copy";
   saveResult(out, outString, outPath, outFolder, i_0);
+}
+else
+{
+  // Benchmarks:
 
 
+  //First call to n-dimensional mean
+  TimerStart();
+  vglCl3dConvolution(img, out, seMean->data, seMean->vglShape->getWidth(), seMean->vglShape->getHeight(), seMean->vglShape->getLength());
+  vglClFlush();
+  printf("First call to             Convolution 3D:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional mean
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglCl3dConvolution(img, out, seMean->data, seMean->vglShape->getWidth(), seMean->vglShape->getHeight(), seMean->vglShape->getLength());
+  }
+  vglClFlush();
+  printf("Time spent on %8d    Convolution 3D:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_conv_mean";
+  saveResult(out, outString, outPath, outFolder, i_0);
+
+
+  //Total time spent on n operations n-dimensional sep. mean
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    VglStrEl* se = seMeanArr[1];
+    vglCl3dConvolution(img, out2, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
+    for(int i = 2; i <= ndim; i++)
+    {
+      se = seMeanArr[i];
+      if (i % 2 == 0)
+        vglCl3dConvolution(out2, out, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
+      else
+        vglCl3dConvolution(out, out2, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
+    }
+  }
+  vglClFlush();
+  printf("Time spent on %8d     Conv. 3D sep.:       %s \n", nSteps, getTimeElapsedInSeconds());
+  if (ndim % 2 == 1)
+    vglCl3dCopy(out2, out);
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_conv_sep";
+  saveResult(out, outString, outPath, outFolder, i_0);
+
+
+  //First call to n-dimensional dilation
+  TimerStart();
+  vglCl3dDilate(img, out, seCube->data, seCube->vglShape->getWidth(), seCube->vglShape->getHeight(), seCube->vglShape->getLength());
+  vglClFlush();
+  printf("First call to           Dilation 3D cube:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional dilation
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglCl3dDilate(img, out, seCube->data, seCube->vglShape->getWidth(), seCube->vglShape->getHeight(), seCube->vglShape->getLength());
+  }
+  vglClFlush();
+  printf("Time spent on %8d  Dilation 3D cube:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_dilate_cube";
+  saveResult(out, outString, outPath, outFolder, i_0);
+
+
+  //Total time spent on n operations n-dimensional sep. dilation
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    VglStrEl* se = seMeanArr[1];
+    vglCl3dDilate(img, out2, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
+    for(int i = 2; i <= ndim; i++)
+    {
+      se = seMeanArr[i];
+      if (i % 2 == 0)
+        vglCl3dDilate(out2, out, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
+      else
+        vglCl3dDilate(out, out2, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
+    }
+  }
+  vglClFlush();
+  printf("Time spent on %8d  Dilation nD sep.:       %s \n", nSteps, getTimeElapsedInSeconds());
+  if (ndim % 2 == 1)
+    vglCl3dCopy(out2, out);
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_conv_sep";
+  saveResult(out, outString, outPath, outFolder, i_0);
+
+
+  //Total time spent on n operations n-dimensional dilation
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglCl3dDilate(img, out, seCross->data, seCross->vglShape->getWidth(), seCross->vglShape->getHeight(), seCross->vglShape->getLength());
+  }
+  vglClFlush();
+  printf("Time spent on %8d Dilation 3D cross:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_dilate_cross";
+  saveResult(out, outString, outPath, outFolder, i_0);
+
+
+  //First call to n-dimensional negation
+  TimerStart();
+  vglCl3dNot(img, out);
+  vglClFlush();
+  printf("First call to                   Negation:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional negation
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglCl3dNot(img, out);
+  }
+  vglClFlush();
+  printf("Time spent on %8d          Negation:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_invert";
+  saveResult(out, outString, outPath, outFolder, i_0);
+
+
+  float thresh = 30.0/255.0;
+  //First call to n-dimensional threshold
+  TimerStart();
+  vglCl3dThreshold(img, out, thresh);
+  vglClFlush();
+  printf("First call to                  Threshold:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional negation
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglCl3dThreshold(img, out, thresh);
+  }
+  vglClFlush();
+  printf("Time spent on %8d         Threshold:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_thresh";
+  saveResult(out, outString, outPath, outFolder, i_0);
+
+
+  //First call to n-dimensional copy
+  TimerStart();
+  vglCl3dCopy(img, out);
+  vglClFlush();
+  printf("First call to                       Copy:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional negation
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglCl3dCopy(img, out);
+  }
+  vglClFlush();
+  printf("Time spent on %8d              Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(out, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(out, origVglShape);
+  }
+  outFolder = (char*) "clnd_copy";
+  saveResult(out, outString, outPath, outFolder, i_0);
+}
   //First call to n-dimensional Copy CPU->GPU
   vglCheckContext(img, VGL_RAM_CONTEXT);
   TimerStart();

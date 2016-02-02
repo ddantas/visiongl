@@ -47,9 +47,9 @@ OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_le
 
 WITH_CUDA = 0
 WITH_OPENCL = 1
-WITH_GDCM = 1
-WITH_DCMTK = 1
-WITH_TIFF = 1
+WITH_GDCM = 0
+WITH_DCMTK = 0
+WITH_TIFF = 0
 
 ifeq ($(WITH_OPENCL), 1)
 	OPENCL_DEF        = -D__OPENCL__
@@ -73,11 +73,12 @@ else
 endif
 
 ifeq ($(WITH_OPENCL), 1)
-        OPENCL_PATH        = /usr/local/cuda/
         OPENCL_PATH        = /opt/intel/opencl-1.2-4.4.0.117/lib64/
         OPENCL_PATH        = /opt/AMDAPP
+        OPENCL_PATH        = /usr/local/cuda/
         OPENCL_INCLUDEPATH = $(OPENCL_PATH)/include/
         OPENCL_LIBPATH     = $(OPENCL_PATH)/lib/x86_64
+        OPENCL_LIBPATH     = $(OPENCL_PATH)/lib64
         #OPENCL_LIBPATH     = /usr/lib/
         OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
         OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
@@ -128,7 +129,7 @@ INSTALL_LIBPATH     = $(INSTALL_PATH)/lib
 
 OPENGL_LIBDIR = -L /usr/X11R6/lib
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(CUDA_LIBPATH):$(OPENCV_LIBPATH):$(INSTALL_LIBPATH):$(GDCM_LIBPATH):$(DCMTK_LIBPATH)
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(CUDA_LIBPATH):$(OPENCV_LIBPATH):$(INSTALL_LIBPATH):$(GDCM_LIBPATH):$(DCMTK_LIBPATH):$(OPENCL_LIBPATH)
 
 
 COMPILER_FLAGS   = -g -pg -DGL_GLEXT_PROTOTYPES -DGLX_GLXEXT_PROTOTYPES 
@@ -385,6 +386,7 @@ rundemobenchmark:
 
 STEPS=10
 rundemobenchmarkclnd:
+	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 2048 10752
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 256 86016 -1d
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 256 86016
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 0 0 336
