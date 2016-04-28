@@ -16,7 +16,7 @@ use perlModules::common qw( LineStartMultiLineComment
 #
 # Returns the string, between /* and */, after the variable
 # in start of $line, that defines its default value, blank string if not found.
-# 
+#
 sub LineStartCommentedDefault { # ($line) {
   my $line = $_[0];
 
@@ -28,11 +28,11 @@ sub LineStartCommentedDefault { # ($line) {
 # LineStartPreamble
 #
 # Eliminates preamble, i.e., typedefs and includes, before __kernel header.
-# 
+#
 sub LineStartPreamble { # ($line) {
   my $line = $_[0];
 
-  # *? is ungreedy match; 
+  # *? is ungreedy match;
   # s modifier makes . match new line
   $line =~ s#^\s*(typedef\s*struct\s*\w*\s*\{.*?\}\s*\w*\s*;)##s;
   $result = $1;
@@ -50,9 +50,9 @@ sub LineStartPreamble { # ($line) {
 #############################################################################
 # LineStartHeader
 #
-# Returns the header of the program, that is, the 
+# Returns the header of the program, that is, the
 # text starting with __kernel until the character before {
-# 
+#
 sub LineStartHeader { # ($line) {
   my $line = $_[0];
 
@@ -70,7 +70,7 @@ sub LineStartHeader { # ($line) {
 # in start of $line, blank string if not found.
 # Valid semantic bindings are __read_only, __write_only, __read_write,
 # __constant and __global.
-# 
+#
 sub LineStartSemantics { # ($line) {
   my $line = $_[0];
 
@@ -94,7 +94,7 @@ sub LineStartSemantics { # ($line) {
 # Returns the string after the directive
 # in start of $line, blank string if not found.
 # Valid directives are SCALAR, ARRAY and SHAPE
-# 
+#
 sub LineStartDirective { # ($line) {
   my $line = $_[0];
 
@@ -116,9 +116,9 @@ sub LineStartDirective { # ($line) {
 #############################################################################
 # LineStartSize
 #
-# Returns the string between [] in 
+# Returns the string between [] in
 # start of $line, blank string if not found.
-# 
+#
 sub LineStartSize { # ($line) {
   my $line = $_[0];
 
@@ -133,7 +133,7 @@ sub LineStartSize { # ($line) {
 #
 # Returns the expression between () in
 # start of $line, blank string if not found.
-# 
+#
 sub LineStartValue { # ($line) {
   my $line = $_[0];
 
@@ -147,7 +147,7 @@ sub LineStartValue { # ($line) {
 # LineStartMain
 #
 # Returns the string that contains the expression __kernel void.
-# 
+#
 sub LineStartMain { # ($line) {
   my $line = $_[0];
 
@@ -160,12 +160,12 @@ sub LineStartMain { # ($line) {
 #
 # Receives as input an array of CL directives and links them to the respective variables
 #
-# A CL Directive purpose is to specify the size of arrays passed as parameters to 
+# A CL Directive purpose is to specify the size of arrays passed as parameters to
 # a kernel. The size is needed by the wrapper to calculate the buffer size. The buffer
 # size is passed as parameter to clCreateBuffer and clEnqueueWriteBuffer.
 #
 sub foo{
-$bar = ' 
+$bar = '
 sub ProcessClDirectives { # ($directives, $variable) {
   my $directives   = $_[0];
   my $variable     = $_[1];
@@ -270,7 +270,7 @@ sub ProcessClDirectives { # ($directives, $variable) {
 #
 # Receives as input a CL directive and returns directive type, variable name and size.
 #
-# A CL Directive purpose is to specify the size of arrays passed as parameters to 
+# A CL Directive purpose is to specify the size of arrays passed as parameters to
 # a kernel. The size is needed by the wrapper to calculate the buffer size. The buffer
 # size is passed as parameter to clCreateBuffer and clEnqueueWriteBuffer.
 #
@@ -371,7 +371,7 @@ sub ProcessClHeader { # ($line) {
   }
   else{
     #print "After eliminating \"__kernel void\":\n$line\n";
-  }  
+  }
 
   ($kernelname, $line) = LineStartVariable($line);
   if (!$kernelname){
@@ -388,7 +388,7 @@ sub ProcessClHeader { # ($line) {
   }
   else{
     #print "After eliminating parenthesis:\n$line\n";
-  }  
+  }
 
   ($separator, $line) = LineStartSeparator($line);
 
@@ -463,9 +463,9 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
   my $filename      = $_[0];
   my $output        = $_[1];
   my $cpp_read_path = $_[2];
-  
-  my $comment; 
-  my $semantics; 
+
+  my $comment;
+  my $semantics;
   my $type;
   my $variable;
   my $default;
@@ -476,8 +476,8 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
 
   print "directive size = $#dircomment\n";
 
-  undef $comment; 
-  undef $semantics; 
+  undef $comment;
+  undef $semantics;
   undef $type;
   undef $variable;
   undef $default;
@@ -505,7 +505,7 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
   }
   else{
     print "Found this comment:\n$comment\n";
-  }  
+  }
 
   print "directive size = $#directive\n";
 
@@ -530,7 +530,7 @@ sub ProcessClFile { # ($filename, $output, $cpp_read_path) {
 
   print "Starting loop to print directives found\n";
   for($i = 0; $i <= $#dirvar; $i++){
-      print ("ProcessClFile result = <$dirvar[$i]> <$dirsize[$i]> <$dirisarray[$i]> <$dirisshape[$i]>\n");  
+      print ("ProcessClFile result = <$dirvar[$i]> <$dirsize[$i]> <$dirisarray[$i]> <$dirisshape[$i]>\n");
   }
 
   print "Eliminating preamble (typedef|include)\n\n\n\n";
@@ -665,7 +665,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
     if ($i < $#type){ #TODO: Fix it. Potential bug when shape is last parameter.
       print CPP ", ";
       print HEAD ", ";
-    } 
+    }
   }
   print CPP ")\n{";
   print HEAD ");\n\n";
@@ -736,7 +736,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   vglClCheckError( _err, (char*) \"clEnqueueWriteBuffer $var\" );
 ";
     }
-  }  
+  }
 
         print CPP "
   static cl_program _program = NULL;
@@ -764,7 +764,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, \"$basename\", &_err ); 
+    _kernel = clCreateKernel( _program, \"$basename\", &_err );
     vglClCheckError(_err, (char*) \"clCreateKernel\" );
   }
 
@@ -803,7 +803,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
       last;
     }
   }
- 
+
   print CPP "
   int _ndim = 2;
   if ($var_worksize->ndim > 2){
@@ -821,7 +821,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
       print CPP "
   _err = clReleaseMemObject( mobj_$variable[$i] );
   vglClCheckError(_err, (char*) \"clReleaseMemObject mobj_$variable[$i]\");
-"; 
+";
     }
   }
 
@@ -840,7 +840,62 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   close CPP;
   close HEAD;
 }
-  
+
+#############################################################################
+# PrintHtmlFile
+#
+# Receives as input a CL filename and generates html tags
+#
+#
+sub PrintHtmlFile { # ($basename, $comment, $semantics, $type, $variable, $default, $uniform, $output, $cpp_read_path) {
+  my $basename      = $_[0];
+  my $comment       = $_[1];
+  my $semantics     = $_[2];
+  my $type          = $_[3];
+  my $variable      = $_[4];
+  my $default       = $_[5];
+  my $is_array      = $_[6];
+  my $size          = $_[7];
+  my $output        = $_[8];
+  my $cpp_read_path = $_[9];
+
+  my $i;
+  my $first_framebuffer = "";
+
+  print "Will write to $output.html\n";
+
+  open HTML, ">>", "$output.html";
+
+  print HTML "<div class=\"lblock ui-corner-all noselect\">";
+  print HTML "<div class=\"ui-widget-header ui-corner-top\">$basename</div>";
+  print HTML "<div class=\"ui-widget-content ui-corner-bottom\">";
+
+  for ($i = 0; $i <= $#type; $i++){
+    if ($semantics[$i] eq "__read_only"){
+      print HTML "<p class=\"pleft\"><span class=\"vertex in ";
+    }else{
+      if ($semantics[$i] eq "__write_only"){
+        print HTML "<p class=\"pright\"><span class=\"vertex out ";
+      }else{
+        print HTML "<p class=\"pleft\"><span class=\"vertex in ";
+      }
+    }
+
+    if ($type[$i] eq "VglImage*"){
+      print HTML "image";
+    }else{
+      print HTML "$type[$i]";
+    }
+    print HTML "\"></span>$variable[$i]</p>";
+
+  }
+
+  print HTML "</div>";
+  print HTML "</div>";
+
+  close HTML;
+}
+
 #############################################################################
 # Main program
 #
@@ -851,11 +906,11 @@ Usage:
 
 cl2cpp  [-o OutputFile] [-p ShadersPath] InputFileList
 
-OutputFile      Source file to which the output will be written. Two files 
-                are written with this prefix, a \".cpp\" and a \".h\". 
+OutputFile      Source file to which the output will be written. Two files
+                are written with this prefix, a \".cpp\" and a \".h\".
                 It is optional and the default is \"cl2cpp_shaders\".
 
-ShadersPath     Path to shader files, added to cpp source code before the 
+ShadersPath     Path to shader files, added to cpp source code before the
                 shader file name. Default is blank.
 
 InputFileList   List of input files. Wildcard characters are allowed.
@@ -867,16 +922,16 @@ print $USAGE;
 
 
 $nargs = $#ARGV;
-$nargs++;        
+$nargs++;
 print "Number of args = $nargs\n";
 
 
 for ($i=0; $i<$nargs; $i=$i+2) {
-  if    ($ARGV[$i] eq "-o") {  
+  if    ($ARGV[$i] eq "-o") {
     $output = $ARGV[$i+1] ;
     print ("Output Files: $output.cpp and $output.h\n") ;
   }
-  elsif ($ARGV[$i] eq "-p") {  
+  elsif ($ARGV[$i] eq "-p") {
     $cpp_read_path = $ARGV[$i+1] ;
     print ("Shader files search path: $cpp_read_path\n") ;
   }
@@ -961,9 +1016,9 @@ for ($i=0; $i<=$#files; $i++) {
     print "i = $i\n";
     print "nargs = $nargs\n";
     ($a, $b, $c) = fileparse($fullname, ".cl");
-    $a or $a = ""; 
-    $b or $b = ""; 
-    $c or $c = ""; 
+    $a or $a = "";
+    $b or $b = "";
+    $c or $c = "";
     print "Path: $b\n";
     print "Basename: $a\n";
     print "Extenssion: $c\n";
@@ -982,4 +1037,3 @@ for ($i=0; $i<=$#files; $i++) {
     PrintCppFile($basename, $comment, $semantics, $type, $variable, $default, $is_array, $is_shape, $size, $output, $cpp_read_path);
 
 }
-
