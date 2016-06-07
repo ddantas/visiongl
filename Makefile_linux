@@ -1,5 +1,3 @@
-
-
 #
 # Makefile for visiongl
 #
@@ -37,22 +35,28 @@ OUTPUT_INCLUDEDIR  = -I $(OUTPUT_INCLUDEPATH)
 OUTPUT_LIBDIR      = -L $(OUTPUT_LIBPATH)
 
 
-OPENCV_PATH        = /usr/local/opencv
-OPENCV_INCLUDEPATH = $(OPENCV_PATH)/include/
-OPENCV_LIBPATH     = $(OPENCV_PATH)/lib
-OPENCV_INCLUDEDIR  = -I $(OPENCV_INCLUDEPATH)
-OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
-OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
-
 
 WITH_CUDA = 0
 WITH_OPENCL = 1
+WITH_OPENCV = 1
 WITH_GDCM = 0
 WITH_DCMTK = 0
 WITH_TIFF = 0
 
 ifeq ($(WITH_OPENCL), 1)
 	OPENCL_DEF        = -D__OPENCL__
+endif
+
+ifeq ($(WITH_OPENCV), 1)
+	OPENCV_DEF        = -D__OPENCV__
+	OPENCV_PATH        = /usr/local/opencv
+	OPENCV_INCLUDEPATH = $(OPENCV_PATH)/include/
+	OPENCV_LIBPATH     = $(OPENCV_PATH)/lib
+	OPENCV_INCLUDEDIR  = -I $(OPENCV_INCLUDEPATH)
+	OPENCV_LIBDIR      = -L $(OPENCV_LIBPATH)
+	OPENCV_LIBRARIES   = -lopencv_highgui -lopencv_core -lopencv_imgproc -lopencv_legacy
+else
+	OPENCV_FILES       = src/vglOpencv.cpp
 endif
 
 ifeq ($(WITH_CUDA), 1)
@@ -75,10 +79,10 @@ endif
 ifeq ($(WITH_OPENCL), 1)
         OPENCL_PATH        = /opt/intel/opencl-1.2-4.4.0.117/lib64/
         OPENCL_PATH        = /opt/AMDAPP
-        OPENCL_PATH        = /usr/local/cuda/
+        #OPENCL_PATH        = /usr/local/cuda/
         OPENCL_INCLUDEPATH = $(OPENCL_PATH)/include/
         OPENCL_LIBPATH     = $(OPENCL_PATH)/lib/x86_64
-        OPENCL_LIBPATH     = $(OPENCL_PATH)/lib64
+        #OPENCL_LIBPATH     = $(OPENCL_PATH)/lib64
         #OPENCL_LIBPATH     = /usr/lib/
         OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
         OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
@@ -140,6 +144,7 @@ LINUXAMD64_DIRS_LIBS =  $(INCLUDE_DIR) \
                         $(OUTPUT_LIBDIR) \
                         $(OPENGL_LIBDIR) \
                         $(OPENGL_LIBRARIES) \
+                        $(OPENCV_DEF) \
                         $(OPENCV_INCLUDEDIR) \
                         $(OPENCV_LIBDIR) \
                         $(OPENCV_LIBRARIES) \
@@ -165,7 +170,7 @@ LINUXAMD64_DIRS_LIBS =  $(INCLUDE_DIR) \
 LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
                         -shared $(CUDA_OPTIONS) $(FPIC) \
                         -o $(OUTPUT_LIBPATH)/lib$(BINARY_NAME).so \
-                          $(CUDA_FILES) $(VGL_FILES) $(OPENCL_FILES) \
+                          $(CUDA_FILES) $(VGL_FILES) $(OPENCL_FILES) $(OPENCV_FILES) \
                          $(LINUXAMD64_DIRS_LIBS) $(CUDA_DIRS_LIBS) 
 
 LINUXAMD64_DEMO_CL3D = $(CC) $(COMPILER_FLAGS) \

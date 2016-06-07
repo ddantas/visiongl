@@ -18,6 +18,14 @@
 //Shaders
 #include "glsl2cpp_BG.h"
 
+//opencv IplImage
+#ifdef __OPENCV__
+  #undef __SSE2__
+  #include <opencv2/core/types_c.h>
+#else
+  #include <vglOpencv.h>
+#endif
+
 #define max(a, b) (a > b ? a : b)
 #define min(a, b) (a < b ? a : b)
 

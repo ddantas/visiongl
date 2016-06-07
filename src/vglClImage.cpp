@@ -6,12 +6,20 @@
 #include "cl2cpp_shaders.h"
 
 
+//ifstream
 #include <fstream>
+//strcmp, strtok
+#include <string.h>
 
-#include <opencv2/imgproc/types_c.h>
-#include <opencv2/imgproc/imgproc_c.h>
-//#include <opencv2/core/core_c.h>
-//#include <opencv2/highgui/highgui_c.h>
+
+//opencv IplImage
+#ifdef __OPENCV__
+  //#undef __SSE2__
+  #include <opencv2/imgproc/types_c.h>
+  #include <opencv2/imgproc/imgproc_c.h>
+#else
+  #include <vglOpencv.h>
+#endif
 
 
 // cl-gl interoperability
@@ -290,7 +298,7 @@ void vglClInit()
 {
     cl_int err;
     cl_uint num_platforms, num_devices;
-    cl_device_type device_type = CL_DEVICE_TYPE_DEFAULT;
+    cl_device_type device_type = CL_DEVICE_TYPE_CPU;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
     cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);

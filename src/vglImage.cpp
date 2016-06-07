@@ -1,5 +1,9 @@
 //#include <sh/sh.hpp>
 #include <iostream>
+//uint8_t 16 32 64
+#include <stdint.h>
+//strcmp
+#include <string.h>
 
 //GL
 #include <GL/glew.h>
@@ -7,10 +11,12 @@
 
 
 //IplImage, cvLoadImage
-//#include <opencv2/core/core_c.h>
-#include <opencv2/highgui/highgui_c.h>
-#include <opencv2/imgproc/imgproc_c.h>
-//#include <cvaux.h>
+#ifdef __OPENCV__
+  #include <opencv2/highgui/highgui_c.h>
+  #include <opencv2/imgproc/imgproc_c.h>
+#else
+//#include <vglOpencv.h>
+#endif
 
 #include "vglContext.h"
 #include "vglImage.h"
@@ -19,8 +25,6 @@
 //vglDilateSq3, vglErodeSq3
 #include "glsl2cpp_shaders.h"
 
-//uint8_t 16 32 64
-#include <stdint.h>
 
   /** \brief Refresh all output images.
    */
@@ -628,30 +632,39 @@ void vglSaveImage(VglImage* image, char* filename)
 */
 void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
 {
-	//vglDownload(image); //must be fixed before enabling
-        char* temp_filename = (char*)malloc(strlen(filename)+256);
-        sprintf(temp_filename, filename, lStart);
-        int d = image->depth / 8;
-        if (d < 1) d = 1; //d is the byte size of the depth color format
+  //vglDownload(image); //must be fixed before enabling
+  char* temp_filename = (char*)malloc(strlen(filename)+256);
+  sprintf(temp_filename, filename, lStart);
+  int d = image->depth / 8;
+  if (d < 1) d = 1; //d is the byte size of the depth color format
 
-        char* temp_image = (char*)malloc(image->getHeight()*image->getWidth()*image->nChannels*d);
-        memcpy(temp_image,image->ndarray,image->getHeight()*image->getWidth()*image->nChannels*d);
+  char* temp_image = (char*)malloc(image->getHeight()*image->getWidth()*image->nChannels*d);
+  memcpy(temp_image,image->ndarray,image->getHeight()*image->getWidth()*image->nChannels*d);
 
-        IplImage* ipl = cvCreateImage(cvSize(image->getWidth(), image->getHeight()), image->depth, image->nChannels);
-        ipl->imageData = temp_image;
+  IplImage* ipl = cvCreateImage(cvSize(image->getWidth(), image->getHeight()), image->depth, image->nChannels);
+  ipl->imageData = temp_image;
 
-        cvSaveImage(temp_filename,  ipl);
-        int c = image->getHeight()*image->getWidth()*d*image->nChannels;
-        for(int i = lStart+1; i <= lEnd; i++)
-        {
-                memcpy(temp_image,((char*)image->ndarray)+c,image->getHeight()*image->getWidth()*image->nChannels*d);
-                ipl->imageData = temp_image;
-                sprintf(temp_filename, filename, i);
-                cvSaveImage(temp_filename, ipl);
-                c += image->getHeight()*image->getWidth()*image->nChannels*d;
-        }
-	cvReleaseImage(&ipl);
-	free(temp_image);
+#ifdef __OPENCV__
+  cvSaveImage(temp_filename, ipl);
+#else
+  iplSavePgm(temp_filename, ipl);
+#endif
+  
+  int c = image->getHeight()*image->getWidth()*d*image->nChannels;
+  for(int i = lStart+1; i <= lEnd; i++)
+  {
+    memcpy(temp_image,((char*)image->ndarray)+c,image->getHeight()*image->getWidth()*image->nChannels*d);
+    ipl->imageData = temp_image;
+    sprintf(temp_filename, filename, i);
+#ifdef __OPENCV__
+    cvSaveImage(temp_filename, ipl);
+#else
+    iplSavePgm(temp_filename, ipl);
+#endif
+    c += image->getHeight()*image->getWidth()*image->nChannels*d;
+  }
+  cvReleaseImage(&ipl);
+  free(temp_image);
 }                
 
 void vglSaveNdImage(VglImage* image, char* filename, int lStart)
@@ -674,14 +687,22 @@ void vglSaveNdImage(VglImage* image, char* filename, int lStart)
   IplImage* ipl = cvCreateImage(cvSize(image->getWidthIn(), image->getHeightIn()), image->depth, image->nChannels);
   ipl->imageData = temp_image;
 
-  cvSaveImage(temp_filename,  ipl);
+#ifdef __OPENCV__
+  cvSaveImage(temp_filename, ipl);
+#else
+  iplSavePgm(temp_filename, ipl);
+#endif
   int c = image->getHeight()*image->getWidth()*d*image->nChannels;
   for(int i = lStart+1; i <= lEnd; i++)
   {
     memcpy(temp_image,((char*)ptr)+c,image->getHeight()*image->getWidth()*image->nChannels*d);
     ipl->imageData = temp_image;
     sprintf(temp_filename, filename, i);
+#ifdef __OPENCV__
     cvSaveImage(temp_filename, ipl);
+#else
+    iplSavePgm(temp_filename, ipl);
+#endif
     c += image->getHeight()*image->getWidth()*image->nChannels*d;
   }
   cvReleaseImage(&ipl);
@@ -1250,7 +1271,12 @@ void vglDownloadPGM(VglImage* image){
  */
 VglImage* vglLoadImage(char* filename, int iscolor /*= -1*/, int has_mipmap /*= 0*/)
 {
+#ifdef __OPENCV__
   IplImage* ipl = cvLoadImage(filename, iscolor);
+#else
+  IplImage* ipl = iplLoadPgm(filename); //TODO: add parameter iscolor
+#endif
+
   VglImage* img;
 
   if (!ipl){
@@ -1296,7 +1322,12 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
   VglImage* img;
   char* tempFilename = (char*)malloc(strlen(filename) + 256);
   sprintf(tempFilename, filename, lStart);
+
+#ifdef __OPENCV__
   IplImage* ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
+#else
+  IplImage* ipl = iplLoadPgm(tempFilename);
+#endif
 
   if (!ipl){
     fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
@@ -1337,7 +1368,13 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
   for(int i = lStart+1; i <= lEnd; i++)
   {
     sprintf(tempFilename,filename,i);
+
+#ifdef __OPENCV__
     ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
+#else
+    ipl = iplLoadPgm(tempFilename);
+#endif
+
     if (!ipl){
       fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
       vglReleaseImage(&img);
@@ -1364,7 +1401,12 @@ VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, int* shape, int n
   VglImage* img;
   char* tempFilename = (char*)malloc(strlen(filename) + 256);
   sprintf(tempFilename, filename, lStart);
+
+#ifdef __OPENCV__
   IplImage* ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
+#else
+  IplImage* ipl = iplLoadPgm(tempFilename);
+#endif
 
   if (!ipl){
     fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
@@ -1417,7 +1459,13 @@ VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, int* shape, int n
   for(int i = lStart+1; i <= lEnd; i++)
   {
     sprintf(tempFilename,filename,i);
+
+#ifdef __OPENCV__
     ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
+#else
+    ipl = iplLoadPgm(tempFilename);
+#endif
+
     if (!ipl){
       fprintf(stderr, "%s: %s: Error loading image %s\n", __FILE__, __FUNCTION__, tempFilename);
       vglReleaseImage(&img);
@@ -2055,60 +2103,93 @@ int vglSavePPM(VglImage* img, char* filename){
     return SavePPM(filename, img->getWidth(), img->getHeight(), img->ipl->imageData);
 }
 
-/** Save image data to PGM file, 1 channel, unsigned byte
+/** Save image to PGM/PPM file, 1 or 3 channels, unsigned byte
 
 */
-int SavePGM(char* filename, int w, int h, void* savebuf){
-    FILE *fp = fopen(filename, "wb");
-    fprintf(fp, "P5\n%d %d\n255\n", w, h);
-    fwrite(savebuf, w * h, 1, fp);
-    fclose(fp);
-    return 0;
+int iplSavePgm(char* filename, IplImage* ipl){
+  FILE *fp = fopen(filename, "wb");
+  int id;
+  int nc = ipl->nChannels;
+  int w = ipl->width;
+  int h = ipl->height;
+  if (nc == 1){
+    id = 5;
+  }
+  else if (nc == 3)
+  {
+    id = 6;
+  }
+  else
+  {
+    fprintf(stderr, "%s: %s: Error saving PGM file %s. Unsupported number of channels = %d.\n", __FILE__, __FUNCTION__, filename, nc);
+    return 1;
+  }
+
+  fprintf(fp, "P%d\n%d %d\n255\n", id, w, h);
+  fwrite(ipl->imageData, w * h * nc, 1, fp);
+  fclose(fp);
+  return 0;
 }
 
-/** Save image to PGM file, 1 channel, unsigned byte
+/** Save image to PGM/PPM file, 1 or 3 channels, unsigned byte
 
 */
-int vglSavePGM(VglImage* img, char* filename){
-    vglCheckContext(img, VGL_GL_CONTEXT);
-    vglDownloadPGM(img);
-    return SavePGM(filename, img->getWidth(), img->getHeight(), img->ipl->imageData);
+int vglSavePgm(VglImage* img, char* filename){
+  vglCheckContext(img, VGL_GL_CONTEXT);
+  vglDownloadPGM(img);
+  if (!img->ipl)
+  {
+    fprintf(stderr, "%s: %s: Error saving PGM/PPM file %s. Field ipl is NULL.\n", __FILE__, __FUNCTION__, filename);
+    return 1;
+  }
+  return iplSavePgm(filename, img->ipl);
 }
 
-/** Load image data from PGM file, 1 channel, unsigned byte
+
+
+/** Load image data from PGM/PPM file, 1 or 3 channels, unsigned byte
 
 */
-IplImage* LoadPGM(char* filename){
-    FILE *fp = fopen(filename, "r");
-    if (!fp){
-      fprintf(stderr, "%s: %s: Error loading PGM file %s\n", __FILE__, __FUNCTION__, filename);
-      return NULL;
-    }
-    char header[15];
-    fgets(header, 3, fp);
-    if (header[0] != 'P' || header[1] != '5' || header[2] != '\0'){
-      fprintf(stderr, "LoadPGM: file %s is not in pgm-format\n", filename);
-    }
-    else{
-      printf("P5 OK!!!\n");
-    }
+IplImage* iplLoadPgm(char* filename){
+  FILE *fp = fopen(filename, "r");
+  if (!fp){
+    fprintf(stderr, "%s: %s: Error loading PGM file %s\n", __FILE__, __FUNCTION__, filename);
+    return NULL;
+  }
 
-    //fprintf(fp, "P5\n%d %d\n255\n", w, h);
-    //fwrite(savebuf, w * h, 1, fp);
-    fclose(fp);
+  int id, w, h, L;
+  int result;
+  IplImage* img;
 
-    //TODO finish implementation.
-    return 0;
+  result = fscanf(fp, "P%d", &id);
+  result = fscanf(fp, "%d %d\n", &w, &h);
+  result = fscanf(fp, "%d\n", &L);
+
+  switch(id){
+    case 5:
+      img = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1);
+      fread(img->imageData, w*h, 1, fp);
+      break;
+    case 6:
+      img = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
+      fread(img->imageData, w*h*3, 1, fp);
+      break;
+    default:
+      fprintf(stderr, "%s: %s: Error loading PGM file %s. Type %d unsupported.\n", __FILE__, __FUNCTION__, filename, id);
+  }
+  fclose(fp);
+  return img;
 }
 
-/** Load image from PGM file, 1 channel, unsigned byte
+/** Load image data from PGM/PPM file, 1 or 3 channels, unsigned byte
 
 */
-VglImage* vglLoadPGM(char* filename){
-    IplImage* ipl = LoadPGM(filename);
-    VglImage* vgl = vglCreateImage(ipl);
-    cvReleaseImage(&ipl);
-    return vgl;
+VglImage* vglLoadPgm(char* filename){
+  IplImage* ipl = iplLoadPgm(filename);
+  VglImage* vgl = vglCreateImage(ipl);
+  cvCopy(ipl, vgl->ipl);
+  cvReleaseImage(&ipl);
+  return vgl;
 }
 
 /** Save compressed YUV411 image data to file.

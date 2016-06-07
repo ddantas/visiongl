@@ -4,6 +4,7 @@
 #include "cl2cpp_shaders.h"
 #include "glsl2cpp_shaders.h"
 
+#include <string.h>
 
 int main(int argc, char *argv[])
 {
@@ -31,16 +32,18 @@ from index 0 to index n\n\
   char *outfolder = argv[4]; // name of the output folder
 
   char *outfilename = (char*) malloc(strlen(outfolder));
-  sprintf(outfilename, "%s/%%05d.jpg", outfolder);
+  sprintf(outfilename, "%s/%%05d.ppm", outfolder);
   printf("outfilename = %s\n", outfilename);
 
   vglInit(500,500);
   vglClInit();
   VglImage* img = vglLoad3dImage(infilename, i_0, i_n);
+
   if (img->nChannels == 3)
   {
     vglNdarray3To4Channels(img);
   }
+
   VglImage* out = vglCreateImage(img);
 
   //3x3x3 mask for convolution
@@ -88,6 +91,8 @@ from index 0 to index n\n\
   //clReleaseMemObject(img->oclPtr);
   //clReleaseMemObject(out->oclPtr);
   vglClFlush();
+
+  printf("Output written to %s\n", outfilename);
 
 
   return 0;

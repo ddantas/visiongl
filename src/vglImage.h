@@ -21,8 +21,12 @@
 #include <cstdio>
 
 //opencv IplImage
-#undef __SSE2__
-#include <opencv2/core/types_c.h>
+#ifdef __OPENCV__
+  #undef __SSE2__
+  #include <opencv2/core/types_c.h>
+#else
+  #include <vglOpencv.h>
+#endif
 
 //GL
 #include <GL/glew.h>
@@ -32,6 +36,9 @@
 #ifdef __OPENCL__
 #include <CL/cl.h>
 #endif
+
+//assert
+#include <assert.h>
 
 // VGL HEADER - Vision with OpenGL
 
@@ -243,10 +250,10 @@ void vglImage3To4Channels(VglImage* img);
 void vglImage4To3Channels(VglImage* img);
 int SavePPM(char* filename, int w, int h, void* savebuf);
 int vglSavePPM(VglImage* img, char* filename);
-int SavePGM(char* filename, int w, int h, void* savebuf);
-int vglSavePGM(VglImage* img, char* filename);
-IplImage* LoadPGM(char* filename);
-VglImage* vglLoadPGM(char* filename);
+int iplSavePgm(char* filename, IplImage* ipl);
+int vglSavePgm(VglImage* img, char* filename);
+IplImage* iplLoadPgm(char* filename);
+VglImage* vglLoadPgm(char* filename);
 
 
 
