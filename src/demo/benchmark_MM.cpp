@@ -4,9 +4,12 @@
 #include "cl2cpp_MM.h"
 #include "vglContext.h"
 
-//#include <opencv2/highgui/highgui_c.h>
-//#include <opencv2/imgproc/imgproc_c.h>
-#include <vglOpencv.h>
+#ifdef __OPENCV__
+  #include <opencv2/highgui/highgui_c.h>
+  #include <opencv2/imgproc/imgproc_c.h>
+#else
+  #include <vglOpencv.h>
+#endif
 
 #include <demo/timer.h>
 #include <math.h>
