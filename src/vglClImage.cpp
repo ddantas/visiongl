@@ -298,7 +298,9 @@ void vglClInit()
 {
     cl_int err;
     cl_uint num_platforms, num_devices;
-    cl_device_type device_type = CL_DEVICE_TYPE_CPU;
+    cl_device_type device_type = CL_DEVICE_TYPE_ALL;
+    cl_uint id = 0;
+    cl_uint plat = 0;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
     cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);
@@ -310,7 +312,7 @@ void vglClInit()
     else if (num_platforms >= 1)
         printf("found %d platform(s) for opencl\n\n", num_platforms);
 
-    err = clGetDeviceIDs(*cl.platformId, device_type, 0, NULL, &num_devices);
+    err = clGetDeviceIDs(cl.platformId[plat], device_type, 0, NULL, &num_devices);
     vglClCheckError(err, (char*) "clGetDeviceIDs get number of devices");
 
     if (num_devices == 0)
@@ -322,11 +324,10 @@ void vglClInit()
         printf("found %d device(s)\n\n",num_devices);
 
     cl.deviceId = (cl_device_id*)malloc(sizeof(cl_device_id)*num_devices);
-    err = clGetDeviceIDs(*cl.platformId, device_type, num_devices, cl.deviceId, NULL);
+    err = clGetDeviceIDs(cl.platformId[plat], device_type, num_devices, cl.deviceId, NULL);
     vglClCheckError(err, (char*) "clGetDeviceIDs get devices id");
     // To add CL_KHR_gl_sharing property to context, window id is needed.
     //cl_context_properties props[] =	{CL_GL_CONTEXT_KHR, (cl_context_properties) wglGetCurrentContext()};
-    int id = 0;
     const int msgLen = 2048;
     char msg[msgLen];
     err = clGetDeviceInfo(cl.deviceId[id], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
@@ -357,10 +358,10 @@ void vglClInit()
     cl_context_properties properties1[] = {
           CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
           CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
-          CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0], 
+          CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[plat], 
           0 };
     cl_context_properties properties2[] = {
-          CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[0], 
+          CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[plat],
           0 };
     cl_context_properties* properties;
     if (Interop)

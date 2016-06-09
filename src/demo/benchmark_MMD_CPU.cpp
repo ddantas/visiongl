@@ -311,7 +311,7 @@ int main(int argc, char* argv[])
     printf("Error: Bad number of arguments = %d. 3 arguments required.\n", argc - 1);
     exit(1);
   }
-  vglInit(50, 50);
+  //vglInit(50, 50);
 
   int nSteps = atoi(argv[2]);
   char* inFilename = argv[1];

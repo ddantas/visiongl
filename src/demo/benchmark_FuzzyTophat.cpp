@@ -3,12 +3,15 @@
 #include "cl2cpp_shaders.h"
 #include "cl2cpp_MM.h"
 #include "vglContext.h"
-#include <opencv2/highgui/highgui_c.h>
-#include <opencv2/imgproc/imgproc_c.h>
+
+//#include <opencv2/highgui/highgui_c.h>
+//#include <opencv2/imgproc/imgproc_c.h>
+
+
 #include <demo/timer.h>
 #include <math.h>
 #include <fstream>
-
+#include <string.h>
 
 void vglClTopHat(VglImage* src, VglImage* dst, VglImage* buf, float* strel, int strel_size_x, int strel_size_y, void (*mmdErode)(VglImage*,VglImage*,float*,int,int),void (*mmdDilate)(VglImage*,VglImage*,float*,int,int))
 {
@@ -95,7 +98,7 @@ int main(int argc, char* argv[])
         printf("Error: Bad number of arguments = %d. 3 arguments required.\n", argc-1);
         exit(1);
     }
-    vglInit(50,50);
+    //vglInit(50,50);
     vglClInit();
 
     int nSteps = atoi(argv[2]);

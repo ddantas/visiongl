@@ -62,7 +62,7 @@ obtained from the image file.\
   char* outString   = (char*) "%s/%s/%%05d.tif";
   printf("outString = %s\n", outString);
 
-  vglInit(10,10);
+  //vglInit(10,10);
   vglClInit();
 
   int shape[VGL_ARR_SHAPE_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};

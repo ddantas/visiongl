@@ -3,12 +3,15 @@
 #include "cl2cpp_shaders.h"
 #include "cl2cpp_MM.h"
 #include "vglContext.h"
-#include <opencv2/highgui/highgui_c.h>
-#include <opencv2/imgproc/imgproc_c.h>
+
+//#include <opencv2/highgui/highgui_c.h>
+//#include <opencv2/imgproc/imgproc_c.h>
+#include <vglOpencv.h>
+
 #include <demo/timer.h>
 #include <math.h>
 #include <fstream>
-
+#include <string.h>
 
 void benchmark(VglImage* in, VglImage* out, float* mask, int size_x, int size_y, char* output_filename, int nSteps, void (*mmdPtr)(VglImage*,VglImage*,float*,int,int,float))
 {
@@ -56,7 +59,7 @@ void benchmark(VglImage* in, VglImage* out, float* mask, int size_x, int size_y,
 
 	vglClDownload(out);
 	//vglIpl4To3Channels(out);
-	cvSaveImage(output_filename, out->ipl);
+	vglSaveImage(out, output_filename);
 }
 
 int main(int argc, char* argv[])
@@ -69,7 +72,7 @@ int main(int argc, char* argv[])
         printf("Error: Bad number of arguments = %d. 3 arguments required.\n", argc-1);
         exit(1);
     }
-    vglInit(50,50);
+    //vglInit(50,50);
     vglClInit();
 
     int nSteps = atoi(argv[2]);

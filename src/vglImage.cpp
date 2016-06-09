@@ -616,7 +616,11 @@ void vglSaveImage(VglImage* image, char* filename)
 
   if (image->ndim <= 2 && image->ipl != NULL)
   {
+#ifdef __OPENCV__
     cvSaveImage(filename, image->ipl);
+#else
+    iplSavePgm(filename, image->ipl);
+#endif
   }
   else if (image->ndim == 3)
   {
