@@ -254,7 +254,7 @@ int iplSavePgm(char* filename, IplImage* ipl);
 int vglSavePgm(VglImage* img, char* filename);
 IplImage* iplLoadPgm(char* filename);
 VglImage* vglLoadPgm(char* filename);
-
+int vglHasDisplay();
 
 
 void vglDistTransformCross3(VglImage* src, VglImage* dst, VglImage* buf, VglImage* buf2, int times = 1);

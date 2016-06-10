@@ -201,6 +201,12 @@ int vglInit(int w, int h)
     int argc = 0;
     int window_id = 0;
 
+    int hasDisplay = vglHasDisplay();
+    if (!hasDisplay)
+    {
+      fprintf(stdout, "%s: %s: Warning: No display available. You should not call vglInit from a machine without X or with $DISPLAY variable not set. You can try to set DISPLAY environment variable to a suitable value. You can also call vglClInit and use OpenCL functions.\n", __FILE__, __FUNCTION__);
+    }
+
     int glut_time = glutGet(GLUT_ELAPSED_TIME);
     printf("Glut elapsed time = %dms\n", glut_time);
     static int started = 0;
@@ -228,7 +234,6 @@ int vglInit(int w, int h)
       {
         if(!glewIsSupported("GL_EXT_framebuffer_object"))
           fprintf(stderr, "%s: %s: glGenFramebuffersEXT not supported. The program may not work.\n", __FILE__, __FUNCTION__);
-
       }
       else
       {
@@ -2195,6 +2200,31 @@ VglImage* vglLoadPgm(char* filename){
   cvReleaseImage(&ipl);
   return vgl;
 }
+
+
+/** Test if there is display available.
+
+    Test if there is display available by checking existence of
+environment variable DISPLAY.
+ */
+int vglHasDisplay()
+{
+#ifdef __linux__
+  char* pDisplay;
+  pDisplay = getenv ("DISPLAY");
+  if (pDisplay == NULL)
+  {
+    printf ("No display available.\n");
+    return 0;
+  }
+  printf ("The current display is: %s\n", pDisplay);
+  return 1;
+#elif defined WIN32
+  printf ("Check not implemented for Windows. Assuming that display is available.\n");
+  return 1;
+#endif
+}
+
 
 /** Save compressed YUV411 image data to file.
 

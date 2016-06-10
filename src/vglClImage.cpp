@@ -352,9 +352,11 @@ void vglClInit()
 	}
     }
     
-
+    int hasDisplay = vglHasDisplay();
 	
 #ifdef __linux__
+    printf("glXGetCurrentContext() = %p\n", glXGetCurrentContext() );
+    printf("glXGetCurrentDisplay() = %p\n", glXGetCurrentDisplay() );
     cl_context_properties properties1[] = {
           CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
           CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
@@ -364,7 +366,7 @@ void vglClInit()
           CL_CONTEXT_PLATFORM, (cl_context_properties) cl.platformId[plat],
           0 };
     cl_context_properties* properties;
-    if (Interop)
+    if (Interop and hasDisplay)
       properties = properties1;
     else
       properties = properties2;

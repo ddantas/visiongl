@@ -107,6 +107,8 @@ void vglClInit()
 	}
 	
 #ifdef __linux__
+    printf("glXGetCurrentContext() = %p\n", glXGetCurrentContext() );
+    printf("glXGetCurrentDisplay() = %p\n", glXGetCurrentDisplay() );
     cl_context_properties properties[] = {
       //CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
       //CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
