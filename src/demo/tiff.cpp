@@ -27,8 +27,8 @@ demo_tiff <input file> <output file>\n\
   {
     printf("\nwidth = %d\nheight = %d\nlayers = %d\ndepth = %d\nnChannels = %d\n\n", vgltiff->getWidth(), vgltiff->getHeight(), vgltiff->getLength(), vgltiff->depth, vgltiff->nChannels);
 
-    //int r = vglGdcmSaveDicomUncompressed(vgltiff, outFilename); 
-    int r = vglSaveTiff(vgltiff, outFilename); 
+    //int r = vglGdcmSaveDicomUncompressed(outFilename, vgltiff);
+    int r = vglSaveTiff(outFilename, vgltiff);
     return 0;
   }
   return 1;

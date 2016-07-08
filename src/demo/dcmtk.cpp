@@ -59,9 +59,9 @@ demo_dcmtk <input file> <output file> -c\n\
 
   
   if(strcmp(compressType, "-c") != 0)
-    int i = vglDcmtkSaveDicomUncompressed(imagevgl, outfilename);
+    int i = vglDcmtkSaveDicomUncompressed(outfilename, imagevgl);
   else
-    int i = vglDcmtkSaveDicomCompressed(imagevgl, outfilename);
+    int i = vglDcmtkSaveDicomCompressed(outfilename, imagevgl);
 
   return 0;
 }

@@ -22,9 +22,9 @@ VglImage* vglLoadTiff(char* inFilename);
 IplImage* iplLoadTiff(char* inFilename);
 VglImage* vglLoadTiffAlt(char* inFilename);
 VglImage* vglLoad4dTiff(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
-int vglSaveTiff(VglImage* image, char* outFilename);
-int iplSaveTiff(IplImage* image, char* outFilename);
-int vglSave4dTiff(VglImage* image, char* filename, int lStart, int lEnd);
+int vglSaveTiff(char* outFilename, VglImage* image);
+int iplSaveTiff(char* outFilename, IplImage* image);
+int vglSave4dTiff(char* filename, VglImage* image, int lStart, int lEnd);
 
 int vglPrintTiffInfo(char* inFilename, char* msg = NULL);
 

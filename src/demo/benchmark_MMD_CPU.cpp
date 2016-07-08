@@ -296,8 +296,8 @@ void benchmark(VglImage* img_in, VglImage* img_out, float* mask, int* mask_size,
   else if (img_in->ndim == 3)
   {
     sprintf(outFilename, "%s/%s_%dx%dx%d.%s", prefix_path, operator_name, mask_size[0], mask_size[1], mask_size[2], "dcm");
-    vglDcmtkSaveDicom(img_out, outFilename, 0);
-    //vglGdcmSaveDicom(img_out, outFilename, 0);
+    vglDcmtkSaveDicom(outFilename, img_out, 0);
+    //vglGdcmSaveDicom(outFilename, img_out, 0);
   }
   
 }

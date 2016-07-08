@@ -188,7 +188,7 @@ VglImage* vglGdcmLoadDicom(char* inFilename)
 /** Function for saving DICOM images with GDCM library
   */
 
-int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
+int vglGdcmSaveDicom(char* outFilename, VglImage* imagevgl, int compress)
 {
   if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
   {
@@ -285,7 +285,7 @@ int vglGdcmSaveDicom(VglImage* imagevgl, char* outFilename, int compress)
 /** Function for saving uncompressed DICOM images with GDCM library
   */
 
-int vglGdcmSaveDicomUncompressed(VglImage* imagevgl, char* outFilename)
+int vglGdcmSaveDicomUncompressed(char* outFilename, VglImage* imagevgl)
 {
   if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
   {
@@ -294,7 +294,7 @@ int vglGdcmSaveDicomUncompressed(VglImage* imagevgl, char* outFilename)
   }
 
   int compress = 0;
-  int r = vglGdcmSaveDicom(imagevgl, outFilename, compress);
+  int r = vglGdcmSaveDicom(outFilename, imagevgl, compress);
   return r;
 }
 
@@ -303,7 +303,7 @@ int vglGdcmSaveDicomUncompressed(VglImage* imagevgl, char* outFilename)
   */
 
 
-int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outFilename)
+int vglGdcmSaveDicomCompressed(char* outFilename, VglImage* imagevgl)
 {
   if ( (imagevgl->nChannels != 1) && (imagevgl->nChannels != 3) )
   {
@@ -312,7 +312,7 @@ int vglGdcmSaveDicomCompressed(VglImage* imagevgl, char* outFilename)
   }
 
   int compress = 1;
-  int r = vglGdcmSaveDicom(imagevgl, outFilename, compress);
+  int r = vglGdcmSaveDicom(outFilename, imagevgl, compress);
   return r;
 }
 
@@ -357,7 +357,7 @@ VglImage*  vglGdcmLoad4dDicom(char* filename, int lStart, int lEnd, bool has_mip
 /** Function for saving a stack of 3d DICOM images with GDCM library
   */
 
-int vglGdcmSave4dDicom(VglImage* image, char* filename, int lStart, int lEnd, int compress /*= 0 default uncompressed*/)
+int vglGdcmSave4dDicom(char* filename, VglImage* image, int lStart, int lEnd, int compress /*= 0 default uncompressed*/)
 {
   if ( (image->nChannels != 1) && (image->nChannels != 3) )
   {
@@ -375,9 +375,9 @@ int vglGdcmSave4dDicom(VglImage* image, char* filename, int lStart, int lEnd, in
     memcpy((char*)temp_image->ndarray,((char*)image->ndarray)+c,temp_image->getTotalSizeInBytes());
     sprintf(temp_filename, filename, i);
     if(compress == 0)
-      vglGdcmSaveDicomUncompressed(temp_image, temp_filename);
+      vglGdcmSaveDicomUncompressed(temp_filename, temp_image);
     else
-      vglGdcmSaveDicomCompressed(temp_image, temp_filename);
+      vglGdcmSaveDicomCompressed(temp_filename, temp_image);
     c += temp_image->getTotalSizeInBytes();
     vglReleaseImage(&temp_image);
   }

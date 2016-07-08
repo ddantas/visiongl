@@ -43,7 +43,7 @@ demo_cuda <input file> <output file>\n\
   //vglCheckContext(img_out, VGL_RAM_CONTEXT);
 
   printf("Saving result to %s\n", outfilename);
-  vglSaveImage(img_out, outfilename);
+  vglSaveImage(outfilename, img_out);
 
   return 0;
 }

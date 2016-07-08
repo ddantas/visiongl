@@ -649,7 +649,7 @@ VglImage* vglLoad4dTiff(char* filename, int lStart, int lEnd, bool has_mipmap /*
 
 /** Function for saving 2D and 3D TIFF images
   */
-int vglSaveTiff(VglImage* image, char* outFilename)
+int vglSaveTiff(char* outFilename, VglImage* image)
 {
   vglCheckContext(image, VGL_RAM_CONTEXT);
 
@@ -689,7 +689,7 @@ int vglSaveTiff(VglImage* image, char* outFilename)
 
 /** Function for saving 2D TIFF images
   */
-int iplSaveTiff(IplImage* image, char* outFilename)
+int iplSaveTiff(char* outFilename, IplImage* image)
 {
   TIFF *out = TIFFOpen(outFilename, "w");
   char* buff = image->imageData;
@@ -724,7 +724,7 @@ int iplSaveTiff(IplImage* image, char* outFilename)
   TIFFClose(out);
 }
 
-int vglSave4dTiff(VglImage* image, char* filename, int lStart, int lEnd)
+int vglSave4dTiff(char* filename, VglImage* image, int lStart, int lEnd)
 {
   vglCheckContext(image, VGL_RAM_CONTEXT);
   if ( (image->nChannels != 1) && (image->nChannels != 3) )
@@ -740,7 +740,7 @@ int vglSave4dTiff(VglImage* image, char* filename, int lStart, int lEnd)
     temp_image->ndarray = (char*)malloc(temp_image->getTotalSizeInBytes());
     memcpy((char*)temp_image->ndarray,((char*)image->ndarray)+c,temp_image->getTotalSizeInBytes());
     sprintf(temp_filename, filename, i);
-    vglSaveTiff(temp_image, temp_filename);
+    vglSaveTiff(temp_filename, temp_image);
     c += temp_image->getTotalSizeInBytes();
     vglReleaseImage(&temp_image);
   }

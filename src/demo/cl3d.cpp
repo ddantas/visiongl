@@ -87,7 +87,7 @@ from index 0 to index n\n\
     vglNdarray4To3Channels(out);
   }
 
-  vglSave3dImage(out, outfilename, i_0, i_n);
+  vglSave3dImage(outfilename, out, i_0, i_n);
   //clReleaseMemObject(img->oclPtr);
   //clReleaseMemObject(out->oclPtr);
   vglClFlush();

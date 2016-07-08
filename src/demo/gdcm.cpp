@@ -61,9 +61,9 @@ demo_gdcm <input file> <output file> -c\n\
 
   
   if(strcmp(compressType, "-c") != 0)
-    int i = vglGdcmSaveDicomUncompressed(imagevgl, outfilename);
+    int i = vglGdcmSaveDicomUncompressed(outfilename, imagevgl);
   else
-    int i = vglGdcmSaveDicomCompressed(imagevgl, outfilename);
+    int i = vglGdcmSaveDicomCompressed(outfilename, imagevgl);
 
   return 0;
 }

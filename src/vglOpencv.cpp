@@ -206,12 +206,12 @@ IplImage* cvLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/)
   char* ext = getFileExtensionUppercase(filename);
   if ( strcmp(ext, ".PGM") || strcmp(ext, ".PPM") )
   {
-    iplImage = iplLoadPgm((char*) filename);
+    iplImage = iplLoadPgm(filename);
   }
   else if ( strcmp(ext, "TIFF") || strcmp(ext, ".TIF") )
   {
 #ifdef __TIFF__
-    iplImage = iplLoadTiff((char*) filename);
+    iplImage = iplLoadTiff(filename);
     if (iplImage)
     {
       return (iplImage);
@@ -238,13 +238,13 @@ int cvSaveImage(char* filename, IplImage* image, int* params /*=0*/)
   char* ext = getFileExtensionUppercase(filename);
   if ( strcmp(ext, ".PGM") || strcmp(ext, ".PPM") )
   {
-    return iplSavePgm((char*) filename, (IplImage*) image);
+    return iplSavePgm(filename, image);
   }
 
   else if ( strcmp(ext, "TIFF") || strcmp(ext, ".TIF") )
   {
 #ifdef __TIFF__
-    iplSaveTiff(image, (char*) filename);
+    iplSaveTiff(filename, image);
 #else
     fprintf(stderr, "%s:%s: Error: TIFF format unsupported. Please recompile using WITH_TIFF = 1.\n", __FILE__, __FUNCTION__);
     exit(1);

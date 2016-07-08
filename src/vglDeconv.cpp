@@ -388,7 +388,7 @@ int normalizeMatrix(double *mIni, double *mNorm)
 
 /** Function to save three RGB images, one for each deconvolved color
  */
-void vglSaveColorDeconv(VglImage *imagevgl, double *mInitial, char *outFilename, int find3rdColor /*=0*/)
+void vglSaveColorDeconv(char *outFilename, VglImage *imagevgl, double *mInitial, int find3rdColor /*=0*/)
 {
   double *mNormal = (double *) malloc(9*sizeof(double));
   
@@ -423,7 +423,7 @@ void vglSaveColorDeconv(VglImage *imagevgl, double *mInitial, char *outFilename,
     convertRGBToBGR(newimagevgl[i]);
     char outname[1024];
     sprintf(outname, outFilename, i);
-    vglSave3dImage(newimagevgl[i], outname, lStart, lEnd);
+    vglSave3dImage(outname, newimagevgl[i], lStart, lEnd);
   }  
 }
 

@@ -8,24 +8,24 @@
 int main(int argc, char* argv[])
 {
 
-	vglInit(50,50);
-	vglClInit();
+    vglInit(50,50);
+    vglClInit();
 
-	if (argc < 2)
-	{
-		printf("Usage: demo_histogram file.dicom\n");
-		printf("bad arguments, read usage again\n");
-		exit(1);
-	}
+    if (argc < 2)
+    {
+        printf("Usage: demo_histogram file.dicom\n");
+        printf("bad arguments, read usage again\n");
+        exit(1);
+    }
 
-	char* image_path = argv[1];
+    char* image_path = argv[1];
 
-	printf("VisionCL on %s\n\n",image_path);
+    printf("VisionCL on %s\n\n",image_path);
 
     //REMEMBER, LOAD A GRAY LEVEL IMAGE
     VglImage* img = vglDcmtkLoadDicom(image_path);
     VglImage* out = vglCreate3dImage(cvSize(img->getWidth(),img->getHeight()),img->depth,img->nChannels,img->getLength());
-	
+
     int* eq = (int*) malloc(256*sizeof(int));
     for(int i = 0; i < 256; i++)
     {
@@ -76,14 +76,14 @@ int main(int argc, char* argv[])
     vglCl3dHistogramEq(img,out);
     
     vglClDownload(out);
-    vglDcmtkSaveDicom(out,"C:/Users/H_DANILO/Dropbox/TCC/TCC_DICOM_HISTEQ.dcm",0);
+    vglDcmtkSaveDicom("C:/Users/H_DANILO/Dropbox/TCC/TCC_DICOM_HISTEQ.dcm", out, 0);
 
     
 
     vglCl3dGrayLevelTransform(img,out,eq);
 
     vglClDownload(out);
-    vglDcmtkSaveDicom(out,"C:/Users/H_DANILO/Dropbox/TCC/TCC_DICOM_GrayLevelTransform.dcm",0);
+    vglDcmtkSaveDicom("C:/Users/H_DANILO/Dropbox/TCC/TCC_DICOM_GrayLevelTransform.dcm", out, 0);
     
     return 0;
 }

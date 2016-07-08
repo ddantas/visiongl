@@ -10,24 +10,24 @@
 int main(int argc, char* argv[])
 {
 
-	vglInit(50,50);
-	vglClInit();
+    vglInit(50,50);
+    vglClInit();
 
-	if (argc < 2)
-	{
-		printf("Usage: demo_histogram file.ext\n");
+    if (argc < 2)
+    {
+        printf("Usage: demo_histogram file.ext\n");
         printf("File must have 1 channel\n");
-		printf("bad arguments, read usage again\n");
-		exit(1);
-	}
+        printf("bad arguments, read usage again\n");
+        exit(1);
+    }
 
-	char* image_path = argv[1];
+    char* image_path = argv[1];
 
-	printf("VisionCL on %s\n\n",image_path);
+    printf("VisionCL on %s\n\n",image_path);
 
     //load 2d gray image
     VglImage* img = vglLoadImage(image_path,0);
-	VglImage* out = vglCreateImage(img);
+    VglImage* out = vglCreateImage(img);
     
     int* eq = (int*) malloc(256*sizeof(int));
     for(int i = 0; i < 256; i++)
@@ -89,13 +89,13 @@ int main(int argc, char* argv[])
     printf("Testing Histogram CPU EQ time: %s\n", getTimeElapsedInSeconds());
 
     vglClDownload(out);
-    cvSaveImage("C:/Users/H_DANILO/Dropbox/TCC/teste/cl_histeq2dgray.tif",out->ipl);
+    cvSaveImage("C:/Users/H_DANILO/Dropbox/TCC/teste/cl_histeq2dgray.tif", out->ipl);
 
     TimerStart();
     vglClGrayLevelTransform(img,out,eq);
     printf("Testing GrayLevelTransform time: %s\n", getTimeElapsedInSeconds());
 
     vglClDownload(out);
-    cvSaveImage("C:/Users/H_DANILO/Dropbox/TCC/teste/cl_grayleveltransform2dgray.tif",out->ipl);
+    cvSaveImage("C:/Users/H_DANILO/Dropbox/TCC/teste/cl_grayleveltransform2dgray.tif", out->ipl);
     return 0;
 }

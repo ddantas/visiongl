@@ -19,7 +19,7 @@ int saveResult(VglImage* out, char* outString, char* outPath, char* outFolder, i
   sprintf(cmd, "mkdir -p %s/%s", outPath, outFolder);
   system(cmd);
   sprintf(outFilename, outString, outPath, outFolder);
-  vglSaveNdImage(out, (char*) outFilename, i_0);
+  vglSaveNdImage((char*) outFilename, out, i_0);
 }  
 
 

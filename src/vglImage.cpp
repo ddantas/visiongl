@@ -617,7 +617,7 @@ VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int has_mipmap /*=0*
 }
 
 
-void vglSaveImage(VglImage* image, char* filename)
+void vglSaveImage(char* filename, VglImage* image)
 {
   vglCheckContext(image, VGL_RAM_CONTEXT);
 
@@ -631,7 +631,7 @@ void vglSaveImage(VglImage* image, char* filename)
   }
   else if (image->ndim == 3)
   {
-    vglSave3dImage(image, filename, 0, image->getLength() - 1);
+    vglSave3dImage(filename, image, 0, image->getLength() - 1);
   }
   else
   {
@@ -641,7 +641,7 @@ void vglSaveImage(VglImage* image, char* filename)
 
 /** Save PGM 3d images on the disk
 */
-void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
+void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd)
 {
   //vglDownload(image); //must be fixed before enabling
   char* temp_filename = (char*)malloc(strlen(filename)+256);
@@ -678,7 +678,7 @@ void vglSave3dImage(VglImage* image, char* filename, int lStart, int lEnd)
   free(temp_image);
 }                
 
-void vglSaveNdImage(VglImage* image, char* filename, int lStart)
+void vglSaveNdImage(char* filename, VglImage* image, int lStart)
 {
   vglCheckContext(image, VGL_RAM_CONTEXT);
 
@@ -2108,7 +2108,7 @@ int SavePPM(char* filename, int w, int h, void* savebuf){
 /** Save image to PPM file, 3 channels, unsigned byte
 
 */
-int vglSavePPM(VglImage* img, char* filename){
+int vglSavePPM(char* filename, VglImage* img){
     vglCheckContext(img, VGL_GL_CONTEXT);
     vglDownloadPPM(img);
     return SavePPM(filename, img->getWidth(), img->getHeight(), img->ipl->imageData);
@@ -2170,7 +2170,7 @@ int iplSavePgm(char* filename, IplImage* ipl){
 /** Save image to PGM/PPM file, 1 or 3 channels, unsigned byte
 
 */
-int vglSavePgm(VglImage* img, char* filename){
+int vglSavePgm(char* filename, VglImage* img){
   vglCheckContext(img, VGL_RAM_CONTEXT);
 
   char* buf = img->getImageData();
