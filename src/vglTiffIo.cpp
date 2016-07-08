@@ -391,6 +391,58 @@ VglImage* vglLoadTiff(char* inFilename)
 /** Function for loading TIFF images.
 
     Function for loading TIFF images. Supports RGB (8 bits) and 
+grayscale (8 and 16 bits) images, 2D and 3D.
+
+  */
+IplImage* iplLoadTiff(char* inFilename)
+{  
+  TIFF* tif;
+  IplImage* img;
+  uint16 pageNumber, numberPages, subfileType;
+
+  tif = TIFFOpen(inFilename, "r");
+  if (tif == NULL){
+    fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, inFilename);
+    return NULL;
+  }
+  
+  int width  = tif_Width(tif);
+  int height = tif_Height(tif);
+  int is3d = tif_Is3d(tif);
+  int layers = tif_Layers(tif);
+  int depth  = tif_BytesPerPixel(tif);          // bytes per pixel
+  int iplDepth = convertDepthTiffToVgl(depth);  // depth \in {IPL_DEPTH_8U, ...}
+  int nChannels = tif_nChannels(tif);           // number of channels
+
+  if (is3d)
+  {
+    fprintf(stderr, "%s:%s: Error loading file %s. Only 2D images supported. Use vglLoadTiff instead.\n", __FILE__, __FUNCTION__, inFilename);
+    exit(1);
+  }
+  else
+  {
+    img = cvCreateImage(cvSize(width,height), iplDepth, nChannels);
+  }
+
+  char* imageData = img->imageData;
+
+  int pixelsPerFrame = img->width * img->height * img->nChannels;
+  int bytesPerFrame = pixelsPerFrame * depth;
+  int j = 0;
+  do{
+    char* buffer = (char*)tif_ReadData(tif);
+    memcpy(imageData+j, buffer, bytesPerFrame);
+    j += bytesPerFrame;
+  }while(TIFFReadDirectory(tif));
+
+  TIFFClose(tif); 
+
+  return img;
+}
+
+/** Function for loading TIFF images.
+
+    Function for loading TIFF images. Supports RGB (8 bits) and 
 grayscale (8 and 16 bits) images, 2D and 3D. Alternative version with simpler code.
 
   */
@@ -632,6 +684,43 @@ int vglSaveTiff(VglImage* image, char* outFilename)
     TIFFWriteDirectory(out);
   }
  
+  TIFFClose(out);
+}
+
+/** Function for saving 2D TIFF images
+  */
+int iplSaveTiff(IplImage* image, char* outFilename)
+{
+  TIFF *out = TIFFOpen(outFilename, "w");
+  char* buff = image->imageData;
+
+  int b = convertDepthVglToTiff(image->depth); //bytes per sample
+  int c = image->nChannels;
+  int widthStep = image->widthStep;
+  int w = image->width;
+  int h = image->height;
+
+  TIFFSetField(out, TIFFTAG_IMAGEWIDTH, w);
+  TIFFSetField(out, TIFFTAG_IMAGELENGTH, h);
+  TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, b * 8);
+  if (image->nChannels == 1)
+    TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
+  else
+    TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+  TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, c);
+  TIFFSetField(out, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+  TIFFSetField(out, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+
+  TIFFSetField(out, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
+  TIFFSetField(out, TIFFTAG_PAGENUMBER, 0, 1);
+
+  for(int y = 0; y < image->height; y++)
+  {
+    TIFFWriteScanline(out, &buff[ (y * widthStep)  ], y, 0);
+  }
+    
+  TIFFWriteDirectory(out);
+
   TIFFClose(out);
 }
 

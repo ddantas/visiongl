@@ -17,8 +17,7 @@
 //toupper, tolower
 #include <ctype.h>
 
-
-#include <vglImage.h>
+#include <vglTiffIo.h>
 
 
 /*********************************************************************
@@ -86,7 +85,7 @@ IplImage* cvCopy(IplImage* src, IplImage* dst)
   return dst;
 }
 
-void cvCvtColor(const IplImage* src, IplImage* dst, int code)
+void cvCvtColor(IplImage* src, IplImage* dst, int code)
 {
 
   int b = src->depth / 8;
@@ -200,10 +199,9 @@ char* getFileExtensionUppercase(const char* filename)
 }
 
 
-IplImage* cvLoadImage(const char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/)
+IplImage* cvLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/)
 {
   IplImage* iplImage;
-  VglImage* vglImage;
 
   char* ext = getFileExtensionUppercase(filename);
   if ( strcmp(ext, ".PGM") || strcmp(ext, ".PPM") )
@@ -213,31 +211,47 @@ IplImage* cvLoadImage(const char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHAN
   else if ( strcmp(ext, "TIFF") || strcmp(ext, ".TIF") )
   {
 #ifdef __TIFF__
-    vglImage = vglLoadImage((char*) filename);
-    if (vglImage->ipl)
+    iplImage = iplLoadTiff((char*) filename);
+    if (iplImage)
     {
-      return (vglImage->ipl);
+      return (iplImage);
     }
     else
     {
-      fprintf(stderr, "%s:%s: Error: Unable to return image as IplImage.\n", __FILE__, __FUNCTION__);
-      return NULL;
+      fprintf(stderr, "%s:%s: Error loading image from file %s.\n", __FILE__, __FUNCTION__, filename);
+      exit(1);
     }
 #else
     fprintf(stderr, "%s:%s: Error: TIFF format unsupported. Please recompile using WITH_TIFF = 1.\n", __FILE__, __FUNCTION__);
-    return NULL;
+    exit(1);
 #endif
-
   }
 
-
-  fprintf(stderr, "%s:%s: Error: please recompile using WITH_OPENCV = 1 or use iplLoadPgm instead.\n", __FILE__, __FUNCTION__);
+  fprintf(stderr, "%s:%s: Error: extension %s unsupported. You may try to recompile using WITH_OPENCV = 1 or use iplLoadPgm instead.\n", __FILE__, __FUNCTION__, ext);
   exit(1);
 }
 
-int cvSaveImage(const char* filename, const IplImage* image, const int* params /*=0*/)
+int cvSaveImage(char* filename, IplImage* image, int* params /*=0*/)
 {
-  fprintf(stderr, "%s:%s: Error: please recompile using WITH_OPENCV = 1 or use iplSavePgm instead.\n", __FILE__, __FUNCTION__);
+  IplImage* iplImage;
+
+  char* ext = getFileExtensionUppercase(filename);
+  if ( strcmp(ext, ".PGM") || strcmp(ext, ".PPM") )
+  {
+    return iplSavePgm((char*) filename, (IplImage*) image);
+  }
+
+  else if ( strcmp(ext, "TIFF") || strcmp(ext, ".TIF") )
+  {
+#ifdef __TIFF__
+    iplSaveTiff(image, (char*) filename);
+#else
+    fprintf(stderr, "%s:%s: Error: TIFF format unsupported. Please recompile using WITH_TIFF = 1.\n", __FILE__, __FUNCTION__);
+    exit(1);
+#endif
+  }
+
+  fprintf(stderr, "%s:%s: Error: extension %s unsupported. You may try to recompile using WITH_OPENCV = 1 or use iplSavePgm instead.\n", __FILE__, __FUNCTION__, ext);
   exit(1);
 }
 

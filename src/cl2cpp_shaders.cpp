@@ -59,7 +59,7 @@ void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dBlurSq3", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dBlurSq3", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -123,7 +123,7 @@ void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convol
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dConvolution", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dConvolution", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -196,7 +196,7 @@ void vglCl3dCopy(VglImage* img_input, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dCopy", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dCopy", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -260,7 +260,7 @@ void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -339,7 +339,7 @@ void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -413,7 +413,7 @@ void vglCl3dMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dMax", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dMax", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -475,7 +475,7 @@ void vglCl3dMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dMin", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dMin", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -536,7 +536,7 @@ void vglCl3dNot(VglImage* img_input, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dNot", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dNot", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -595,7 +595,7 @@ void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dSub", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dSub", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -657,7 +657,7 @@ void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dSum", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dSum", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -718,7 +718,7 @@ void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dThreshold", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dThreshold", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -782,7 +782,7 @@ void vglClBlurSq3(VglImage* img_input, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClBlurSq3", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClBlurSq3", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -846,7 +846,7 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClConvolution", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClConvolution", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -916,7 +916,7 @@ void vglClCopy(VglImage* img_input, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClCopy", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClCopy", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -980,7 +980,7 @@ void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_w
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1056,7 +1056,7 @@ void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_wi
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1126,7 +1126,7 @@ void vglClInvert(VglImage* img_input, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClInvert", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClInvert", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1185,7 +1185,7 @@ void vglClMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClMax", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClMax", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1247,7 +1247,7 @@ void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClMin", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClMin", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1309,7 +1309,7 @@ void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClSub", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClSub", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1371,7 +1371,7 @@ void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClSum", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClSum", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1431,7 +1431,7 @@ void vglClSwapRgb(VglImage* src, VglImage* dst)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClSwapRgb", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClSwapRgb", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1489,7 +1489,7 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh, float top)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClThreshold", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClThreshold", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
