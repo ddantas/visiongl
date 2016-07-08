@@ -14,6 +14,13 @@
 //uint8_t, int16_t etc
 #include <stdint.h>
 
+//toupper, tolower
+#include <ctype.h>
+
+
+#include <vglImage.h>
+
+
 /*********************************************************************
 ***  IplImage                                                      ***
 *********************************************************************/
@@ -169,17 +176,67 @@ void cvCvtColor(const IplImage* src, IplImage* dst, int code)
   }
 }
 
-IplImage* cvLoadImage(const char* filename, int iscolor)
+
+/** Return file extension from file name.
+
+ */
+char* getFileExtensionUppercase(const char* filename)
 {
+  char* ext = (char*) malloc(32);
+  const int len = 4;
+  if (strlen(filename) > len)
+  {
+    sprintf(ext, "%s", filename + strlen(filename) - len); //TODO: Implement saving by extension.
+    printf("Filename: %s\n", filename);
+    printf("Extension: %s\n", ext);
+    for (int i = 0; i < len; i++)
+    {
+      ext[i] = toupper(ext[i]);
+    }
+    printf("Extension: %s\n", ext);
+    return ext;
+  }
+  return NULL;
+}
+
+
+IplImage* cvLoadImage(const char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/)
+{
+  IplImage* iplImage;
+  VglImage* vglImage;
+
+  char* ext = getFileExtensionUppercase(filename);
+  if ( strcmp(ext, ".PGM") || strcmp(ext, ".PPM") )
+  {
+    iplImage = iplLoadPgm((char*) filename);
+  }
+  else if ( strcmp(ext, "TIFF") || strcmp(ext, ".TIF") )
+  {
+#ifdef __TIFF__
+    vglImage = vglLoadImage((char*) filename);
+    if (vglImage->ipl)
+    {
+      return (vglImage->ipl);
+    }
+    else
+    {
+      fprintf(stderr, "%s:%s: Error: Unable to return image as IplImage.\n", __FILE__, __FUNCTION__);
+      return NULL;
+    }
+#else
+    fprintf(stderr, "%s:%s: Error: TIFF format unsupported. Please recompile using WITH_TIFF = 1.\n", __FILE__, __FUNCTION__);
+    return NULL;
+#endif
+
+  }
+
+
   fprintf(stderr, "%s:%s: Error: please recompile using WITH_OPENCV = 1 or use iplLoadPgm instead.\n", __FILE__, __FUNCTION__);
   exit(1);
 }
 
 int cvSaveImage(const char* filename, const IplImage* image, const int* params /*=0*/)
 {
-  //char ext[32];
-  //strcpy(filename + strlen(filename) - 4, ext); //TODO: Implement saving by extension.
-
   fprintf(stderr, "%s:%s: Error: please recompile using WITH_OPENCV = 1 or use iplSavePgm instead.\n", __FILE__, __FUNCTION__);
   exit(1);
 }

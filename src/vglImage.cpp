@@ -4,6 +4,8 @@
 #include <stdint.h>
 //strcmp
 #include <string.h>
+//malloc_usable_size
+#include <malloc.h>
 
 //GL
 #include <GL/glew.h>
@@ -2182,8 +2184,9 @@ int vglSavePgm(VglImage* img, char* filename){
 }
 
 
-/** Load image data from PGM/PPM file, 1 or 3 channels, unsigned byte
+/** Load image data from PGM/PPM file.
 
+    Load image data from PGM/PPM file, 1 or 3 channels, unsigned byte or short.
 */
 IplImage* iplLoadPgm(char* filename){
   FILE *fp = fopen(filename, "r");
@@ -2192,7 +2195,7 @@ IplImage* iplLoadPgm(char* filename){
     return NULL;
   }
 
-  int id, w, h, L;
+  int id, w, h, L, b, iplDepth;
   int result;
   IplImage* img;
 
@@ -2200,14 +2203,31 @@ IplImage* iplLoadPgm(char* filename){
   result = fscanf(fp, "%d %d\n", &w, &h);
   result = fscanf(fp, "%d\n", &L);
 
+  if (L == 255)
+  {
+    b = 1;
+    iplDepth = IPL_DEPTH_8U;
+  }
+  else if (L == 65535)
+  {
+    b = 2;
+    iplDepth = IPL_DEPTH_16U;
+  }
+  else
+  {
+    fprintf(stderr, "%s: %s: Error loading PGM file %s. Dynamic range = %d unsupported.\n", __FILE__, __FUNCTION__, filename, L);
+  }
+
   switch(id){
     case 5:
-      img = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 1);
-      fread(img->imageData, w*h, 1, fp);
+      img = cvCreateImage(cvSize(w, h), iplDepth, 1);
+      img->widthStep = h*b;
+      fread(img->imageData, w*h*b, 1, fp);
       break;
     case 6:
-      img = cvCreateImage(cvSize(w, h), IPL_DEPTH_8U, 3);
-      fread(img->imageData, w*h*3, 1, fp);
+      img = cvCreateImage(cvSize(w, h), iplDepth, 3);
+      img->widthStep = h*b*3;
+      fread(img->imageData, w*h*b*3, 1, fp);
       break;
     default:
       fprintf(stderr, "%s: %s: Error loading PGM file %s. Type %d unsupported.\n", __FILE__, __FUNCTION__, filename, id);
@@ -2216,8 +2236,10 @@ IplImage* iplLoadPgm(char* filename){
   return img;
 }
 
-/** Load image data from PGM/PPM file, 1 or 3 channels, unsigned byte
 
+/** Load image data from PGM/PPM file.
+
+    Load image data from PGM/PPM file, 1 or 3 channels, unsigned byte or short.
 */
 VglImage* vglLoadPgm(char* filename){
   IplImage* ipl = iplLoadPgm(filename);
