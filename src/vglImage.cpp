@@ -1556,8 +1556,8 @@ void vglPrintImageInfo(VglImage* image, char* msg){
     {
         printf("====== vglPrintImageInfo:\n");
     }
-    printf("Image @ %p: w x h x l = %d x %d x %d\n", 
-    image, image->getWidth(), image->getHeight(), image->getLength());
+    printf("Image @ %p: w x h x l = %d(%d) x %d x %d\n", 
+	    image, image->getWidth(), image->getWidthStep(), image->getHeight(), image->getLength());
     printf("ndim = %d\n", image->ndim);
     printf("size = %d\n", image->vglShape->getSize());
     printf("shape = {");
@@ -2112,48 +2112,74 @@ int vglSavePPM(VglImage* img, char* filename){
     return SavePPM(filename, img->getWidth(), img->getHeight(), img->ipl->imageData);
 }
 
-/** Save image to PGM/PPM file, 1 or 3 channels, unsigned byte
-
+/** Generic function to save image to PGM/PPM file, 1 or 3 channels, 
+unsigned byte or short. Can be used with ipl or ndarray type of image.
 */
-int iplSavePgm(char* filename, IplImage* ipl){
+int vglGenericSavePgm(char* filename, char* buf, int w, int h, int widthStep, int c, int b){
   FILE *fp = fopen(filename, "wb");
   int id;
-  int nc = ipl->nChannels;
-  int w = ipl->width;
-  int h = ipl->height;
-  if (nc == 1){
+  if (c == 1){
     id = 5;
   }
-  else if (nc == 3)
+  else if (c == 3)
   {
     id = 6;
   }
   else
   {
-    fprintf(stderr, "%s: %s: Error saving PGM file %s. Unsupported number of channels = %d.\n", __FILE__, __FUNCTION__, filename, nc);
+    fprintf(stderr, "%s: %s: Error saving PGM file %s. Unsupported number of channels = %d.\n", __FILE__, __FUNCTION__, filename, c);
     return 1;
   }
 
-  fprintf(fp, "P%d\n%d %d\n255\n", id, w, h);
-  fwrite(ipl->imageData, w * h * nc, 1, fp);
+  int L = (1<<(b*8)) - 1;
+  if ((b != 1) && (b != 2))
+  {
+    fprintf(stderr, "%s: %s: Error saving PGM file %s. Unsupported pixel depth = %d.\n", __FILE__, __FUNCTION__, filename, b*8);
+    return 1;
+  }
+
+  printf("vglGenericSavePpm: L = %d, b = %d\n", L, b);
+
+  fprintf(fp, "P%d\n%d %d\n%d\n", id, w, h, L);
+  for(int i = 0; i < h; i++)
+  {
+    fwrite(buf + i * widthStep, w * c * b, 1, fp);
+  }
   fclose(fp);
   return 0;
 }
+
+
+/** Save image to PGM/PPM file, 1 or 3 channels, unsigned byte
+
+*/
+int iplSavePgm(char* filename, IplImage* ipl){
+  char* buf = ipl->imageData;
+  int w = ipl->width;
+  int h = ipl->height;
+  int widthStep = ipl->widthStep;
+  int c = ipl->nChannels;
+  int b = (ipl->depth & 255) / 8;
+  int result = vglGenericSavePgm(filename, buf, w, h, widthStep, c, b);
+  return result;
+}
+
 
 /** Save image to PGM/PPM file, 1 or 3 channels, unsigned byte
 
 */
 int vglSavePgm(VglImage* img, char* filename){
-  vglCheckContext(img, VGL_GL_CONTEXT);
-  vglDownloadPGM(img);
-  if (!img->ipl)
-  {
-    fprintf(stderr, "%s: %s: Error saving PGM/PPM file %s. Field ipl is NULL.\n", __FILE__, __FUNCTION__, filename);
-    return 1;
-  }
-  return iplSavePgm(filename, img->ipl);
-}
+  vglCheckContext(img, VGL_RAM_CONTEXT);
 
+  char* buf = img->getImageData();
+  int w = img->getWidth();
+  int h = img->getHeight();
+  int widthStep = img->getWidthStep();
+  int c = img->getNChannels();
+  int b = (img->depth & 255) / 8;
+  int result = vglGenericSavePgm(filename, buf, w, h, widthStep, c, b);
+  return result;
+}
 
 
 /** Load image data from PGM/PPM file, 1 or 3 channels, unsigned byte

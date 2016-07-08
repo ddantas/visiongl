@@ -12,11 +12,12 @@
 #include <vglImage.h>
 
 VglImage* vglLoadTiff(char* inFilename);
+VglImage* vglLoadTiffAlt(char* inFilename);
 VglImage* vglLoad4dTiff(char* filename, int lStart, int lEnd, bool has_mipmap = 0);
 int vglSaveTiff(VglImage* image, char* outFilename);
 int vglSave4dTiff(VglImage* image, char* filename, int lStart, int lEnd);
 
-int vglPrintTiffInfo(char* inFilename);
+int vglPrintTiffInfo(char* inFilename, char* msg = NULL);
 
 #endif
 

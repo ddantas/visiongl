@@ -6,7 +6,7 @@
 int main(int argc, char *argv[])
 {
   char* usage = (char*) "\n\
-    This program reads a tiff file and save a copy using the GDCM library. \n\
+    This program reads a tiff file and save a copy using the libTIFF library. \n\
     Usage is as follows:\n\
 \n\
 demo_tiff <input file> <output file>\n\
@@ -27,8 +27,9 @@ demo_tiff <input file> <output file>\n\
   {
     printf("\nwidth = %d\nheight = %d\nlayers = %d\ndepth = %d\nnChannels = %d\n\n", vgltiff->getWidth(), vgltiff->getHeight(), vgltiff->getLength(), vgltiff->depth, vgltiff->nChannels);
 
-  int r = vglGdcmSaveDicomUncompressed(vgltiff, outFilename); 
-  return 0;
+    //int r = vglGdcmSaveDicomUncompressed(vgltiff, outFilename); 
+    int r = vglSaveTiff(vgltiff, outFilename); 
+    return 0;
   }
   return 1;
 }

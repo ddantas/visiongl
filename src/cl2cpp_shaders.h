@@ -120,6 +120,10 @@ void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
   */
 void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 
+/** Swap R and B channels.
+  */
+void vglClSwapRgb(VglImage* src, VglImage* dst);
+
 /** Threshold of src image by float parameter. if the pixel is below thresh,
     the output is 0, else, the output is top. Result is stored in dst image.
   */

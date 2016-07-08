@@ -1397,6 +1397,63 @@ void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
 
+/** Swap R and B channels.
+  */
+void vglClSwapRgb(VglImage* src, VglImage* dst)
+{
+  vglCheckContext(src, VGL_CL_CONTEXT);
+  vglCheckContext(dst, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL/vglClSwapRgb.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClSwapRgb", &_err ); 
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &src->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &dst->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  int _ndim = 2;
+  if (src->ndim > 2){
+    _ndim = 3;
+  }
+  size_t worksize[] = { src->getWidthIn(), src->getHeightIn(),  src->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  vglSetContext(dst, VGL_CL_CONTEXT);
+}
+
 /** Threshold of src image by float parameter. if the pixel is below thresh,
     the output is 0, else, the output is top. Result is stored in dst image.
   */

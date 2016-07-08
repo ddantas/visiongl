@@ -38,10 +38,10 @@ OUTPUT_LIBDIR      = -L $(OUTPUT_LIBPATH)
 
 WITH_CUDA = 0
 WITH_OPENCL = 1
-WITH_OPENCV = 1
+WITH_OPENCV = 0
 WITH_GDCM = 0
 WITH_DCMTK = 0
-WITH_TIFF = 0
+WITH_TIFF = 1
 
 ifeq ($(WITH_OPENCL), 1)
 	OPENCL_DEF        = -D__OPENCL__
@@ -119,6 +119,11 @@ endif
 
 ifeq ($(WITH_TIFF), 1)
 	TIFF_DEF        = -D__TIFF__
+	TIFF_INCLUDEPATH = /usr/include/x86_64-linux-gnu/
+	TIFF_LIBPATH     = /usr/lib/x86_64-linux-gnu/
+	TIFF_INCLUDEDIR  = -I $(TIFF_INCLUDEPATH)
+	TIFF_LIBDIR      = -L $(TIFF_LIBPATH)
+	TIFF_LIBRARIES   = -ltiff
 endif
 
 
@@ -165,6 +170,9 @@ LINUXAMD64_DIRS_LIBS =  $(INCLUDE_DIR) \
 			$(DCMTK_LIBDIR) \
                         $(DCMTK_LIBRARIES) \
 			$(TIFF_DEF) \
+                        $(TIFF_INCLUDEDIR) \
+                        $(TIFF_LIBDIR) \
+                        $(TIFF_LIBRARIES) \
 
 
 LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
@@ -324,7 +332,7 @@ democlnd:
 	$(LINUXAMD64_DEMO_CLND)
 
 demobenchmark:
-	$(LINUXAMD64_DEMO_BENCHMARK_CV)
+	#$(LINUXAMD64_DEMO_BENCHMARK_CV)
 	#$(LINUXAMD64_DEMO_BENCHMARK_CVOCL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CL)
 	$(LINUXAMD64_DEMO_BENCHMARK_CL3D)

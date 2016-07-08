@@ -152,6 +152,20 @@ class VglImage{
     return this->vglShape->getWidthIn();
   }
 
+  int getWidthStep()
+  {
+    int widthStep;
+    if (this->ipl)
+    {
+      widthStep = this->ipl->widthStep;
+    }
+    else
+    {
+      widthStep = this->getWidth() * this->getBytesPerPixel() * this->getNChannels();
+    }
+    return widthStep;
+  }
+
   int getHeightIn()
   {
     return this->vglShape->getHeightIn();

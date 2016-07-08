@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+//uint8_t, int16_t etc
+#include <stdint.h>
+
 /*********************************************************************
 ***  IplImage                                                      ***
 *********************************************************************/
@@ -78,8 +81,92 @@ IplImage* cvCopy(IplImage* src, IplImage* dst)
 
 void cvCvtColor(const IplImage* src, IplImage* dst, int code)
 {
-  fprintf(stderr, "%s:%s: Error: please recompile using WITH_OPENCV = 1.\n", __FILE__, __FUNCTION__);
-  exit(1);
+
+  int b = src->depth / 8;
+  if (b < 1) b = 1; //b is the size in bytes of a pixel with the depth color format
+  int w = src->width;
+  int h = src->height;
+  int d = src->depth;
+  int nPixels = w * h;
+  int datasize;
+
+  switch (code)
+  {
+    case CV_BGR2BGRA:
+    //case CV_RGB2RGBA:
+    {
+      if (src->nChannels == 4)
+      {
+        fprintf(stdout, "%s:%s: Warning: image already has 4 channels\n", __FILE__, __FUNCTION__);
+        return;
+      }
+      else if (src->nChannels != 3)
+      {
+        fprintf(stderr, "%s:%s: Error: image should have 3 channels but has %d channels\n", __FILE__, __FUNCTION__, src->nChannels);
+        return;
+      }
+      if (3*src->width != src->widthStep)
+      {
+        fprintf(stderr, "%s:%s: Error: Padded image not supported, or 3*%d != %d. Please recompile using WITH_OPENCV = 1.\n", __FILE__, __FUNCTION__, src->width, src->widthStep);
+        return;
+      }
+      dst = cvCreateImage(cvSize(w, h), d, 4);
+
+      int datasize = nPixels * 4 * b;
+      int iSrc = 0;
+      uint8_t temp_alpha = 0;
+
+      for(int iDst = 0; iDst < (datasize/d); iDst++)//for(int i = (datasize/d)-1; i >= 0; i--)
+      {
+        if (((iDst+1) % 4) == 0)
+        {
+          switch(d)
+          {
+            case 1:
+              ((uint8_t*)dst->imageData)[iDst] = temp_alpha;
+              break;
+            case 2:
+              ((uint16_t*)dst->imageData)[iDst] = temp_alpha;
+              break;
+            case 4:
+              ((uint32_t*)dst->imageData)[iDst] = temp_alpha;
+              break;
+            case 8:
+              ((uint64_t*)dst->imageData)[iDst] = temp_alpha;
+              break;
+          }
+        }
+        else
+        {
+          switch(d)
+          {
+            case 1:
+              ((uint8_t*)dst->imageData)[iDst] = ((uint8_t*)src->imageData)[iSrc];
+              break;
+            case 2:
+              ((uint16_t*)dst->imageData)[iDst] = ((uint16_t*)src->imageData)[iSrc];
+              break;
+            case 4:
+              ((uint32_t*)dst->imageData)[iDst] = ((uint32_t*)src->imageData)[iSrc];
+              break;
+            case 8:
+              ((uint64_t*)dst->imageData)[iDst] = ((uint64_t*)src->imageData)[iSrc];
+              break;
+          }
+          iSrc++;
+        }
+      }
+      break;
+    }
+    //case CV_BGRA2BGR:
+    //case CV_RGBA2RGB:
+
+
+      break;
+    default:
+      fprintf(stderr, "%s:%s: Error: Code %d not implemented. Please recompile using WITH_OPENCV = 1.\n", __FILE__, __FUNCTION__, code);
+      exit(1);
+  }
 }
 
 IplImage* cvLoadImage(const char* filename, int iscolor)
@@ -88,8 +175,11 @@ IplImage* cvLoadImage(const char* filename, int iscolor)
   exit(1);
 }
 
-int cvSaveImage(const char* filename, const IplImage* image, const int* params)
+int cvSaveImage(const char* filename, const IplImage* image, const int* params /*=0*/)
 {
+  //char ext[32];
+  //strcpy(filename + strlen(filename) - 4, ext); //TODO: Implement saving by extension.
+
   fprintf(stderr, "%s:%s: Error: please recompile using WITH_OPENCV = 1 or use iplSavePgm instead.\n", __FILE__, __FUNCTION__);
   exit(1);
 }
