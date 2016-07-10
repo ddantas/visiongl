@@ -88,11 +88,11 @@ IplImage* cvCopy(IplImage* src, IplImage* dst)
 void cvCvtColor(IplImage* src, IplImage* dst, int code)
 {
 
-  int b = src->depth / 8;
-  if (b < 1) b = 1; //b is the size in bytes of a pixel with the depth color format
   int w = src->width;
   int h = src->height;
-  int d = src->depth;
+  int d = src->depth && 255; // d = bits per sample
+  int b = d / 8;
+  if (b < 1) b = 1;          // b = bytes per sample
   int nPixels = w * h;
   int datasize;
 
@@ -116,16 +116,20 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
         fprintf(stderr, "%s:%s: Error: Padded image not supported, or 3*%d != %d. Please recompile using WITH_OPENCV = 1.\n", __FILE__, __FUNCTION__, src->width, src->widthStep);
         return;
       }
-      dst = cvCreateImage(cvSize(w, h), d, 4);
+      dst = cvCreateImage(cvSize(w, h),src->depth, 4);
 
       int datasize = nPixels * 4 * b;
       int iSrc = 0;
       uint8_t temp_alpha = 0;
 
+      printf("datasize = %d, w = %d, h = %d, b = %d, nPixels = %d\n\n", datasize, w, h, b, nPixels);
+      exit(1);
+
       for(int iDst = 0; iDst < (datasize/d); iDst++)//for(int i = (datasize/d)-1; i >= 0; i--)
       {
         if (((iDst+1) % 4) == 0)
         {
+          printf("_%d", iDst);
           switch(d)
           {
             case 1:
@@ -144,6 +148,7 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
         }
         else
         {
+          printf(">%d", iDst);
           switch(d)
           {
             case 1:
@@ -204,11 +209,12 @@ IplImage* cvLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/)
   IplImage* iplImage;
 
   char* ext = getFileExtensionUppercase(filename);
-  if ( strcmp(ext, ".PGM") || strcmp(ext, ".PPM") )
+  if      ( strcmp(ext, ".PGM") == 0 || strcmp(ext, ".PPM") == 0 )
   {
     iplImage = iplLoadPgm(filename);
   }
-  else if ( strcmp(ext, "TIFF") || strcmp(ext, ".TIF") )
+
+  else if ( strcmp(ext, "TIFF") == 0 || strcmp(ext, ".TIF") == 0 )
   {
 #ifdef __TIFF__
     iplImage = iplLoadTiff(filename);
@@ -234,17 +240,21 @@ IplImage* cvLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/)
 int cvSaveImage(char* filename, IplImage* image, int* params /*=0*/)
 {
   IplImage* iplImage;
+  int result;
 
   char* ext = getFileExtensionUppercase(filename);
-  if ( strcmp(ext, ".PGM") || strcmp(ext, ".PPM") )
+
+  if      ( strcmp(ext, ".PGM") == 0 || strcmp(ext, ".PPM") == 0 )
   {
-    return iplSavePgm(filename, image);
+    result = iplSavePgm(filename, image);
+    return result;
   }
 
-  else if ( strcmp(ext, "TIFF") || strcmp(ext, ".TIF") )
+  else if ( strcmp(ext, "TIFF") == 0 || strcmp(ext, ".TIF") == 0 )
   {
 #ifdef __TIFF__
-    iplSaveTiff(filename, image);
+    result = iplSaveTiff(filename, image);
+    return result;
 #else
     fprintf(stderr, "%s:%s: Error: TIFF format unsupported. Please recompile using WITH_TIFF = 1.\n", __FILE__, __FUNCTION__);
     exit(1);

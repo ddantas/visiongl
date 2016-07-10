@@ -6,6 +6,9 @@
 //toupper
 #include <ctype.h>
 
+#include <string.h>
+
+
 int main(int argc, char *argv[])
 {
   char* usage = (char*) "\n\

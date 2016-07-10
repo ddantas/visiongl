@@ -722,6 +722,7 @@ int iplSaveTiff(char* outFilename, IplImage* image)
   TIFFWriteDirectory(out);
 
   TIFFClose(out);
+  return 0;
 }
 
 int vglSave4dTiff(char* filename, VglImage* image, int lStart, int lEnd)

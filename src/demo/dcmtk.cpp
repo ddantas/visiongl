@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-  char* usage = "\n\
+  char* usage = (char*) "\n\
     This program reads a dicom file using the DCMTK library and saves \n\
 a copy. Usage is as follows:\n\
 \n\
