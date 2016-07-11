@@ -27,22 +27,6 @@ demo_tiff <input file> <output file>\n\
   {
     printf("\nwidth = %d\nheight = %d\nlayers = %d\ndepth = %d\nnChannels = %d\n\n", vgltiff->getWidth(), vgltiff->getHeight(), vgltiff->getLength(), vgltiff->depth, vgltiff->nChannels);
 
-    {
-
-      IplImage* ipl   = cvLoadImage((char*) "../images/lena_std.tif");
-      IplImage* ipl4c = cvCreateImage(cvGetSize(ipl), ipl->depth, 4);
-
-      printf("VAI CONVERTER\n\n");
-      cvCvtColor(ipl, ipl4c, CV_BGR2BGRA);
-
-      printf("VAI SALVAR 3C\n\n");
-      cvSaveImage((char*) "/tmp/lena_3c.tif", ipl);
-
-      printf("VAI SALVAR 4C\n\n");
-      cvSaveImage((char*) "/tmp/lena_4c.tif", ipl4c);
-
-
-    }
     //int r = vglGdcmSaveDicomUncompressed(outFilename, vgltiff);
     int r = vglSaveTiff(outFilename, vgltiff);
     return 0;

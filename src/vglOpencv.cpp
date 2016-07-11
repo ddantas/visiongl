@@ -95,91 +95,380 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
   if (b < 1) b = 1;          // b = bytes per sample
   int nPixels = w * h;
   int datasize;
+  int srcNChan;
+  int dstNChan;
+  int srcIChan[4];
+  int dstIChan[4];
+
 
   switch (code)
   {
     case CV_BGR2BGRA:
-    //case CV_RGB2RGBA:
+    //case CV_RGB2RGBA: //0
+    case CV_BGR2RGBA:
+    //case CV_RGB2BGRA: //2
+    case CV_BGR2RGB:
+    //case CV_RGB2BGR: //4
+    case CV_BGR2GRAY: //6
+    case CV_RGB2GRAY: //7
     {
-      if (src->nChannels == 4)
-      {
-        fprintf(stdout, "%s:%s: Warning: image already has 4 channels\n", __FILE__, __FUNCTION__);
-        return;
-      }
-      else if (src->nChannels != 3)
+      if (src->nChannels != 3)
       {
         fprintf(stderr, "%s:%s: Error: image should have 3 channels but has %d channels\n", __FILE__, __FUNCTION__, src->nChannels);
-        return;
-      }
-      if (3*src->width != src->widthStep)
-      {
-        fprintf(stderr, "%s:%s: Error: Padded image not supported, or 3*%d != %d. Please recompile using WITH_OPENCV = 1.\n", __FILE__, __FUNCTION__, src->width, src->widthStep);
-        return;
-      }
-      dst = cvCreateImage(cvSize(w, h),src->depth, 4);
-
-      int datasize = nPixels * 4 * b;
-      int iSrc = 0;
-      uint8_t temp_alpha = 0;
-
-      printf("datasize = %d, w = %d, h = %d, b = %d, nPixels = %d\n\n", datasize, w, h, b, nPixels);
-      exit(1);
-
-      for(int iDst = 0; iDst < (datasize/d); iDst++)//for(int i = (datasize/d)-1; i >= 0; i--)
-      {
-        if (((iDst+1) % 4) == 0)
-        {
-          printf("_%d", iDst);
-          switch(d)
-          {
-            case 1:
-              ((uint8_t*)dst->imageData)[iDst] = temp_alpha;
-              break;
-            case 2:
-              ((uint16_t*)dst->imageData)[iDst] = temp_alpha;
-              break;
-            case 4:
-              ((uint32_t*)dst->imageData)[iDst] = temp_alpha;
-              break;
-            case 8:
-              ((uint64_t*)dst->imageData)[iDst] = temp_alpha;
-              break;
-          }
-        }
-        else
-        {
-          printf(">%d", iDst);
-          switch(d)
-          {
-            case 1:
-              ((uint8_t*)dst->imageData)[iDst] = ((uint8_t*)src->imageData)[iSrc];
-              break;
-            case 2:
-              ((uint16_t*)dst->imageData)[iDst] = ((uint16_t*)src->imageData)[iSrc];
-              break;
-            case 4:
-              ((uint32_t*)dst->imageData)[iDst] = ((uint32_t*)src->imageData)[iSrc];
-              break;
-            case 8:
-              ((uint64_t*)dst->imageData)[iDst] = ((uint64_t*)src->imageData)[iSrc];
-              break;
-          }
-          iSrc++;
-        }
+        exit(1);
       }
       break;
     }
-    //case CV_BGRA2BGR:
-    //case CV_RGBA2RGB:
-
-
+    case CV_BGRA2BGR:
+    //case CV_RGBA2RGB: //1
+    case CV_RGBA2BGR:
+    //case CV_BGRA2RGB: //3
+    case CV_BGRA2RGBA:
+    //case CV_RGBA2BGRA: //5
+    case CV_BGRA2GRAY: //10
+    case CV_RGBA2GRAY: //11
+    {
+      if (src->nChannels != 4)
+      {
+        fprintf(stderr, "%s:%s: Error: image should have 4 channels but has %d channels\n", __FILE__, __FUNCTION__, src->nChannels);
+        exit(1);
+      }
       break;
+    }
     default:
-      fprintf(stderr, "%s:%s: Error: Code %d not implemented. Please recompile using WITH_OPENCV = 1.\n", __FILE__, __FUNCTION__, code);
+    {
+      fprintf(stdout, "%s:%s: Error: conversion option = %d not implemented.\n", __FILE__, __FUNCTION__, code);
       exit(1);
+    }
   }
-}
 
+
+  if (dst)
+  {
+    switch (code)
+    {
+      case CV_BGR2BGRA:
+      //case CV_RGB2RGBA: //0
+      case CV_BGR2RGBA:
+      //case CV_RGB2BGRA: //2
+      case CV_BGRA2RGBA:
+      //case CV_RGBA2BGRA: //5
+      {
+        if (dst->nChannels != 4)
+        {
+          fprintf(stdout, "%s:%s: Error: dst image should have 4 channels but has %d channels\n", __FILE__, __FUNCTION__, dst->nChannels);
+          exit(1);
+        }
+        break;
+      }
+      case CV_BGRA2BGR:
+      //case CV_RGBA2RGB: //1
+      case CV_RGBA2BGR:
+      //case CV_BGRA2RGB: //3
+      case CV_BGR2RGB:
+      //case CV_RGB2BGR: //4
+      {
+        if (dst->nChannels != 3)
+        {
+          fprintf(stdout, "%s:%s: Error: dst image should have 3 channels but has %d channels\n", __FILE__, __FUNCTION__, dst->nChannels);
+          exit(1);
+        }
+        break;
+      }
+      case CV_BGR2GRAY: //6
+      case CV_RGB2GRAY: //7
+      case CV_BGRA2GRAY: //10
+      case CV_RGBA2GRAY: //11
+      {
+        if (dst->nChannels != 1)
+        {
+          fprintf(stdout, "%s:%s: Error: dst image should have 1 channel but has %d channels\n", __FILE__, __FUNCTION__, dst->nChannels);
+          exit(1);
+        }
+        break;
+      }
+      default:
+      {
+        fprintf(stdout, "%s:%s: Error: conversion option = %d not implemented.\n", __FILE__, __FUNCTION__, code);
+        exit(1);
+      }
+    }
+  }
+
+  switch (code)
+  {
+    case CV_BGR2BGRA:
+    //case CV_RGB2RGBA: //0
+    {
+      srcNChan = 3;
+      dstNChan = 4;
+      srcIChan[0] = 0;
+      srcIChan[1] = 1;
+      srcIChan[2] = 2;
+      srcIChan[3] = -1; //no Alpha channel in src image.
+      dstIChan[0] = 0;
+      dstIChan[1] = 1;
+      dstIChan[2] = 2;
+      dstIChan[3] = 3;
+      break;
+    }
+    case CV_BGRA2BGR:
+    //case CV_RGBA2RGB: //1
+    {
+      srcNChan = 4;
+      dstNChan = 3;
+      srcIChan[0] = 0;
+      srcIChan[1] = 1;
+      srcIChan[2] = 2;
+      srcIChan[3] = 3;
+      dstIChan[0] = 0;
+      dstIChan[1] = 1;
+      dstIChan[2] = 2;
+      dstIChan[3] = -1; //no Alpha channel in dst image.
+      break;
+    }
+    case CV_BGR2RGBA:
+    //case CV_RGB2BGRA: //2
+    {
+      srcNChan = 3;
+      dstNChan = 4;
+      srcIChan[0] = 0;
+      srcIChan[1] = 1;
+      srcIChan[2] = 2;
+      srcIChan[3] = -1; //no Alpha channel in src image.
+      dstIChan[0] = 2;
+      dstIChan[1] = 1;
+      dstIChan[2] = 0;
+      dstIChan[3] = 3;
+      break;
+    }
+    case CV_RGBA2BGR:
+    //case CV_BGRA2RGB: //3
+    {
+      srcNChan = 4;
+      dstNChan = 3;
+      srcIChan[0] = 0;
+      srcIChan[1] = 1;
+      srcIChan[2] = 2;
+      srcIChan[3] = 3;
+      dstIChan[0] = 2;
+      dstIChan[1] = 1;
+      dstIChan[2] = 0;
+      dstIChan[3] = -1; //no Alpha channel in dst image.
+      break;
+    }
+    case CV_BGR2RGB:
+    //case CV_RGB2BGR: //4
+    {
+      srcNChan = 3;
+      dstNChan = 3;
+      srcIChan[0] = 0;
+      srcIChan[1] = 1;
+      srcIChan[2] = 2;
+      srcIChan[3] = -1; //no Alpha channel in src image.
+      dstIChan[0] = 2;
+      dstIChan[1] = 1;
+      dstIChan[2] = 0;
+      dstIChan[3] = -1; //no Alpha channel in dst image.
+      break;
+    }
+    case CV_BGRA2RGBA:
+    //case CV_RGBA2BGRA: //5
+    {
+      srcNChan = 4;
+      dstNChan = 4;
+      srcIChan[0] = 0;
+      srcIChan[1] = 1;
+      srcIChan[2] = 2;
+      srcIChan[3] = 3; //no Alpha channel in src image.
+      dstIChan[0] = 2;
+      dstIChan[1] = 1;
+      dstIChan[2] = 0;
+      dstIChan[3] = 3; //no Alpha channel in dst image.
+      break;
+    }
+    case CV_BGR2GRAY: //6
+    {
+      srcNChan = 3;
+      dstNChan = 1;
+      srcIChan[0] = 2;
+      srcIChan[1] = 1;
+      srcIChan[2] = 0;
+      srcIChan[3] = -1;
+      break;
+    }
+    case CV_RGB2GRAY: //7
+    {
+      srcNChan = 3;
+      dstNChan = 1;
+      srcIChan[0] = 0;
+      srcIChan[1] = 1;
+      srcIChan[2] = 2;
+      srcIChan[3] = -1;
+      break;
+    }
+    case CV_BGRA2GRAY: //10
+    {
+      srcNChan = 4;
+      dstNChan = 1;
+      srcIChan[0] = 2;
+      srcIChan[1] = 1;
+      srcIChan[2] = 0;
+      srcIChan[3] = 3;
+      break;
+    }
+    case CV_RGBA2GRAY: //11
+    {
+      srcNChan = 4;
+      dstNChan = 1;
+      srcIChan[0] = 0;
+      srcIChan[1] = 1;
+      srcIChan[2] = 2;
+      srcIChan[3] = 3;
+      break;
+    }
+    default:
+    {
+      fprintf(stdout, "%s:%s: Error: conversion option = %d not implemented.\n", __FILE__, __FUNCTION__, code);
+      exit(1);
+    }
+  }
+
+  fprintf(stdout, "%s:%s: dstNChan = %d\n", __FILE__, __FUNCTION__, dstNChan);
+  fprintf(stdout, "%s:%s: dst = %p\n", __FILE__, __FUNCTION__, dst);
+
+  //TODO: create dst image and return pointer by reference.
+  if (dst == NULL)
+  {
+    fprintf(stderr, "%s:%s: Error: dst image is NULL.\n", __FILE__, __FUNCTION__);
+    exit(1);
+    //dst = cvCreateImage(cvSize(w, h), src->depth, dstNChan);
+  }
+  fprintf(stdout, "%s:%s: dst = %p\n", __FILE__, __FUNCTION__, dst);
+
+  uint8_t temp_alpha = -1;
+  float wR = .30;
+  float wG = .59;
+  float wB = .11;
+
+  switch (code)
+  {
+    case CV_BGR2BGRA:
+    //case CV_RGB2RGBA: //0
+    case CV_BGRA2BGR: 
+    //case CV_RGBA2RGB: //1
+    case CV_BGR2RGBA:
+    //case CV_RGB2BGRA: //2
+    case CV_RGBA2BGR:
+    //case CV_BGRA2RGB: //3
+    case CV_BGR2RGB:
+    //case CV_RGB2BGR: //4
+    case CV_BGRA2RGBA:
+    //case CV_RGBA2BGRA: //5
+    {
+      for(int i = 0; i < h; i++)
+      {
+        for(int j = 0; j < w; j++)
+        {
+          int srcOffs = i * src->widthStep + j * srcNChan;
+          int dstOffs = i * dst->widthStep + j * dstNChan;
+          for(int k = 0; k < dstNChan; k++)
+          {
+            int srcIdx = srcOffs + srcIChan[k];
+            int dstIdx = dstOffs + dstIChan[k];
+            printf("%d", k);
+            if (dstIChan[k] == 3 && srcIChan[k] == -1)
+            {
+              switch(d)
+              {
+                case 1:
+                  ((uint8_t*)dst->imageData)[dstIdx] = temp_alpha;
+                  break;
+                case 2:
+                  ((uint16_t*)dst->imageData)[dstIdx] = temp_alpha;
+                  break;
+                case 4:
+                  ((uint32_t*)dst->imageData)[dstIdx] = temp_alpha;
+                  break;
+                case 8:
+                  ((uint64_t*)dst->imageData)[dstIdx] = temp_alpha;
+                  break;
+              }
+            }
+            else
+            {
+              //printf("X");
+              switch(d)
+              {
+                case 1:
+                  ((uint8_t*)dst->imageData)[dstIdx] = ((uint8_t*)src->imageData)[srcIdx];
+                  break;
+                case 2:
+                  ((uint16_t*)dst->imageData)[dstIdx] = ((uint16_t*)src->imageData)[srcIdx];
+                  break;
+                case 4:
+                  ((uint32_t*)dst->imageData)[dstIdx] = ((uint32_t*)src->imageData)[srcIdx];
+                  break;
+                case 8:
+                  ((uint64_t*)dst->imageData)[dstIdx] = ((uint64_t*)src->imageData)[srcIdx];
+                  break;
+              }
+            }
+	  }
+	}
+      }
+      break;
+    }
+    case CV_BGR2GRAY: //6
+    case CV_RGB2GRAY: //7
+    case CV_BGRA2GRAY: //10
+    case CV_RGBA2GRAY: //11
+    {
+      for(int i = 0; i < h; i++)
+      {
+        //printf("\n%d:", i);
+        for(int j = 0; j < w; j++)
+        {
+          //printf("%d ", j);
+          int srcOffs = i * src->widthStep + j * srcNChan;
+          int dstOffs = i * dst->widthStep + j;
+          int srcIdx = srcOffs;
+          int dstIdx = dstOffs;
+          switch(d)
+          {
+            case 1:
+              ((uint8_t*)dst->imageData)[dstIdx] =  wR * ((uint8_t*)src->imageData)[srcIdx + srcIChan[0]] +
+                                                    wG * ((uint8_t*)src->imageData)[srcIdx + srcIChan[1]] +
+                                                    wB * ((uint8_t*)src->imageData)[srcIdx + srcIChan[2]];
+              break;
+            case 2:
+              ((uint16_t*)dst->imageData)[dstIdx] = wR * ((uint16_t*)src->imageData)[srcIdx + srcIChan[0]] +
+                                                    wG * ((uint16_t*)src->imageData)[srcIdx + srcIChan[1]] +
+                                                    wB * ((uint16_t*)src->imageData)[srcIdx + srcIChan[2]];
+              break;
+            case 4:
+              ((uint32_t*)dst->imageData)[dstIdx] = wR * ((uint32_t*)src->imageData)[srcIdx + srcIChan[0]] +
+                                                    wG * ((uint32_t*)src->imageData)[srcIdx + srcIChan[1]] +
+                                                    wB * ((uint32_t*)src->imageData)[srcIdx + srcIChan[2]];
+              break;
+            case 8:
+              ((uint64_t*)dst->imageData)[dstIdx] = wR * ((uint64_t*)src->imageData)[srcIdx + srcIChan[0]] +
+                                                    wG * ((uint64_t*)src->imageData)[srcIdx + srcIChan[1]] +
+                                                    wB * ((uint64_t*)src->imageData)[srcIdx + srcIChan[2]];
+              break;
+	  }
+	}
+      }
+      break;
+    }
+    default:
+    {
+      fprintf(stdout, "%s:%s: Error: conversion option = %d not implemented.\n", __FILE__, __FUNCTION__, code);
+      exit(1);
+    }
+  }
+
+}
 
 /** Return file extension from file name.
 

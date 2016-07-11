@@ -27,8 +27,18 @@ enum
     CV_RGBA2BGR    =3,
     CV_BGRA2RGB    =CV_RGBA2BGR,
 
+    CV_BGR2RGB     =4,
+    CV_RGB2BGR     =CV_BGR2RGB,
+
+    CV_BGRA2RGBA   =5,
+    CV_RGBA2BGRA   =CV_BGRA2RGBA,
+
     CV_BGR2GRAY    =6,
     CV_RGB2GRAY    =7,
+
+    CV_BGRA2GRAY   =10,
+    CV_RGBA2GRAY   =11,
+
 };
 
 enum
