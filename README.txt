@@ -24,8 +24,8 @@ will be empty (NULL or -1) and vice-versa.
 
         Compilation
 
-The library requires OpenCV 2.4.0 or superior, CUDA 4 or superior, 
-GLEW 1.6 or superior and freeglut 3 or superior. OpenGL is also required!
+The library requires CUDA 4 or superior, GLEW 1.6 or superior and freeglut 3 
+or superior. OpenGL support by the hardware is also required!
 
 To install GLEW:
 apt-get install libglew1.6 libglew1.6-dev
@@ -75,21 +75,46 @@ To build the demos:
 make -f Makefile_linux democam
 make -f Makefile_linux demofrac
 make -f Makefile_linux demobenchmark
+make -f Makefile_linux demoio
+make -f Makefile_linux demotiff
+make -f Makefile_linux demogdcm
+make -f Makefile_linux demodcmtk
 
 To run the demos:
 make -f Makefile_linux rundemocam
 make -f Makefile_linux rundemofrac
 make -f Makefile_linux rundemobenchmark
+make -f Makefile_linux rundemoio
+make -f Makefile_linux rundemotiff
+make -f Makefile_linux rundemogdcm
+make -f Makefile_linux rundemodcmtk
 
 To build the documentation:
 build dox
 
 To generate wrapper code after some shader is modified:
+make -f Makefile_linux cl
 make -f Makefile_linux frag
 make -f Makefile_linux frag_bg
 make -f Makefile_linux frag_stereo
 make -f Makefile_linux frag_diffeq
 make -f Makefile_linux cuda
+
+        Compilation with OpenCV
+
+Please download OpenCV 2.4.0 or superior. It is available from:
+https://github.com/opencv/opencv 
+
+To compile VisionGL with support to OpenCV, please set WITH_OPENCV = 1 in 
+the VisionGL makefile.
+
+        Compilation with libTIFF
+
+Please install libtiff 4.0 or superior. Install it by running:
+sudo apt-get install libtiff4 libtiff4-dev
+
+To compile VisionGL with support to libTIFF, please set WITH_TIFF = 1 in 
+the VisionGL makefile.
 
         Compilation with GDCM
 
@@ -132,10 +157,14 @@ demofrac: Probably the most basic demo. Does not require any aditional
 library besides the minimum. Use the arrows in the numpad to navigate,
  z/x to zoom in/out, and q to quit. 
  
-democam: Another basic demo that does not require aditional libraries.
-Captures images from the first webcam found. The capture is done by 
+democam: Another basic demo. Requires OpenCV to obtain images from the 
+webcam. Captures images from the first webcam found. The capture is done by 
 OpenCV function cvCaptureFromCAM. An OpenGL window shows four versions 
 of the captured image after a few operations.
+ 
+demoio and demotiff: To run these examples, please compile VisionGL with
+TIFF support. In a previous section there are instructions about how
+to compile GDCM.
 
 demogdcm: To run this example, please compile VisionGL with
 GDCM support. In a previous section there are instructions about how
@@ -145,7 +174,7 @@ demodcmtk: To run this example, please compile VisionGL with
 DCMTK support. In a previous section there are instructions about how
 to compile DCMTK.
 
-demobenchmark: This demo is composed by three programs.
+demobenchmark: This demo is composed by six programs.
  - demobenchmark_cv: The simplest one, requires OpenCV.
  - demobenchmark_cl: To run this example, please compile VisionGL with
                      OpenCL support.
@@ -156,7 +185,7 @@ demobenchmark: This demo is composed by three programs.
                      present in the 2.4.8 and 2.4.9 tags. Get OpenCV
                      with git by running:
 
-                     git clone https://github.com/Itseez/opencv.git
+                     git clone https://github.com/opencv/opencv.git
                      git checkout 2.4.9
 
  - demobenchmark_cl3d: To run this example, please compile VisionGL with
@@ -169,6 +198,15 @@ demobenchmark: This demo is composed by three programs.
                      to look for the card model in compupench.org and look 
                      for the card details.
 
+ - demobenchmark_mm: To run this example, please compile VisionGL with
+                     OpenCL support.
+
+ - demobenchmark_fuzzytophat: To run this example, please compile VisionGL with
+                     OpenCL support.
+
+demobenchmark_clnd: To run this example, please compile VisionGL with
+OpenCL support.
+
 References
 
 
@@ -178,7 +216,12 @@ International Conference on Image Processing (ICIP), 2015, IEEE, Quebec City
 http://dx.doi.org/10.1109/ICIP.2015.7351730
 http://ieeexplore.ieee.org/xpl/articleDetails.jsp?reload=true&arnumber=7351730
 
-[2] Daniel Oliveira Dantas, Junior Barrera
+[2] Daniel Oliveira Dantas, Helton Danilo Passos Leal, Davy Oliveira Barros Sousa
+Fast multidimensional image processing with OpenCL
+International Conference on Image Processing (ICIP), 2016, IEEE, Phoenix City, in press.
+http://2016.ieeeicip.org/Papers/viewpapers.asp?papernum=2260
+
+[3] Daniel Oliveira Dantas, Junior Barrera
 Automatic generation of wrapper code for video processing functions
 Learning and Nonlinear models, Vol 9, Num 2, 2011
 https://www.academia.edu/4367451/Automatic_generation_of_wrapper_code_for_video_processing_functions

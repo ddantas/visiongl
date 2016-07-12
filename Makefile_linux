@@ -13,6 +13,7 @@ DCMTK_NAME           = dcmtk
 CL3D_NAME            = cl3d
 CLND_NAME            = clnd
 TIFF_NAME            = tiff
+IO_NAME		     = io
 BENCHMARK_CV_NAME    = benchmark_cv
 BENCHMARK_CVOCL_NAME = benchmark_cvocl
 BENCHMARK_CL_NAME    = benchmark_cl
@@ -226,7 +227,13 @@ LINUXAMD64_DEMO_DCMTK = $(CC) $(COMPILER_FLAGS) -D__DCMTK__ \
 LINUXAMD64_DEMO_TIFF = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINPATH)/demo_$(TIFF_NAME) \
                          src/demo/$(TIFF_NAME).cpp \
-                         -lvisiongl -ltiff \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS)
+
+LINUXAMD64_DEMO_IO = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(IO_NAME) \
+                         src/demo/$(IO_NAME).cpp \
+                         -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS)
 
 
@@ -283,7 +290,6 @@ LINUXAMD64_DEMO_COLORDECONV = $(CC) $(COMPILER_FLAGS) \
 
 
 
-
 GENERATE_HEADER = cat $(INCLUDE_PATH)/vglHead.h $(INCLUDE_PATH)/vglImage.h $(INCLUDE_PATH)/vglCudaImage.h $(INCLUDE_PATH)/vglClImage.h $(INCLUDE_PATH)/vglGdcmIo.h $(INCLUDE_PATH)/vglDcmtkIo.h $(INCLUDE_PATH)/vglTiffIo.h $(INCLUDE_PATH)/vglContext.h $(INCLUDE_PATH)/vglSimpleBGModel.h $(INCLUDE_PATH)/glsl2cpp*.h $(INCLUDE_PATH)/kernel2cu*.h $(INCLUDE_PATH)/cl2cpp*.h $(INCLUDE_PATH)/vglClFunctions*.h $(INCLUDE_PATH)/vglTail.h $(INCLUDE_PATH)/vglDeconv.h > /tmp/$(BINARY_NAME).h; grep -v vglImage\.h /tmp/$(BINARY_NAME).h > $(OUTPUT_INCLUDEPATH)/$(BINARY_NAME).h
 
 
@@ -324,6 +330,9 @@ demodcmtk:
 
 demotiff:
 	$(LINUXAMD64_DEMO_TIFF)
+
+demoio:
+	$(LINUXAMD64_DEMO_IO)
 
 democl3d:
 	$(LINUXAMD64_DEMO_CL3D)
@@ -388,6 +397,23 @@ rundemodcmtk:
 
 rundemotiff:
 	cd $(OUTPUT_BINPATH); ./demo_$(TIFF_NAME) ../images/tif/E1154S7I_3d.tif /tmp/demo_tif_out.tif
+
+rundemoio:
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) ../images/lena_std.tif /tmp/lena_std.tif -1
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) ../images/lena_gray.tif /tmp/lena_gray.tif -1
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) ../images/tif/E1154S7I_001.tif /tmp/E1154S7I_001.tif -1
+
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) ../images/lena_std.tif /tmp/lena_std.ppm -1
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) ../images/lena_gray.tif /tmp/lena_gray.pgm -1
+
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) /tmp/lena_std.ppm /tmp/lena_std_UNCHANGED.ppm -1
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) /tmp/lena_gray.pgm /tmp/lena_gray_UNCHANGED.pgm -1
+
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) /tmp/lena_std.ppm /tmp/lena_std_GRAYSCALE.pgm 0
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) /tmp/lena_gray.pgm /tmp/lena_gray_GRAYSCALE.pgm 0
+
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) /tmp/lena_std.ppm /tmp/lena_std_BGR.ppm 1
+	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) /tmp/lena_gray.pgm /tmp/lena_gray_BGR.ppm 1
 
 rundemobenchmark:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 10 /tmp
