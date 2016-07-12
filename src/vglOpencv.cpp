@@ -332,6 +332,10 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
       srcIChan[1] = 0;
       srcIChan[2] = 0;
       srcIChan[3] = -1;
+      dstIChan[0] = 0;
+      dstIChan[1] = 1;
+      dstIChan[2] = 2;
+      dstIChan[3] = -1; //no Alpha channel in dst image.
       break;
     }
     case CV_GRAY2BGRA:
@@ -345,6 +349,10 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
       srcIChan[1] = 0;
       srcIChan[2] = 0;
       srcIChan[3] = -1;
+      dstIChan[0] = 0;
+      dstIChan[1] = 1;
+      dstIChan[2] = 2;
+      dstIChan[3] = 3;
       break;
     }
     case CV_BGRA2GRAY: //10
@@ -374,9 +382,6 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
     }
   }
 
-  fprintf(stdout, "%s:%s: dstNChan = %d\n", __FILE__, __FUNCTION__, dstNChan);
-  fprintf(stdout, "%s:%s: dst = %p\n", __FILE__, __FUNCTION__, dst);
-
   //TODO: create dst image and return pointer by reference.
   if (dst == NULL)
   {
@@ -384,7 +389,6 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
     exit(1);
     //dst = cvCreateImage(cvSize(w, h), src->depth, dstNChan);
   }
-  fprintf(stdout, "%s:%s: dst = %p\n", __FILE__, __FUNCTION__, dst);
 
   uint8_t temp_alpha = -1;
   float wR = .30;
@@ -405,6 +409,10 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
     //case CV_RGB2BGR: //4
     case CV_BGRA2RGBA:
     //case CV_RGBA2BGRA: //5
+    case CV_GRAY2BGR:
+    //case CV_GRAY2RGB: //8
+    case CV_GRAY2BGRA:
+    //case CV_GRAY2RGBA: //9
     {
       for(int i = 0; i < h; i++)
       {
@@ -416,7 +424,6 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
           {
             int srcIdx = srcOffs + srcIChan[k];
             int dstIdx = dstOffs + dstIChan[k];
-            printf("%d", k);
             if (dstIChan[k] == 3 && srcIChan[k] == -1)
             {
               switch(d)
@@ -519,14 +526,11 @@ char* getFileExtensionUppercase(const char* filename)
   const int len = 4;
   if (strlen(filename) > len)
   {
-    sprintf(ext, "%s", filename + strlen(filename) - len); //TODO: Implement saving by extension.
-    printf("Filename: %s\n", filename);
-    printf("Extension: %s\n", ext);
+    sprintf(ext, "%s", filename + strlen(filename) - len);
     for (int i = 0; i < len; i++)
     {
       ext[i] = toupper(ext[i]);
     }
-    printf("Extension: %s\n", ext);
     return ext;
   }
   return NULL;
@@ -623,6 +627,7 @@ IplImage* cvLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/)
     }
 
     dst = cvCreateImage(size, depth, dstNChan);
+
     cvCvtColor(iplImage, dst, code);
     cvReleaseImage(&iplImage);
     return dst;
