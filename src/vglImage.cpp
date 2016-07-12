@@ -17,7 +17,7 @@
   #include <opencv2/highgui/highgui_c.h>
   #include <opencv2/imgproc/imgproc_c.h>
 #else
-//#include <vglOpencv.h>
+  #include <vglOpencv.h>
 #endif
 
 #include "vglContext.h"

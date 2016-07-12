@@ -9,6 +9,16 @@
 //memcpy, strlen
 #include <string.h>
 
+//IplImage, cvLoadImage
+#ifdef __OPENCV__
+  #include <opencv2/highgui/highgui_c.h>
+//  #include <opencv2/imgproc/imgproc_c.h>
+#else
+  #include <vglOpencv.h>
+#endif
+
+
+
 /** \brief Convert depth from tiff's format to ipl's format.
   */
 int convertDepthTiffToVgl(int tiffDepth)
