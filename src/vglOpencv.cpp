@@ -103,6 +103,18 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
 
   switch (code)
   {
+    case CV_GRAY2BGR:
+    //case CV_GRAY2RGB: //8
+    case CV_GRAY2BGRA:
+    //case CV_GRAY2RGBA: //9
+    {
+      if (src->nChannels != 1)
+      {
+        fprintf(stderr, "%s:%s: Error: src image should have 1 channel but has %d channels\n", __FILE__, __FUNCTION__, src->nChannels);
+        exit(1);
+      }
+      break;
+    }
     case CV_BGR2BGRA:
     //case CV_RGB2RGBA: //0
     case CV_BGR2RGBA:
@@ -114,7 +126,7 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
     {
       if (src->nChannels != 3)
       {
-        fprintf(stderr, "%s:%s: Error: image should have 3 channels but has %d channels\n", __FILE__, __FUNCTION__, src->nChannels);
+        fprintf(stderr, "%s:%s: Error: src image should have 3 channels but has %d channels\n", __FILE__, __FUNCTION__, src->nChannels);
         exit(1);
       }
       break;
@@ -130,7 +142,7 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
     {
       if (src->nChannels != 4)
       {
-        fprintf(stderr, "%s:%s: Error: image should have 4 channels but has %d channels\n", __FILE__, __FUNCTION__, src->nChannels);
+        fprintf(stderr, "%s:%s: Error: src image should have 4 channels but has %d channels\n", __FILE__, __FUNCTION__, src->nChannels);
         exit(1);
       }
       break;
@@ -153,6 +165,8 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
       //case CV_RGB2BGRA: //2
       case CV_BGRA2RGBA:
       //case CV_RGBA2BGRA: //5
+      case CV_GRAY2BGRA:
+      //case CV_GRAY2RGBA: //9
       {
         if (dst->nChannels != 4)
         {
@@ -167,6 +181,8 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
       //case CV_BGRA2RGB: //3
       case CV_BGR2RGB:
       //case CV_RGB2BGR: //4
+      case CV_GRAY2BGR:
+      //case CV_GRAY2RGB: //8
       {
         if (dst->nChannels != 3)
         {
@@ -280,7 +296,7 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
       srcIChan[0] = 0;
       srcIChan[1] = 1;
       srcIChan[2] = 2;
-      srcIChan[3] = 3; //no Alpha channel in src image.
+      srcIChan[3] = 3;
       dstIChan[0] = 2;
       dstIChan[1] = 1;
       dstIChan[2] = 0;
@@ -294,7 +310,7 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
       srcIChan[0] = 2;
       srcIChan[1] = 1;
       srcIChan[2] = 0;
-      srcIChan[3] = -1;
+      srcIChan[3] = -1; //no Alpha channel in src image.
       break;
     }
     case CV_RGB2GRAY: //7
@@ -304,6 +320,30 @@ void cvCvtColor(IplImage* src, IplImage* dst, int code)
       srcIChan[0] = 0;
       srcIChan[1] = 1;
       srcIChan[2] = 2;
+      srcIChan[3] = -1; //no Alpha channel in src image.
+      break;
+    }
+    case CV_GRAY2BGR:
+    //case CV_GRAY2RGB: //8
+    {
+      srcNChan = 1;
+      dstNChan = 3;
+      srcIChan[0] = 0;
+      srcIChan[1] = 0;
+      srcIChan[2] = 0;
+      srcIChan[3] = -1;
+      break;
+    }
+    case CV_GRAY2BGRA:
+    //case CV_GRAY2RGBA: //9
+    {
+      srcNChan = 1;
+      dstNChan = 4;
+      srcNChan = 1;
+      dstNChan = 3;
+      srcIChan[0] = 0;
+      srcIChan[1] = 0;
+      srcIChan[2] = 0;
       srcIChan[3] = -1;
       break;
     }
@@ -521,14 +561,77 @@ IplImage* cvLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/)
 
   if (iplImage)
   {
-    return iplImage;
+    int srcNChan = iplImage->nChannels;
+    int dstNChan;
+    int depth = iplImage->depth;
+    CvSize size = cvGetSize(iplImage);
+    int code;
+    IplImage* dst;
+
+    switch (iscolor)
+    {
+      case CV_LOAD_IMAGE_UNCHANGED:
+      {
+        return iplImage;
+        break;
+      }
+      case CV_LOAD_IMAGE_GRAYSCALE:
+      {
+        dstNChan = 1;
+        switch (srcNChan)
+	{
+          case 1:
+            return iplImage;
+            break;
+          case 3:
+            code = CV_RGB2GRAY;
+            break;
+          case 4:
+            code = CV_RGBA2GRAY;
+            break;
+          default:
+            fprintf(stderr, "%s:%s: Error: loaded image has number of channels = %d unsupported by cvCvtColor. You may try to recompile using WITH_OPENCV = 1.\n", __FILE__, __FUNCTION__, srcNChan);
+            exit(1);
+	  }
+        break;
+      }
+      case CV_LOAD_IMAGE_COLOR:
+      {
+        dstNChan = 3;
+        switch (srcNChan)
+	{
+          case 1:
+            code = CV_GRAY2BGR;
+            break;
+          case 3:
+            code = CV_RGB2BGR;
+            break;
+          case 4:
+            code = CV_RGBA2BGR;
+            break;
+          default:
+            fprintf(stderr, "%s:%s: Error: loaded image has number of channels = %d unsupported by cvCvtColor. You may try to recompile using WITH_OPENCV = 1.\n", __FILE__, __FUNCTION__, srcNChan);
+            exit(1);
+	  }
+        break;
+      }
+      default:
+      {
+        fprintf(stdout, "%s:%s: Error: load option = %d not implemented.\n", __FILE__, __FUNCTION__, iscolor);
+        exit(1);
+      }
+    }
+
+    dst = cvCreateImage(size, depth, dstNChan);
+    cvCvtColor(iplImage, dst, code);
+    cvReleaseImage(&iplImage);
+    return dst;
   }
   else
   {
     fprintf(stderr, "%s:%s: Error loading image from file %s.\n", __FILE__, __FUNCTION__, filename);
     exit(1);
   }
-
 }
 
 int cvSaveImage(char* filename, IplImage* image, int* params /*=0*/)

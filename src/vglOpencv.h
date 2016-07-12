@@ -35,24 +35,26 @@ enum
 
     CV_BGR2GRAY    =6,
     CV_RGB2GRAY    =7,
-
+    CV_GRAY2BGR    =8,
+    CV_GRAY2RGB    =CV_GRAY2BGR,
+    CV_GRAY2BGRA   =9,
+    CV_GRAY2RGBA   =CV_GRAY2BGRA,
     CV_BGRA2GRAY   =10,
     CV_RGBA2GRAY   =11,
-
 };
 
 enum
 {
-/* 8bit, color or not */
+/* as is */
     CV_LOAD_IMAGE_UNCHANGED  =-1,
-/* 8bit, gray */
+/* gray */
     CV_LOAD_IMAGE_GRAYSCALE  =0,
-/* ?, color */
+/* BGR */
     CV_LOAD_IMAGE_COLOR      =1,
 /* any depth, ? */
-    CV_LOAD_IMAGE_ANYDEPTH   =2,
+//    CV_LOAD_IMAGE_ANYDEPTH   =2,
 /* ?, any color */
-    CV_LOAD_IMAGE_ANYCOLOR   =4
+//    CV_LOAD_IMAGE_ANYCOLOR   =4
 };
 
 /*

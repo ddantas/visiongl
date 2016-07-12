@@ -1285,7 +1285,7 @@ VglImage* vglLoadImage(char* filename, int iscolor /*= -1*/, int has_mipmap /*= 
 #ifdef __OPENCV__
   IplImage* ipl = cvLoadImage(filename, iscolor);
 #else
-  IplImage* ipl = iplLoadPgm(filename); //TODO: add parameter iscolor
+  IplImage* ipl = iplLoadPgm(filename);
 #endif
 
   VglImage* img;
