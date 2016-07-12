@@ -507,23 +507,28 @@ IplImage* cvLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/)
   {
 #ifdef __TIFF__
     iplImage = iplLoadTiff(filename);
-    if (iplImage)
-    {
-      return (iplImage);
-    }
-    else
-    {
-      fprintf(stderr, "%s:%s: Error loading image from file %s.\n", __FILE__, __FUNCTION__, filename);
-      exit(1);
-    }
 #else
     fprintf(stderr, "%s:%s: Error: TIFF format unsupported. Please recompile using WITH_TIFF = 1.\n", __FILE__, __FUNCTION__);
     exit(1);
 #endif
   }
+  
+  else
+  {
+    fprintf(stderr, "%s:%s: Error: extension %s unsupported. You may try to recompile using WITH_OPENCV = 1 or use iplLoadPgm instead.\n", __FILE__, __FUNCTION__, ext);
+    exit(1);
+  }
 
-  fprintf(stderr, "%s:%s: Error: extension %s unsupported. You may try to recompile using WITH_OPENCV = 1 or use iplLoadPgm instead.\n", __FILE__, __FUNCTION__, ext);
-  exit(1);
+  if (iplImage)
+  {
+    return iplImage;
+  }
+  else
+  {
+    fprintf(stderr, "%s:%s: Error loading image from file %s.\n", __FILE__, __FUNCTION__, filename);
+    exit(1);
+  }
+
 }
 
 int cvSaveImage(char* filename, IplImage* image, int* params /*=0*/)
@@ -536,22 +541,25 @@ int cvSaveImage(char* filename, IplImage* image, int* params /*=0*/)
   if      ( strcmp(ext, ".PGM") == 0 || strcmp(ext, ".PPM") == 0 )
   {
     result = iplSavePgm(filename, image);
-    return result;
   }
 
   else if ( strcmp(ext, "TIFF") == 0 || strcmp(ext, ".TIF") == 0 )
   {
 #ifdef __TIFF__
     result = iplSaveTiff(filename, image);
-    return result;
 #else
     fprintf(stderr, "%s:%s: Error: TIFF format unsupported. Please recompile using WITH_TIFF = 1.\n", __FILE__, __FUNCTION__);
     exit(1);
 #endif
   }
 
-  fprintf(stderr, "%s:%s: Error: extension %s unsupported. You may try to recompile using WITH_OPENCV = 1 or use iplSavePgm instead.\n", __FILE__, __FUNCTION__, ext);
-  exit(1);
+  else
+  {
+    fprintf(stderr, "%s:%s: Error: extension %s unsupported. You may try to recompile using WITH_OPENCV = 1 or use iplSavePgm instead.\n", __FILE__, __FUNCTION__, ext);
+    exit(1);
+  }
+
+  return result;
 }
 
 
