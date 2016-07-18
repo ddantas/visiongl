@@ -137,16 +137,16 @@ inline CvSize cvGetSize(IplImage* ipl)
 ***  Function prototypes                                           ***
 *********************************************************************/
 
+CvSize cvSize(int width, int height);
+CvSize cvGetSize(IplImage* ipl);
+
+
 void cvReleaseImage(IplImage** p_ipl);
 IplImage* cvCreateImage(CvSize size, int depth, int channels);
 IplImage* cvCopy(IplImage* src, IplImage* dst);
 void cvCvtColor(IplImage* src, IplImage* dst, int code);
 IplImage* cvLoadImage(char* filename, int iscolor = CV_LOAD_IMAGE_UNCHANGED);
 int cvSaveImage(char* filename, IplImage* image, int* params = 0);
-
-
-CvSize cvSize(int width, int height);
-CvSize cvGetSize(IplImage* ipl);
 
 
 #endif
