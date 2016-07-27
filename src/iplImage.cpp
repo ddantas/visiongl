@@ -18,7 +18,8 @@
 #include <vglTiffIo.h>
 
 #ifdef __OPENCV__
-  #include <opencv2/core/types_c.h>
+  #include <opencv2/imgproc/types_c.h>
+  #include <opencv2/highgui/highgui_c.h>
 #else
   #include <vglOpencv.h>
 #endif
