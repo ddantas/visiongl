@@ -22,7 +22,12 @@ void iplReleaseImage(IplImage** p_ipl);
 IplImage* iplCreateImage(CvSize size, int depth, int channels);
 IplImage* iplCopy(IplImage* src, IplImage* dst);
 void iplCvtColor(IplImage* src, IplImage* dst, int code);
+
+IplImage* iplLoadPgm(char* filename);
 IplImage* iplLoadImage(char* filename, int iscolor = CV_LOAD_IMAGE_UNCHANGED);
+
+int iplGenericSavePgm(char* filename, char* buf, int w, int h, int widthStep, int c, int b);
+int iplSavePgm(char* filename, IplImage* ipl);
 int iplSaveImage(char* filename, IplImage* image, int* params = 0);
 
 

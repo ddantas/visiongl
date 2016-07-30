@@ -265,9 +265,7 @@ void vglImage3To4Channels(VglImage* img);
 void vglImage4To3Channels(VglImage* img);
 int SavePPM(char* filename, int w, int h, void* savebuf);
 int vglSavePPM(char* filename, VglImage* img);
-int iplSavePgm(char* filename, IplImage* ipl);
 int vglSavePgm(char* filename, VglImage* img);
-IplImage* iplLoadPgm(char* filename);
 VglImage* vglLoadPgm(char* filename);
 int vglHasDisplay();
 
