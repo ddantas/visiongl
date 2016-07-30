@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 
+// exit, malloc
+#include <cstdlib>
+
 struct VglClContext
 {
 	cl_platform_id* platformId;
