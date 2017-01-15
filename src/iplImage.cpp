@@ -67,7 +67,7 @@ int iplFindWidthStep(int depth, int width, int channels /*= 1*/)
   int bpp = iplFindBitsPerSample(depth);
   if (bpp < 8)
   {
-    fprintf(stderr, "%s:%s: Error: bits per pixel = %d < 8. Image depth may be wrong.\n", __FILE__, __FUNCTION__, bpp);
+    fprintf(stderr, "%s:%s: Error: bits per pixel = %d < 8 and != 1. Image depth may be wrong.\n", __FILE__, __FUNCTION__, bpp);
     exit(1);
   }
   return (depth / 8) * channels * width;

@@ -73,40 +73,51 @@ class VglImage{
   int       inContext;
   char*     filename;
 
-  size_t getBytesPerPixel()
+  size_t getBitsPerSample()
   {
-    size_t bytesPerPixel = this->depth & 255;
-    bytesPerPixel /= 8;
-    if (bytesPerPixel < 1)
-      bytesPerPixel = 1;
-    return bytesPerPixel;    
+    return this->depth & 255;
   }
 
-  size_t getTotalSizeInPixelsChannels()
+  int getWidthStep()
   {
-    /*
-    size_t totalSize = 1;
-    for(int i = 1; i <= this->ndim; i++)
+    int widthStep;
+    if (this->ipl)
     {
-      totalSize *= this->shape[i];
+      widthStep = this->ipl->widthStep;
     }
-    totalSize *= this->nChannels;
+    else
+    {
+      int bps = this->getBitsPerSample();
+      if (bps == 1)
+      {
+        widthStep = (this->getWidthIn() - 1) / 8 + 1;
+      }
+      else if (bps < 8)
+      {
+        fprintf(stderr, "%s:%s: Error: bits per pixel = %d < 8 and != 1. Image depth may be wrong.\n", __FILE__, __FUNCTION__, bps);
+        exit(1);
+      }
+      widthStep = (bps / 8) * this->getNChannels() * this->getWidthIn();
+    }
+    return widthStep;
+  }
 
-    // 1D images may be stored as 2d images.
-    if ( (this->ndim == 1) && (this->getHeightIn() > 1) )
-    {
-      totalSize *= this->getHeightIn();
-    }
-    return totalSize;
-    */
-    return this->vglShape->getSize();
+  /** Total number of rows
+
+      Get total number of rows. Notice that, in images with more than 2D, may be 
+      different of image height
+  */
+
+  size_t getTotalRows()
+  {
+    //return this->vglShape->getSize();
+   return this->vglShape->getHeightIn() * this->vglShape->getNFrames();
   }
 
   size_t getTotalSizeInBytes()
   {
-    size_t bytesPerPixel = this->getBytesPerPixel();
-
-    size_t totalSize = this->getTotalSizeInPixelsChannels() * bytesPerPixel;
+    size_t bitsPerSample = this->getBitsPerSample();
+    size_t totalSize = this->getTotalRows() * this->getWidthStep();
 
     return totalSize;
   }
@@ -151,20 +162,6 @@ class VglImage{
   int getWidthIn()
   {
     return this->vglShape->getWidthIn();
-  }
-
-  int getWidthStep()
-  {
-    int widthStep;
-    if (this->ipl)
-    {
-      widthStep = this->ipl->widthStep;
-    }
-    else
-    {
-      widthStep = this->getWidth() * this->getBytesPerPixel() * this->getNChannels();
-    }
-    return widthStep;
   }
 
   int getHeightIn()

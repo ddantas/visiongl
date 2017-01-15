@@ -8,12 +8,14 @@
 #include "vglShape.h"
 #include "vglStrEl.h"
 
+// strcmp, strlen
+#include <string.h>
 
 int main(int argc, char *argv[])
 {
   char* usage = (char*) "\n\
     This program reads a stack of image files and saves \n\
-a copy after a 3d erosion. Usage is as follows:\n\
+a copy after a ND operation. Usage is as follows:\n\
 \n\
 demo_clnd <input file> <index 0> <index n> <output folder>\n\
 \n\
@@ -145,7 +147,7 @@ obtained from the image file.\
     vglReshape(out, origVglShape);
   }
 
-  vglSaveNdImage(out, (char*) "/tmp/clnd_%04d.tif", 0);
+  vglSaveNdImage((char*) "/tmp/clnd_%04d.tif", out, 0);
 
   return 0;
 }

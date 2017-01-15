@@ -666,7 +666,7 @@ int vglSaveTiff(char* outFilename, VglImage* image)
   TIFF *out = TIFFOpen(outFilename, "w");
   char* buff = image->getImageData();
 
-  int b = image->getBytesPerPixel();
+  //int b = image->getBitsPerSample();
   int c = image->getNChannels();
   int widthStep = image->getWidthStep();
 
@@ -674,7 +674,7 @@ int vglSaveTiff(char* outFilename, VglImage* image)
   {
     TIFFSetField(out, TIFFTAG_IMAGEWIDTH, image->getWidth());
     TIFFSetField(out, TIFFTAG_IMAGELENGTH, image->getHeight());
-    TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, image->getBytesPerPixel()*8);
+    TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, image->getBitsPerSample());
     if (image->nChannels == 1)
       TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
     else

@@ -633,7 +633,7 @@ void vglSaveImage(char* filename, VglImage* image)
 #ifdef __OPENCV__
     cvSaveImage(filename, image->ipl);
 #else
-    iplSavePgm(filename, image->ipl);
+    iplSaveImage(filename, image->ipl);
 #endif
   }
   else if (image->ndim == 3)
@@ -665,7 +665,7 @@ void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd)
 #ifdef __OPENCV__
   cvSaveImage(temp_filename, ipl);
 #else
-  iplSavePgm(temp_filename, ipl);
+  iplSaveImage(temp_filename, ipl);
 #endif
   
   int c = image->getHeight()*image->getWidth()*d*image->nChannels;
@@ -677,7 +677,7 @@ void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd)
 #ifdef __OPENCV__
     cvSaveImage(temp_filename, ipl);
 #else
-    iplSavePgm(temp_filename, ipl);
+    iplSaveImage(temp_filename, ipl);
 #endif
     c += image->getHeight()*image->getWidth()*image->nChannels*d;
   }
@@ -708,7 +708,7 @@ void vglSaveNdImage(char* filename, VglImage* image, int lStart)
 #ifdef __OPENCV__
   cvSaveImage(temp_filename, ipl);
 #else
-  iplSavePgm(temp_filename, ipl);
+  iplSaveImage(temp_filename, ipl);
 #endif
   int c = image->getHeight()*image->getWidth()*d*image->nChannels;
   for(int i = lStart+1; i <= lEnd; i++)
@@ -719,7 +719,7 @@ void vglSaveNdImage(char* filename, VglImage* image, int lStart)
 #ifdef __OPENCV__
     cvSaveImage(temp_filename, ipl);
 #else
-    iplSavePgm(temp_filename, ipl);
+    iplSaveImage(temp_filename, ipl);
 #endif
     c += image->getHeight()*image->getWidth()*image->nChannels*d;
   }
@@ -1292,7 +1292,7 @@ VglImage* vglLoadImage(char* filename, int iscolor /*= -1*/, int has_mipmap /*= 
 #ifdef __OPENCV__
   IplImage* ipl = cvLoadImage(filename, iscolor);
 #else
-  IplImage* ipl = iplLoadPgm(filename);
+  IplImage* ipl = iplLoadImage(filename, iscolor);
 #endif
 
   VglImage* img;
@@ -1344,7 +1344,7 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
 #ifdef __OPENCV__
   IplImage* ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
 #else
-  IplImage* ipl = iplLoadPgm(tempFilename);
+  IplImage* ipl = iplLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
 #endif
 
   if (!ipl){
@@ -1390,7 +1390,7 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
 #ifdef __OPENCV__
     ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
 #else
-    ipl = iplLoadPgm(tempFilename);
+    ipl = iplLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
 #endif
 
     if (!ipl){
@@ -1423,7 +1423,7 @@ VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, int* shape, int n
 #ifdef __OPENCV__
   IplImage* ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
 #else
-  IplImage* ipl = iplLoadPgm(tempFilename);
+  IplImage* ipl = iplLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
 #endif
 
   if (!ipl){
@@ -1481,7 +1481,7 @@ VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, int* shape, int n
 #ifdef __OPENCV__
     ipl = cvLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
 #else
-    ipl = iplLoadPgm(tempFilename);
+    ipl = iplLoadImage(tempFilename, CV_LOAD_IMAGE_UNCHANGED);
 #endif
 
     if (!ipl){
@@ -1615,7 +1615,7 @@ void vglPrintImageData(VglImage* image, char* msg /*= NULL*/, char* format /*= "
   {
     printf("====== vglPrintImageData:\n");
   }
-  int w = image->getWidth() * image->nChannels * image->getBytesPerPixel();
+  int w = image->getWidthStep();
   int h = image->getHeight();
   int ndarraySize = image->getTotalSizeInBytes();
   char* ptr = image->getImageData();
