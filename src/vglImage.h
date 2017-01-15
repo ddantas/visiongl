@@ -247,6 +247,7 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap =
 VglImage* vglLoadNdImage(char* filename, int lStart, int lEnd, int* shape, int ndim, bool has_mipmap = 0);
 int vglReshape(VglImage* img, VglShape* newShape);
 void vglPrintImageData(VglImage* image, char* msg = NULL, char* format = (char*) "%c");
+void iplPrintImageData(IplImage* image, char* msg = NULL, char* format = (char*) "%c");
 void vglPrintImageInfo(VglImage* image, char* msg = NULL);
 void iplPrintImageInfo(IplImage* ipl, char* msg = NULL);
 void vglCopyImageTex(VglImage* src, VglImage* dst);

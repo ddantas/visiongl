@@ -18,6 +18,9 @@
 ***  Function prototypes                                           ***
 *********************************************************************/
 
+int iplFindBitsPerSample(int depth);
+int iplFindWidthStep(int depth, int width, int channels = 1);
+
 void iplReleaseImage(IplImage** p_ipl);
 IplImage* iplCreateImage(CvSize size, int depth, int channels);
 IplImage* iplCopy(IplImage* src, IplImage* dst);

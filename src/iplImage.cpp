@@ -51,16 +51,43 @@ void iplReleaseImage(IplImage** p_ipl)
   p_ipl = NULL;
 }
 
+int iplFindBitsPerSample(int depth)
+{
+  return depth & 255;
+}
+
+int iplFindWidthStep(int depth, int width, int channels /*= 1*/)
+{
+  printf("%s:%s: depth    = %d.\n", __FILE__, __FUNCTION__, depth);
+  printf("%s:%s: width    = %d.\n", __FILE__, __FUNCTION__, width);
+  printf("%s:%s: channels = %d.\n", __FILE__, __FUNCTION__, channels);
+  if (depth == IPL_DEPTH_1U){
+    return (width - 1) / 8 + 1;
+  }
+  int bpp = iplFindBitsPerSample(depth);
+  if (bpp < 8)
+  {
+    fprintf(stderr, "%s:%s: Error: bits per pixel = %d < 8. Image depth may be wrong.\n", __FILE__, __FUNCTION__, bpp);
+    exit(1);
+  }
+  return (depth / 8) * channels * width;
+}
+
 IplImage* iplCreateImage(CvSize size, int depth, int channels)
 {
   IplImage* ipl = (IplImage*) malloc(sizeof(struct _IplImage));
 
+  /* TODO: remove all instances of this and replace with iplFindBitsPerSample and iplFindWidthStep
   size_t bytesPerPixel = depth & 255;
   bytesPerPixel /= 8;
   if (bytesPerPixel < 1)
     bytesPerPixel = 1;
 
   size_t widthStep = size.width * channels * bytesPerPixel;
+  size_t imageSize = size.height * widthStep;
+  */
+
+  size_t widthStep = iplFindWidthStep(depth, size.width, channels);
   size_t imageSize = size.height * widthStep;
 
   ipl->nSize     = sizeof(IplImage);
@@ -543,42 +570,96 @@ char* getFileExtensionUppercase(const char* filename)
   return NULL;
 }
 
+/** Skip comments inside PPM/PGM/PBM file.
 
-/** Load image data from PGM/PPM file.
+    Skip comments inside PPM/PGM/PBM file.
 
-    Load image data from PGM/PPM file, 1 or 3 channels, unsigned byte or short.
+    Based on code from Along the Pathway blog, Reading/Writing PGM Files in C, Posted 
+    on March 4, 2010 by ugurkoltuk. Original version had a bug, not working on big lines.
+
+    https://ugurkoltuk.wordpress.com/2010/03/04/an-extreme-simple-pgm-io-api/
+
+*/
+void skipComments(FILE* fp){
+  int ch;
+ 
+  while ((ch = fgetc(fp)) != EOF && isspace(ch))
+  {
+  }
+  if (ch == '#')
+  {
+    while ((ch = fgetc(fp)) != '\n')
+    {
+    }
+    skipComments(fp);
+  }
+  else
+  {
+    fseek(fp, -1, SEEK_CUR);
+  }
+}
+
+/** Load image data from PGM/PPM/PBM file.
+
+    Load image data from PGM/PPM file, 1 or 3 channels, unsigned byte or short, and from PBM file.
 */
 IplImage* iplLoadPgm(char* filename){
+
   FILE *fp = fopen(filename, "r");
   if (!fp){
     fprintf(stderr, "%s: %s: Error loading PGM file %s\n", __FILE__, __FUNCTION__, filename);
     return NULL;
   }
 
-  int id, w, h, L, b, iplDepth;
+  int id, w, ws, h, L, b, iplDepth;
   int result;
   IplImage* img;
 
   result = fscanf(fp, "P%d", &id);
+  skipComments(fp);
   result = fscanf(fp, "%d %d\n", &w, &h);
-  result = fscanf(fp, "%d\n", &L);
+  printf("FOUND ID + %d\n", id);
+  printf("FOUND W + %d\n", w);
+  printf("FOUND H + %d\n", h);
 
-  if (L == 255)
+
+  if (id == 4)
   {
-    b = 1;
-    iplDepth = IPL_DEPTH_8U;
+    ws = (w-1)/8+1;
+    iplDepth = IPL_DEPTH_1U;
   }
-  else if (L == 65535)
+  else if (id == 5 || id == 6)
   {
-    b = 2;
-    iplDepth = IPL_DEPTH_16U;
+    skipComments(fp);
+    result = fscanf(fp, "%d\n", &L);
+    if (L == 255)
+    {
+      b = 1;
+      iplDepth = IPL_DEPTH_8U;
+    }
+    else if (L == 65535)
+    {
+      b = 2;
+      iplDepth = IPL_DEPTH_16U;
+    }
+    else
+    {
+      fprintf(stderr, "%s: %s: Error loading PGM file %s. Dynamic range = %d unsupported.\n", __FILE__, __FUNCTION__, filename, L);
+    }
   }
   else
   {
-    fprintf(stderr, "%s: %s: Error loading PGM file %s. Dynamic range = %d unsupported.\n", __FILE__, __FUNCTION__, filename, L);
+    fprintf(stderr, "%s: %s: Error loading PGM file %s. Type %d unsupported.\n", __FILE__, __FUNCTION__, filename, id);
+    fclose(fp);
+    return NULL;
   }
 
   switch(id){
+    case 4:
+      img = cvCreateImage(cvSize(w, h), iplDepth, 1);
+      img->widthStep = ws;
+      fread(img->imageData, ws*h, 1, fp);
+      break;
     case 5:
       img = cvCreateImage(cvSize(w, h), iplDepth, 1);
       img->widthStep = h*b;
@@ -591,6 +672,8 @@ IplImage* iplLoadPgm(char* filename){
       break;
     default:
       fprintf(stderr, "%s: %s: Error loading PGM file %s. Type %d unsupported.\n", __FILE__, __FUNCTION__, filename, id);
+      fclose(fp);
+      return NULL;
   }
   fclose(fp);
   return img;
@@ -602,7 +685,7 @@ IplImage* iplLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/
   IplImage* iplImage;
 
   char* ext = getFileExtensionUppercase(filename);
-  if      ( strcmp(ext, ".PGM") == 0 || strcmp(ext, ".PPM") == 0 )
+  if      ( strcmp(ext, ".PGM") == 0 || strcmp(ext, ".PPM") == 0 || strcmp(ext, ".PBM") == 0 )
   {
     iplImage = iplLoadPgm(filename);
   }
@@ -701,12 +784,15 @@ IplImage* iplLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/
 
 
 /** Generic function to save image to PGM/PPM file, 1 or 3 channels, 
-unsigned byte or short. Can be used with ipl or ndarray type of image.
+unsigned byte or short, or PBM file. Can be used with ipl or ndarray type of image.
 */
-int iplGenericSavePgm(char* filename, char* buf, int w, int h, int widthStep, int c, int b){
+int iplGenericSavePgm(char* filename, char* buf, int w, int h, int widthStep, int c, int bps){
   FILE *fp = fopen(filename, "wb");
   int id;
-  if (c == 1){
+  if      (bps == 1){
+    id = 4;
+  }
+  else if (c == 1){
     id = 5;
   }
   else if (c == 3)
@@ -719,19 +805,24 @@ int iplGenericSavePgm(char* filename, char* buf, int w, int h, int widthStep, in
     return 1;
   }
 
-  int L = (1<<(b*8)) - 1;
-  if ((b != 1) && (b != 2))
+  int L = (1<<bps) - 1;
+  if ( (bps != 1) && (bps != 8) && (bps != 16) )
   {
-    fprintf(stderr, "%s: %s: Error saving PGM file %s. Unsupported pixel depth = %d.\n", __FILE__, __FUNCTION__, filename, b*8);
+    fprintf(stderr, "%s: %s: Error saving PGM file %s. Unsupported pixel depth = %d.\n", __FILE__, __FUNCTION__, filename, bps);
     return 1;
   }
 
-  printf("iplGenericSavePpm: L = %d, b = %d\n", L, b);
+  printf("iplGenericSavePgm: L = %d, b = %d\n", L, bps);
 
-  fprintf(fp, "P%d\n%d %d\n%d\n", id, w, h, L);
+  char* msg = (char*) "Created with VisionGL iplGenericSavePgm";
+  fprintf(fp, "P%d\n#%s\n%d %d\n", id, msg, w, h);
+  if (id != 4)
+  {
+    fprintf(fp, "%d\n", L);
+  }
   for(int i = 0; i < h; i++)
   {
-    fwrite(buf + i * widthStep, w * c * b, 1, fp);
+    fwrite(buf + i * widthStep, widthStep, 1, fp);
   }
   fclose(fp);
   return 0;
@@ -747,8 +838,8 @@ int iplSavePgm(char* filename, IplImage* ipl){
   int h = ipl->height;
   int widthStep = ipl->widthStep;
   int c = ipl->nChannels;
-  int b = (ipl->depth & 255) / 8;
-  int result = iplGenericSavePgm(filename, buf, w, h, widthStep, c, b);
+  int bps = iplFindBitsPerSample(ipl->depth);
+  int result = iplGenericSavePgm(filename, buf, w, h, widthStep, c, bps);
   return result;
 }
 
@@ -760,7 +851,7 @@ int iplSaveImage(char* filename, IplImage* image, int* params /*=0*/)
 
   char* ext = getFileExtensionUppercase(filename);
 
-  if      ( strcmp(ext, ".PGM") == 0 || strcmp(ext, ".PPM") == 0 )
+  if      ( strcmp(ext, ".PGM") == 0 || strcmp(ext, ".PPM") == 0 || strcmp(ext, ".PBM") == 0 )
   {
     result = iplSavePgm(filename, image);
   }

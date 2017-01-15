@@ -1608,35 +1608,70 @@ void vglPrintImageInfo(VglImage* image, char* msg){
 
  */
 void vglPrintImageData(VglImage* image, char* msg /*= NULL*/, char* format /*= "%c"*/){
-    if (msg){
-        printf("====== %s:\n", msg);
-    }
-    else
-    {
-        printf("====== vglPrintImageData:\n");
-    }
-    int w = image->getWidth() * image->nChannels * image->getBytesPerPixel();
-    int h = image->getHeight();
-    int ndarraySize = image->getTotalSizeInBytes();
-    char* ptr = image->getImageData();
+  if (msg){
+    printf("====== %s:\n", msg);
+  }
+  else
+  {
+    printf("====== vglPrintImageData:\n");
+  }
+  int w = image->getWidth() * image->nChannels * image->getBytesPerPixel();
+  int h = image->getHeight();
+  int ndarraySize = image->getTotalSizeInBytes();
+  char* ptr = image->getImageData();
 
-    for(int i = 0; i < ndarraySize;)
+  for(int i = 0; i < ndarraySize;)
+  {
+    if (i % w == 0)
     {
-        if (i % w == 0)
-	{
-            printf("%d: ", i / w);
-	}
-        printf(format, ((unsigned char*)ptr)[i]);
-        i++;
-        if (i % w == 0)
-	{
-            printf("\n"); 
-        }
-        else if (i % 8 == 0)
-	{
-            printf(" "); 
-        }
+      printf("%d: ", i / w);
     }
+    printf(format, ((unsigned char*)ptr)[i]);
+    i++;
+    if (i % w == 0)
+    {
+      printf("\n");
+    }
+    else if (i % 8 == 0)
+    {
+      printf(" ");
+    }
+  }
+}
+
+/** Print image pixels in text format to stdout
+
+ */
+void iplPrintImageData(IplImage* image, char* msg /*= NULL*/, char* format /*= "%c"*/){
+  if (msg){
+    printf("====== %s:\n", msg);
+  }
+  else
+  {
+    printf("====== iplPrintImageData:\n");
+  }
+  int w = image->widthStep;
+  int h = image->height;
+  int ndarraySize = w * h;
+  char* ptr = image->imageData;
+
+  for(int i = 0; i < ndarraySize;)
+  {
+    if (i % w == 0)
+    {
+      printf("%d: ", i / w);
+    }
+    printf(format, ((unsigned char*)ptr)[i]);
+    i++;
+    if (i % w == 0)
+    {
+      printf("\n");
+    }
+    else if (i % 8 == 0)
+    {
+      printf(" ");
+    }
+  }
 }
 
 
@@ -2133,8 +2168,8 @@ int vglSavePgm(char* filename, VglImage* img){
   int h = img->getHeight();
   int widthStep = img->getWidthStep();
   int c = img->getNChannels();
-  int b = (img->depth & 255) / 8;
-  int result = iplGenericSavePgm(filename, buf, w, h, widthStep, c, b);
+  int bps = iplFindBitsPerSample(img->depth);
+  int result = iplGenericSavePgm(filename, buf, w, h, widthStep, c, bps);
   return result;
 }
 

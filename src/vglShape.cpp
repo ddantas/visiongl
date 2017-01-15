@@ -293,6 +293,14 @@ int VglShape::getLength()
   return this->shape[VGL_SHAPE_LENGTH];
 }
 
+/* WidthIn refers to the width of the internal representation of a 1D array stored as
+   2D image. Textures have a maximum width limited to a few thousand pixels, so, 
+   to represent long 1D arrays, they are broken to fit in a 2D texture.
+
+   The dimensions of the internal representation are stored inside the shape structure.
+
+   The actual array has height = 1 and width = array length.
+ */
 int VglShape::getWidthIn()
 {
   return this->shape[VGL_SHAPE_WIDTH];
