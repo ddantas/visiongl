@@ -107,19 +107,14 @@ class VglImage{
       Get total number of rows. Notice that, in images with more than 2D, may be 
       different of image height
   */
-
   size_t getTotalRows()
   {
-    //return this->vglShape->getSize();
-   return this->vglShape->getHeightIn() * this->vglShape->getNFrames();
+    return this->vglShape->getHeightIn() * this->vglShape->getNFrames();
   }
 
   size_t getTotalSizeInBytes()
   {
-    size_t bitsPerSample = this->getBitsPerSample();
-    size_t totalSize = this->getTotalRows() * this->getWidthStep();
-
-    return totalSize;
+    return this->getTotalRows() * this->getWidthStep();
   }
 
   char* getImageData()

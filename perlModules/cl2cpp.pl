@@ -809,7 +809,22 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   if ($var_worksize->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { $var_worksize->getWidthIn(), $var_worksize->getHeightIn(),  $var_worksize->getNFrames() };
+
+  size_t _worksize_0 = $var_worksize->getWidthIn();";
+
+  for ($i = 0; $i <= $#type; $i++){
+    if ($type[$i] eq "VglImage*"){
+      print CPP "
+  if ($variable[$i]->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = $variable[$i]->getWidthStep();
+  }";
+    }
+  }
+
+  print CPP "
+
+  size_t worksize[] = { _worksize_0, $var_worksize->getHeightIn(),  $var_worksize->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) \"clEnqueueNDRangeKernel\" );

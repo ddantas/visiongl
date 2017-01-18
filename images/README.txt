@@ -32,6 +32,10 @@ JPG
 
 2d (528x393)     RGB  8bit Compres.  Emphysema_H_and_E.jpg -> http://en.wikipedia.org/wiki/H%26E_stain
 
+PGM
+
+2d (100x100)     Gray  8bit  Uncompr.  test_mm.pgm -> Made by us.
+2d (100x100)     Gray  8bit  Uncompr.  test_conway.pgm -> Made by us.
 
 Other references
 

@@ -446,6 +446,11 @@ void vglClBuildDebug(cl_int err, cl_program program)
  */
 void vglClUpload(VglImage* img)
 {
+    if (cl.context == 0)
+    {
+      vglClInit();
+    }
+
     if (Interop && img->nChannels > 1)
     {
         vglClUploadInterop(img);
@@ -487,7 +492,11 @@ void vglClUpload(VglImage* img)
                 format.image_channel_order = CL_RGBA;
             }
 
-            if (img->depth == IPL_DEPTH_8U)
+            if (img->depth == IPL_DEPTH_1U)
+	    {
+                format.image_channel_data_type = CL_UNSIGNED_INT8;
+	    }
+            else if (img->depth == IPL_DEPTH_8U)
 	    {
                 format.image_channel_data_type = CL_UNORM_INT8;
 	    }
@@ -505,7 +514,13 @@ void vglClUpload(VglImage* img)
                 format.image_channel_data_type = CL_UNORM_INT8;
 	    }
 
-            if ( (img->ndim == 2) && !(img->clForceAsBuf) )
+            // TODO: Generalize to higher dimensions
+            if ( (img->ndim == 2) && !(img->clForceAsBuf) && (img->depth == IPL_DEPTH_1U) )
+            {
+                img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->getWidthStep(), img->getHeight(), 0, NULL, &err);
+                vglClCheckError( err, (char*) "clCreateImage2D" );
+            }
+            else if ( (img->ndim == 2) && !(img->clForceAsBuf) )
             {
                 img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->getWidth(), img->getHeight(), 0, NULL, &err);
                 vglClCheckError( err, (char*) "clCreateImage2D" );
@@ -568,8 +583,18 @@ void vglClUpload(VglImage* img)
                 fprintf(stderr, "%s: %s: Error: both ipl and ndarray are NULL.\n", __FILE__, __FUNCTION__);
                 exit(1);
             }
+
+
+            if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  && (img->depth == IPL_DEPTH_1U) )
+            {
+                size_t Size3d[3] = {img->getWidthStep(), img->getHeight(), nFrames};
+                err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, (char*)imageData, 0, NULL, NULL );
+                vglClCheckError( err, (char*) "clEnqueueWriteImage" );
+                clFinish(cl.commandQueue);
+            }
+
    
-            if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  )
+            else if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  )
             {
                 size_t Size3d[3] = {img->getWidth(), img->getHeight(), nFrames};
                 err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, (char*)imageData, 0, NULL, NULL );
@@ -722,8 +747,15 @@ void vglClDownload(VglImage* img)
           fprintf(stderr, "%s: %s: Error: both ipl and ndarray are NULL.\n", __FILE__, __FUNCTION__);
           exit(1);
         }
-   
-        if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  )
+
+
+        if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  && (img->depth == IPL_DEPTH_1U) )
+	{
+            size_t Size3d[3] = {img->getWidthStep(), img->getHeight(), nFrames};
+            cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, imageData, 0, NULL, NULL );
+            vglClCheckError( err_cl, (char*) "clEnqueueReadImage" );
+	}
+        else if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  )
         {
             size_t Size3d[3] = {img->getWidth(), img->getHeight(), nFrames};
             cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, imageData, 0, NULL, NULL );

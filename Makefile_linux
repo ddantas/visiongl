@@ -14,6 +14,8 @@ CL3D_NAME            = cl3d
 CLND_NAME            = clnd
 TIFF_NAME            = tiff
 IO_NAME		     = io
+BIN_NAME	     = bin
+KEY_NAME             = key
 BENCHMARK_CV_NAME    = benchmark_cv
 BENCHMARK_CVOCL_NAME = benchmark_cvocl
 BENCHMARK_CL_NAME    = benchmark_cl
@@ -88,7 +90,7 @@ ifeq ($(WITH_OPENCL), 1)
         OPENCL_INCLUDEDIR  = -I $(OPENCL_INCLUDEPATH)
         OPENCL_LIBDIR      = -L $(OPENCL_LIBPATH)
         OPENCL_LIBRARIES   = -lOpenCL
-        OPENCL_FILES = src/cl2cpp_shaders.cpp src/vglClFunctions.cpp src/vglClImage.cpp src/cl2cpp_MM.cpp src/cl2cpp_ND.cpp
+        OPENCL_FILES = src/cl2cpp_shaders.cpp src/vglClFunctions.cpp src/vglClImage.cpp src/cl2cpp_MM.cpp src/cl2cpp_ND.cpp src/cl2cpp_BIN.cpp
 
         OPENGL_INCLUDEPATH = $(OPENCL_INCLUDEPATH)
         OPENGL_INCLUDEDIR  = $(OPENCL_INCLUDEDIR)
@@ -236,6 +238,26 @@ LINUXAMD64_DEMO_IO = $(CC) $(COMPILER_FLAGS) \
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS)
 
+LINUXAMD64_DEMO_BIN = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(BIN_NAME) \
+                         src/demo/$(BIN_NAME).cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS)
+
+LINUXAMD64_DEMO_KEY = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(KEY_NAME) \
+                         src/demo/$(KEY_NAME)/*.cpp \
+                         -I /usr/local/sgb/include/ \
+                         -L /usr/local/sgb/lib/ \
+                         -I $(INSTALL_INCLUDEPATH) \
+                         -L $(INSTALL_LIBPATH) \
+                         -L /usr/lib/x86_64-linux-gnu/ \
+                         -lvisiongl -lgb -ltimer -lcalibrate -lfftw3 -lhitmiss \
+                         -lopencv_calib3d -lopencv_video \
+                         -I $(ROOTPATH)/src/demo/$(KEY_NAME)/ \
+                         $(OPENCV_INCLUDEDIR) \
+                         $(LINUXAMD64_DIRS_LIBS)
+
 
 ifeq ($(WITH_OPENCL), 1)
         LINUXAMD64_DEMO_BENCHMARK_CL = $(CC) $(COMPILER_FLAGS) \
@@ -334,6 +356,12 @@ demotiff:
 demoio:
 	$(LINUXAMD64_DEMO_IO)
 
+demobin:
+	$(LINUXAMD64_DEMO_BIN)
+
+demokey:
+	$(LINUXAMD64_DEMO_KEY)
+
 democl3d:
 	$(LINUXAMD64_DEMO_CL3D)
 
@@ -361,8 +389,8 @@ rundemocl3d:
 	cd $(OUTPUT_BINPATH); ./demo_$(CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 /tmp
 
 rundemoclnd:
-	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016 -1d
-	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016
+	#cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016 -1d
+	#cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 256 86016
 	cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp
 	#cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 336
 	#cd $(OUTPUT_BINPATH); ./demo_$(CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 /tmp 0 0 2 168
@@ -414,6 +442,15 @@ rundemoio:
 
 	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) /tmp/lena_std.ppm /tmp/lena_std_BGR.ppm 1
 	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) /tmp/lena_gray.pgm /tmp/lena_gray_BGR.ppm 1
+
+rundemobin:
+	cd $(OUTPUT_BINPATH); ./demo_$(BIN_NAME) ../images/test_conway.pgm /tmp 200
+	cd $(OUTPUT_BINPATH); ./demo_$(BIN_NAME) ../images/test_mm.pgm /tmp 0
+
+rundemokey:
+	LD_LIBRARY_PATH=$(CUDA_LIBPATH):$(OPENCV_LIBPATH):$(INSTALL_LIBPATH):$(GDCM_LIBPATH):$(DCMTK_LIBPATH):$(OPENCL_LIBPATH):/usr/local/sgb/lib; cd $(OUTPUT_BINPATH); ./demo_$(KEY_NAME)
+	echo $(LD_LIBRARY_PATH)
+
 
 rundemobenchmark:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 10 /tmp
@@ -469,6 +506,9 @@ cloud_cl:
 
 cl_mm:
 	./perlModules/cl2cpp.pl -o src/cl2cpp_MM -p CL_MM src/CL_MM/*.cl
+
+cl_bin:
+	./perlModules/cl2cpp.pl -o src/cl2cpp_BIN -p CL_BIN src/CL_BIN/*.cl
 
 run:
 	cd $(OUTPUT_BINPATH); ./$(BINARY_NAME)

@@ -58,9 +58,6 @@ int iplFindBitsPerSample(int depth)
 
 int iplFindWidthStep(int depth, int width, int channels /*= 1*/)
 {
-  printf("%s:%s: depth    = %d.\n", __FILE__, __FUNCTION__, depth);
-  printf("%s:%s: width    = %d.\n", __FILE__, __FUNCTION__, width);
-  printf("%s:%s: channels = %d.\n", __FILE__, __FUNCTION__, channels);
   if (depth == IPL_DEPTH_1U){
     return (width - 1) / 8 + 1;
   }
@@ -618,10 +615,6 @@ IplImage* iplLoadPgm(char* filename){
   result = fscanf(fp, "P%d", &id);
   skipComments(fp);
   result = fscanf(fp, "%d %d\n", &w, &h);
-  printf("FOUND ID + %d\n", id);
-  printf("FOUND W + %d\n", w);
-  printf("FOUND H + %d\n", h);
-
 
   if (id == 4)
   {
@@ -811,8 +804,6 @@ int iplGenericSavePgm(char* filename, char* buf, int w, int h, int widthStep, in
     fprintf(stderr, "%s: %s: Error saving PGM file %s. Unsupported pixel depth = %d.\n", __FILE__, __FUNCTION__, filename, bps);
     return 1;
   }
-
-  printf("iplGenericSavePgm: L = %d, b = %d\n", L, bps);
 
   char* msg = (char*) "Created with VisionGL iplGenericSavePgm";
   fprintf(fp, "P%d\n#%s\n%d %d\n", id, msg, w, h);
