@@ -1,12 +1,12 @@
         VisionGL
 
 The objective of this library is to provide an easy way to prototype and 
-implement image and video processing functions in CUDA and GLSL. The library
-provides wrapper code generators for both CUDA and GLSL languages. 
+implement image and video processing functions in CUDA, GLSL and OpenCL. 
+The library provides wrapper code generators for all the three languages.
 
-The wrapper functions are generated in C++ from the shader code, written 
-in either CUDA or GLSL. The shader code must contain three types of 
-directives in comments:
+The wrapper functions are generated in C++ from the shader code. Shader 
+codes written in CUDA or GLSL must contain three types of directives in 
+comments:
 1 - Documentation comment: a multiple line comment between /** and */
     This comment is copied ipsis literis to the output files.
 2 - Declaration comment: a single line comment describing the parameter 
@@ -15,17 +15,19 @@ directives in comments:
 3 - Attribution comment: single line comments associating variables in C++
     to its counterparts in GLSL or CUDA
 
+Shader code written in OpenCL require only the two first kinds of comments.
+
 The wrapper functions use a common variable type to store image data, called 
 VglImage. It contains space to store the image data in RAM, and handles to 
-store the image in both CUDA and OpenGL contexts. These contexts are used 
-under demand. If the image is used only in OpenGL context, the CUDA handle 
-will be empty (NULL or -1) and vice-versa.
+store the image in both CUDA, OpenGL and OpenCL contexts. These contexts 
+are used under demand. If the image is used only in OpenGL context, the 
+CUDA handle will be empty (NULL or -1) and vice-versa.
 
 
         Compilation
 
-The library requires CUDA 4 or superior, GLEW 1.6 or superior and freeglut 3 
-or superior. OpenGL support by the hardware is also required!
+The library requires GLEW 1.6 or superior and freeglut 3 or superior. 
+OpenGL support by the hardware is also required!
 
 To install GLEW:
 apt-get install libglew1.6 libglew1.6-dev
@@ -35,6 +37,9 @@ apt-get install freeglut3 freeglut3-dev
 
 To install OpenCV:
 apt-get install libopencv-dev
+
+The library can optionally use CUDA 4 or superior, OpenCL, OpenCV, 
+libTiff, GDCM or DCMTK.
 
 
         Compilation using cmake
@@ -79,6 +84,7 @@ make -f Makefile_linux demoio
 make -f Makefile_linux demotiff
 make -f Makefile_linux demogdcm
 make -f Makefile_linux demodcmtk
+make -f Makefile_linux demobin
 
 To run the demos:
 make -f Makefile_linux rundemocam
@@ -88,6 +94,7 @@ make -f Makefile_linux rundemoio
 make -f Makefile_linux rundemotiff
 make -f Makefile_linux rundemogdcm
 make -f Makefile_linux rundemodcmtk
+make -f Makefile_linux rundemobin
 
 To build the documentation:
 build dox
@@ -207,19 +214,23 @@ demobenchmark: This demo is composed by six programs.
 demobenchmark_clnd: To run this example, please compile VisionGL with
 OpenCL support.
 
+demobin: Examples of operations on binary images (1bpp). To run this 
+example, please compile VisionGL with OpenCL support.
+
 References
 
 
 [1] Daniel Oliveira Dantas, Helton Danilo Passos Leal, Davy Oliveira Barros Sousa
 Fast 2D and 3D image processing with OpenCL
-International Conference on Image Processing (ICIP), 2015, IEEE, Quebec City
+International Conference on Image Processing (ICIP), 2015, IEEE, Quebec City.
 http://dx.doi.org/10.1109/ICIP.2015.7351730
 http://ieeexplore.ieee.org/xpl/articleDetails.jsp?reload=true&arnumber=7351730
 
 [2] Daniel Oliveira Dantas, Helton Danilo Passos Leal, Davy Oliveira Barros Sousa
 Fast multidimensional image processing with OpenCL
-International Conference on Image Processing (ICIP), 2016, IEEE, Phoenix City, in press.
-http://2016.ieeeicip.org/Papers/viewpapers.asp?papernum=2260
+International Conference on Image Processing (ICIP), 2016, IEEE, Phoenix City.
+http://doi.org/10.1109/ICIP.2016.7532664
+http://ieeexplore.ieee.org/document/7532664/
 
 [3] Daniel Oliveira Dantas, Junior Barrera
 Automatic generation of wrapper code for video processing functions
