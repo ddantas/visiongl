@@ -22,10 +22,10 @@
 
 #define VGL_MAX_DIM 10
 #define VGL_ARR_SHAPE_SIZE (VGL_MAX_DIM+1)
-#define VGL_WIDTH 0
-#define VGL_HEIGHT 1
-#define VGL_LENGTH 2
-#define VGL_4D 3
+//#define VGL_WIDTH 0
+//#define VGL_HEIGHT 1
+//#define VGL_LENGTH 2
+//#define VGL_4D 3
 
 #define VGL_SHAPE_D0        0
 #define VGL_SHAPE_D1        1

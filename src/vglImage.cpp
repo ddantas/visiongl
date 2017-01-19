@@ -540,7 +540,7 @@ VglImage* vglCreateImage(int* shape, int depth, int ndim /*=2*/, int has_mipmap 
       vglImage->shape[i] = 1;
     }
   }
-  if ( (ndim == 1) && (shape[VGL_HEIGHT] > 1) )
+  if ( (ndim == 1) && (shape[VGL_SHAPE_HEIGHT] > 1) )
   {
     vglImage->shape[VGL_SHAPE_HEIGHT] = shape[VGL_SHAPE_HEIGHT];
   }

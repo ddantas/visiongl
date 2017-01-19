@@ -62,7 +62,7 @@ void vglCl3dFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* con
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyAlgDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyAlgDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -89,7 +89,18 @@ void vglCl3dFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* con
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -141,7 +152,7 @@ void vglCl3dFuzzyAlgErode(VglImage* img_input, VglImage* img_output, float* conv
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyAlgErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyAlgErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -168,7 +179,18 @@ void vglCl3dFuzzyAlgErode(VglImage* img_input, VglImage* img_output, float* conv
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -220,7 +242,7 @@ void vglCl3dFuzzyArithDilate(VglImage* img_input, VglImage* img_output, float* c
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyArithDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyArithDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -247,7 +269,18 @@ void vglCl3dFuzzyArithDilate(VglImage* img_input, VglImage* img_output, float* c
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -299,7 +332,7 @@ void vglCl3dFuzzyArithErode(VglImage* img_input, VglImage* img_output, float* co
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyArithErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyArithErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -326,7 +359,18 @@ void vglCl3dFuzzyArithErode(VglImage* img_input, VglImage* img_output, float* co
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -378,7 +422,7 @@ void vglCl3dFuzzyBoundDilate(VglImage* img_input, VglImage* img_output, float* c
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyBoundDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyBoundDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -405,7 +449,18 @@ void vglCl3dFuzzyBoundDilate(VglImage* img_input, VglImage* img_output, float* c
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -457,7 +512,7 @@ void vglCl3dFuzzyBoundErode(VglImage* img_input, VglImage* img_output, float* co
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyBoundErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyBoundErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -484,7 +539,18 @@ void vglCl3dFuzzyBoundErode(VglImage* img_input, VglImage* img_output, float* co
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -536,7 +602,7 @@ void vglCl3dFuzzyDaPDilate(VglImage* img_input, VglImage* img_output, float* con
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDaPDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDaPDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -566,7 +632,18 @@ void vglCl3dFuzzyDaPDilate(VglImage* img_input, VglImage* img_output, float* con
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -618,7 +695,7 @@ void vglCl3dFuzzyDaPErode(VglImage* img_input, VglImage* img_output, float* conv
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDaPErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDaPErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -648,7 +725,18 @@ void vglCl3dFuzzyDaPErode(VglImage* img_input, VglImage* img_output, float* conv
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -700,7 +788,7 @@ void vglCl3dFuzzyDrasticDilate(VglImage* img_input, VglImage* img_output, float*
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDrasticDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDrasticDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -727,7 +815,18 @@ void vglCl3dFuzzyDrasticDilate(VglImage* img_input, VglImage* img_output, float*
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -779,7 +878,7 @@ void vglCl3dFuzzyDrasticErode(VglImage* img_input, VglImage* img_output, float* 
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDrasticErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyDrasticErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -806,7 +905,18 @@ void vglCl3dFuzzyDrasticErode(VglImage* img_input, VglImage* img_output, float* 
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -858,7 +968,7 @@ void vglCl3dFuzzyGeoDilate(VglImage* img_input, VglImage* img_output, float* con
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyGeoDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyGeoDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -885,7 +995,18 @@ void vglCl3dFuzzyGeoDilate(VglImage* img_input, VglImage* img_output, float* con
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -937,7 +1058,7 @@ void vglCl3dFuzzyGeoErode(VglImage* img_input, VglImage* img_output, float* conv
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyGeoErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyGeoErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -964,7 +1085,18 @@ void vglCl3dFuzzyGeoErode(VglImage* img_input, VglImage* img_output, float* conv
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1016,7 +1148,7 @@ void vglCl3dFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyHamacherDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyHamacherDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1046,7 +1178,18 @@ void vglCl3dFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1098,7 +1241,7 @@ void vglCl3dFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float*
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyHamacherErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyHamacherErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1128,7 +1271,18 @@ void vglCl3dFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float*
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1180,7 +1334,7 @@ void vglCl3dFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* con
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyStdDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyStdDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1207,7 +1361,18 @@ void vglCl3dFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* con
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1259,7 +1424,7 @@ void vglCl3dFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* conv
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglCl3dFuzzyStdErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglCl3dFuzzyStdErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1286,7 +1451,18 @@ void vglCl3dFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* conv
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1338,7 +1514,7 @@ void vglClFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* convo
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyAlgDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyAlgDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1362,7 +1538,18 @@ void vglClFuzzyAlgDilate(VglImage* img_input, VglImage* img_output, float* convo
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1414,7 +1601,7 @@ void vglClFuzzyAlgErode(VglImage* img_input, VglImage* img_output, float* convol
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyAlgErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyAlgErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1438,7 +1625,18 @@ void vglClFuzzyAlgErode(VglImage* img_input, VglImage* img_output, float* convol
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1490,7 +1688,7 @@ void vglClFuzzyArithDilate(VglImage* img_input, VglImage* img_output, float* con
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyArithDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyArithDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1514,7 +1712,18 @@ void vglClFuzzyArithDilate(VglImage* img_input, VglImage* img_output, float* con
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1566,7 +1775,7 @@ void vglClFuzzyArithErode(VglImage* img_input, VglImage* img_output, float* conv
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyArithErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyArithErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1590,7 +1799,18 @@ void vglClFuzzyArithErode(VglImage* img_input, VglImage* img_output, float* conv
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1642,7 +1862,7 @@ void vglClFuzzyBoundDilate(VglImage* img_input, VglImage* img_output, float* con
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyBoundDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyBoundDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1666,7 +1886,18 @@ void vglClFuzzyBoundDilate(VglImage* img_input, VglImage* img_output, float* con
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1718,7 +1949,7 @@ void vglClFuzzyBoundErode(VglImage* img_input, VglImage* img_output, float* conv
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyBoundErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyBoundErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1742,7 +1973,18 @@ void vglClFuzzyBoundErode(VglImage* img_input, VglImage* img_output, float* conv
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1794,7 +2036,7 @@ void vglClFuzzyDaPDilate(VglImage* img_input, VglImage* img_output, float* convo
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyDaPDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyDaPDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1821,7 +2063,18 @@ void vglClFuzzyDaPDilate(VglImage* img_input, VglImage* img_output, float* convo
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1873,7 +2126,7 @@ void vglClFuzzyDaPErode(VglImage* img_input, VglImage* img_output, float* convol
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyDaPErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyDaPErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1900,7 +2153,18 @@ void vglClFuzzyDaPErode(VglImage* img_input, VglImage* img_output, float* convol
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -1952,7 +2216,7 @@ void vglClFuzzyDrasticDilate(VglImage* img_input, VglImage* img_output, float* c
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyDrasticDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyDrasticDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -1976,7 +2240,18 @@ void vglClFuzzyDrasticDilate(VglImage* img_input, VglImage* img_output, float* c
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -2028,7 +2303,7 @@ void vglClFuzzyDrasticErode(VglImage* img_input, VglImage* img_output, float* co
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyDrasticErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyDrasticErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -2052,7 +2327,18 @@ void vglClFuzzyDrasticErode(VglImage* img_input, VglImage* img_output, float* co
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -2104,7 +2390,7 @@ void vglClFuzzyGeoDilate(VglImage* img_input, VglImage* img_output, float* convo
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyGeoDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyGeoDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -2128,7 +2414,18 @@ void vglClFuzzyGeoDilate(VglImage* img_input, VglImage* img_output, float* convo
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -2180,7 +2477,7 @@ void vglClFuzzyGeoErode(VglImage* img_input, VglImage* img_output, float* convol
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyGeoErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyGeoErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -2204,7 +2501,18 @@ void vglClFuzzyGeoErode(VglImage* img_input, VglImage* img_output, float* convol
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -2256,7 +2564,7 @@ void vglClFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float* 
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyHamacherDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyHamacherDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -2283,7 +2591,18 @@ void vglClFuzzyHamacherDilate(VglImage* img_input, VglImage* img_output, float* 
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -2335,7 +2654,7 @@ void vglClFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float* c
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyHamacherErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyHamacherErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -2362,7 +2681,18 @@ void vglClFuzzyHamacherErode(VglImage* img_input, VglImage* img_output, float* c
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -2414,7 +2744,7 @@ void vglClFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* convo
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyStdDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyStdDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -2438,7 +2768,18 @@ void vglClFuzzyStdDilate(VglImage* img_input, VglImage* img_output, float* convo
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -2490,7 +2831,7 @@ void vglClFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* convol
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClFuzzyStdErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClFuzzyStdErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -2514,7 +2855,18 @@ void vglClFuzzyStdErode(VglImage* img_input, VglImage* img_output, float* convol
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
