@@ -31,6 +31,12 @@ void vglClBinConway(VglImage* img_input, VglImage* img_output)
 
   cl_int _err;
 
+  cl_mem mobj_img_shape = NULL;
+  mobj_img_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer img_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_img_shape, CL_TRUE, 0, sizeof(VglClShape), img_input->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer img_shape" );
+
   static cl_program _program = NULL;
   if (_program == NULL)
   {
@@ -67,6 +73,9 @@ void vglClBinConway(VglImage* img_input, VglImage* img_output)
   _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
   vglClCheckError( _err, (char*) "clSetKernelArg 1" );
 
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &mobj_img_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
   int _ndim = 2;
   if (img_input->ndim > 2){
     _ndim = 3;
@@ -86,6 +95,9 @@ void vglClBinConway(VglImage* img_input, VglImage* img_output)
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  _err = clReleaseMemObject( mobj_img_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_img_shape");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }

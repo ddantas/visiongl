@@ -444,8 +444,13 @@ rundemoio:
 	cd $(OUTPUT_BINPATH); ./demo_$(IO_NAME) /tmp/lena_gray.pgm /tmp/lena_gray_BGR.ppm 1
 
 rundemobin:
-	cd $(OUTPUT_BINPATH); ./demo_$(BIN_NAME) ../images/test_conway.pgm /tmp 200
 	cd $(OUTPUT_BINPATH); ./demo_$(BIN_NAME) ../images/test_mm.pgm /tmp 0
+
+rundemobinconway:
+	cd $(OUTPUT_BINPATH); ./demo_$(BIN_NAME) ../images/test_conway.pgm /tmp 40
+	cd /tmp; convert -delay 1 -loop 0 demo_bin_conway*.pbm animation.gif
+	cd /tmp; convert animation.gif -filter box -resize 400% animation4x.gif
+
 
 rundemokey:
 	LD_LIBRARY_PATH=$(CUDA_LIBPATH):$(OPENCV_LIBPATH):$(INSTALL_LIBPATH):$(GDCM_LIBPATH):$(DCMTK_LIBPATH):$(OPENCL_LIBPATH):/usr/local/sgb/lib; cd $(OUTPUT_BINPATH); ./demo_$(KEY_NAME)

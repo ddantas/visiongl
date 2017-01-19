@@ -106,15 +106,13 @@ int main(int argc, char *argv[])
       sprintf(outFilename, "%s%s", outPath, "/demo_bin_conway.pbm");
       vglSaveImage(outFilename, vglConway0);
 
+      vglClBinCopy(vglThresh, vglConway0);
+      for(int i = 0; i <= iter; i++)
       {
-        vglClBinCopy(vglThresh, vglConway0);
-        for(int i = 0; i <= iter; i++)
-        {
-          vglClBinConway(vglConway0, vglConway1);
-          sprintf(outFilename, "%s%s%d%s", outPath, "/demo_bin_conway", i, ".pbm");
-          vglSaveImage(outFilename, vglConway0);
-          vglClBinCopy(vglConway1, vglConway0);
-        }
+        vglClBinConway(vglConway0, vglConway1);
+        sprintf(outFilename, "%s%s%03d%s", outPath, "/demo_bin_conway", i, ".pbm");
+        vglSaveImage(outFilename, vglConway0);
+        vglClBinCopy(vglConway1, vglConway0);
       }
 
   }

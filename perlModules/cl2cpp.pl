@@ -657,14 +657,14 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
     if ( ($is_array[$i]) or ($type[$i] eq "VglStrEl") ){
       $p = "*";
     }
+    if (($i > 0) and (not $is_shape[0])){
+      print CPP ", ";
+      print HEAD ", ";
+    }
     print CPP "$type[$i]$p $variable[$i]";
     print HEAD "$type[$i]$p $variable[$i]";
     if ($default[$i]){
       print HEAD " $default[$i]";
-    }
-    if ($i < $#type){ #TODO: Fix it. Potential bug when shape is last parameter.
-      print CPP ", ";
-      print HEAD ", ";
     }
   }
   print CPP ")\n{";
