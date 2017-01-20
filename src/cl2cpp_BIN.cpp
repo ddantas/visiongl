@@ -187,6 +187,12 @@ void vglClBinDilate(VglImage* img_input, VglImage* img_output, float* convolutio
   _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
   vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
 
+  cl_mem mobj_img_shape = NULL;
+  mobj_img_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer img_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_img_shape, CL_TRUE, 0, sizeof(VglClShape), img_input->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer img_shape" );
+
   static cl_program _program = NULL;
   if (_program == NULL)
   {
@@ -232,6 +238,9 @@ void vglClBinDilate(VglImage* img_input, VglImage* img_output, float* convolutio
   _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
   vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
+  _err = clSetKernelArg( _kernel, 5, sizeof( cl_mem ), (void*) &mobj_img_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
+
   int _ndim = 2;
   if (img_input->ndim > 2){
     _ndim = 3;
@@ -255,10 +264,13 @@ void vglClBinDilate(VglImage* img_input, VglImage* img_output, float* convolutio
   _err = clReleaseMemObject( mobj_convolution_window );
   vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
 
+  _err = clReleaseMemObject( mobj_img_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_img_shape");
+
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
 
-/** Dilation of img_input by mask. Result is stored in img_output.
+/** Erosion of img_input by mask. Result is stored in img_output.
 
   */
 void vglClBinErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y)
@@ -273,6 +285,12 @@ void vglClBinErode(VglImage* img_input, VglImage* img_output, float* convolution
   vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
   _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
   vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
+
+  cl_mem mobj_img_shape = NULL;
+  mobj_img_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer img_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_img_shape, CL_TRUE, 0, sizeof(VglClShape), img_input->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer img_shape" );
 
   static cl_program _program = NULL;
   if (_program == NULL)
@@ -319,6 +337,9 @@ void vglClBinErode(VglImage* img_input, VglImage* img_output, float* convolution
   _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
   vglClCheckError( _err, (char*) "clSetKernelArg 4" );
 
+  _err = clSetKernelArg( _kernel, 5, sizeof( cl_mem ), (void*) &mobj_img_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
+
   int _ndim = 2;
   if (img_input->ndim > 2){
     _ndim = 3;
@@ -341,6 +362,9 @@ void vglClBinErode(VglImage* img_input, VglImage* img_output, float* convolution
 
   _err = clReleaseMemObject( mobj_convolution_window );
   vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
+
+  _err = clReleaseMemObject( mobj_img_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_img_shape");
 
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }

@@ -27,7 +27,7 @@ void vglClBinCopy(VglImage* img_input, VglImage* img_output);
   */
 void vglClBinDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
-/** Dilation of img_input by mask. Result is stored in img_output.
+/** Erosion of img_input by mask. Result is stored in img_output.
 
   */
 void vglClBinErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);

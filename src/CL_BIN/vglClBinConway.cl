@@ -2,7 +2,7 @@
 
   */
 
-//SHAPE img_shape (img_input->vglShape->asVglClShape())
+// SHAPE img_shape (img_input->vglShape->asVglClShape())
 
 #include "vglClShape.h"
 
@@ -15,8 +15,8 @@ __kernel void vglClBinConway(__read_only image2d_t img_input,
                           CLK_ADDRESS_CLAMP_TO_EDGE |   //Clamp to next edge
                           CLK_FILTER_NEAREST;           //Don't interpolate
     
-    int w_half_win = 1;
-    int h_half_win = 1;
+    int w_r = 1;
+    int h_r = 1;
     int w_img = img_shape->shape[VGL_SHAPE_WIDTH];
     int h_img = img_shape->shape[VGL_SHAPE_HEIGHT];
     int i_l;
@@ -30,9 +30,9 @@ __kernel void vglClBinConway(__read_only image2d_t img_input,
       alive = 0;
       result_bit = 0;
       i_l = 0;
-      for(int i_w = -h_half_win; i_w <= h_half_win; i_w++)
+      for(int i_w = -h_r; i_w <= h_r; i_w++)
       {
-        for(int j_w = -w_half_win; j_w <= w_half_win; j_w++)
+        for(int j_w = -w_r; j_w <= w_r; j_w++)
         {
           int i_img = coords.y + i_w;
           int j_img = 8 * coords.x + 7 - bit + j_w;
@@ -44,9 +44,6 @@ __kernel void vglClBinConway(__read_only image2d_t img_input,
             p = read_imageui(img_input, smp, (int2)(j_img / 8, i_img));
             p_bit = p.x & (1 << ((8 + bit - j_w) % 8));
           }
-
-          if ( (i_img < 0) || (i_img >= h_img) || (j_img < 0) || (j_img >= w_img) )
-            p_bit = 0;
 
           if (p_bit > 0)
 	  {
