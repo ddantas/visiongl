@@ -535,6 +535,7 @@ int vglPrintTiffInfo(char* inFilename, char* msg){
   if (tif) { 
     uint32 w, h; 
     uint16 bps, spp, photo, config, pageNumber, numberPages;
+    uint32 subfileType;
 
     tdir_t dirCount;
 
@@ -585,6 +586,7 @@ int vglPrintTiffInfo(char* inFilename, char* msg){
     TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &photo); 
     TIFFGetField(tif, TIFFTAG_PLANARCONFIG, &config);
     TIFFGetField(tif, TIFFTAG_PAGENUMBER, &pageNumber, &numberPages);
+    TIFFGetField(tif, TIFFTAG_SUBFILETYPE, &subfileType);
 
     stripSize = TIFFStripSize(tif);
     stripMax = TIFFNumberOfStrips(tif);
@@ -608,6 +610,7 @@ int vglPrintTiffInfo(char* inFilename, char* msg){
     printf("Planar configuration = %d\n", config);
     printf("stripSize = %ld, stripMax = %d\n", (long int) stripSize, stripMax);
     printf("Number of directories = %d\n", dirCount);
+    printf("Subfile type = %d\n", subfileType);
 
     //printbin((char*)&w, sizeof(w));
     //printbin((char*)&h, sizeof(h));

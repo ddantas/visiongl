@@ -11,6 +11,9 @@
 
 #include "demo/timer.h"
 
+// strcmp, strlen
+#include <string.h>
+
 int saveResult(VglImage* out, char* outString, char* outPath, char* outFolder, int i_0)
 {
   char *cmd         = (char*) malloc(strlen(outPath) + 255);

@@ -3,6 +3,7 @@
 #include <vglClImage.h>
 #include <cl2cpp_BIN.h>
 #include <cl2cpp_shaders.h>
+#include <iplImage.h>
 
 // IplImage, cvLoadImage
 #ifdef __OPENCV__
@@ -47,8 +48,10 @@ int main(int argc, char *argv[])
   VglImage* vglNot;
   VglImage* vglDilate;
   VglImage* vglErode;
+  VglImage* vglRoi;
   VglImage* vglConway0;
   VglImage* vglConway1;
+  VglImage* vglBin;
 
   float seSquare[9] = {0,0,0,
                        0,1,1,
@@ -57,7 +60,7 @@ int main(int argc, char *argv[])
   vglClInit();
 
   {
-      iplInput   = cvLoadImage(inFilename, CV_LOAD_IMAGE_GRAYSCALE);
+      iplInput   = iplLoadImage(inFilename, CV_LOAD_IMAGE_GRAYSCALE);
       vglInput   = vglCopyCreateImage(iplInput);
       vglGray    = vglCreateImage(cvSize(vglInput->getWidth(), vglInput->getHeight()), IPL_DEPTH_8U, 1);
       vglThresh  = vglCreateImage(cvSize(vglInput->getWidth(), vglInput->getHeight()), IPL_DEPTH_1U, 1);
@@ -65,8 +68,10 @@ int main(int argc, char *argv[])
       vglNot     = vglCreateImage(cvSize(vglInput->getWidth(), vglInput->getHeight()), IPL_DEPTH_1U, 1);
       vglDilate  = vglCreateImage(cvSize(vglInput->getWidth(), vglInput->getHeight()), IPL_DEPTH_1U, 1);
       vglErode   = vglCreateImage(cvSize(vglInput->getWidth(), vglInput->getHeight()), IPL_DEPTH_1U, 1);
+      vglRoi     = vglCreateImage(cvSize(vglInput->getWidth(), vglInput->getHeight()), IPL_DEPTH_1U, 1);
       vglConway0 = vglCreateImage(cvSize(vglInput->getWidth(), vglInput->getHeight()), IPL_DEPTH_1U, 1);
       vglConway1 = vglCreateImage(cvSize(vglInput->getWidth(), vglInput->getHeight()), IPL_DEPTH_1U, 1);
+      vglBin     = vglCreateImage(cvSize(vglInput->getWidth(), vglInput->getHeight()), IPL_DEPTH_1U, 1);
 
       if (vglInput->depth == IPL_DEPTH_1U)
       {
@@ -82,7 +87,8 @@ int main(int argc, char *argv[])
 
       vglClBinThreshold(vglGray, vglThresh, .5);
       sprintf(outFilename, "%s%s", outPath, "/demo_bin_thresh.pbm");
-      vglSaveImage(outFilename, vglThresh);
+      vglCheckContext(vglThresh, VGL_RAM_CONTEXT);      // Transfer image to RAM
+      iplSavePgm(outFilename, vglThresh->ipl);          // Save image as PBM, 8bpp, signature P4.
 
       vglClBinToGray(vglThresh, vglToGray);
       sprintf(outFilename, "%s%s", outPath, "/demo_bin_to_gray.pgm");
@@ -90,28 +96,53 @@ int main(int argc, char *argv[])
 
       vglClBinNot(vglThresh, vglNot);
       sprintf(outFilename, "%s%s", outPath, "/demo_bin_not.pbm");
-      vglSaveImage(outFilename, vglNot);
+      vglCheckContext(vglNot, VGL_RAM_CONTEXT);
+      iplSavePgm(outFilename, vglNot->ipl);
 
-      vglClBinDilate(vglNot, vglDilate, seSquare, 3, 3);
+      vglClBinDilate(vglThresh, vglDilate, seSquare, 3, 3);
       sprintf(outFilename, "%s%s", outPath, "/demo_bin_dilate.pbm");
-      vglSaveImage(outFilename, vglDilate);
+      vglCheckContext(vglDilate, VGL_RAM_CONTEXT);
+      iplSavePgm(outFilename, vglDilate->ipl);
 
-      vglClBinErode(vglDilate, vglErode, seSquare, 3, 3);
+      vglClBinErode(vglThresh, vglErode, seSquare, 3, 3);
       sprintf(outFilename, "%s%s", outPath, "/demo_bin_erode.pbm");
-      vglSaveImage(outFilename, vglErode);
+      vglCheckContext(vglErode, VGL_RAM_CONTEXT);
+      iplSavePgm(outFilename, vglErode->ipl);
+
+      vglClBinRoi(vglRoi, 5, 40, 256, 256);
+      sprintf(outFilename, "%s%s", outPath, "/demo_bin_roi.pbm");
+      vglCheckContext(vglRoi, VGL_RAM_CONTEXT);
+      iplSavePgm(outFilename, vglRoi->ipl);
+
+      vglClBinMax(vglThresh, vglRoi, vglBin);
+      sprintf(outFilename, "%s%s", outPath, "/demo_bin_max.pbm");
+      vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+      iplSavePgm(outFilename, vglBin->ipl);
+
+      vglClBinMin(vglThresh, vglRoi, vglBin);
+      sprintf(outFilename, "%s%s", outPath, "/demo_bin_min.pbm");
+      vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+      iplSavePgm(outFilename, vglBin->ipl);
+
+      vglClBinSub(vglThresh, vglRoi, vglBin);
+      sprintf(outFilename, "%s%s", outPath, "/demo_bin_sub.pbm");
+      vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+      iplSavePgm(outFilename, vglBin->ipl);
+
 
       vglClBinCopy(vglThresh, vglConway0);
-      sprintf(outFilename, "%s%s", outPath, "/demo_bin_lixo.pbm");
-      vglSaveImage(outFilename, vglThresh);
       sprintf(outFilename, "%s%s", outPath, "/demo_bin_conway.pbm");
-      vglSaveImage(outFilename, vglConway0);
+      vglCheckContext(vglConway0, VGL_RAM_CONTEXT);
+      iplSavePgm(outFilename, vglConway0->ipl);
 
       vglClBinCopy(vglThresh, vglConway0);
       for(int i = 0; i <= iter; i++)
       {
-        vglClBinConway(vglConway0, vglConway1);
         sprintf(outFilename, "%s%s%03d%s", outPath, "/demo_bin_conway", i, ".pbm");
-        vglSaveImage(outFilename, vglConway0);
+        vglCheckContext(vglConway0, VGL_RAM_CONTEXT);
+        iplSavePgm(outFilename, vglConway0->ipl);
+
+        vglClBinConway(vglConway0, vglConway1);
         vglClBinCopy(vglConway1, vglConway0);
       }
 

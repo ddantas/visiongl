@@ -369,6 +369,162 @@ void vglClBinErode(VglImage* img_input, VglImage* img_output, float* convolution
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
 
+/** Maximum or union between two images.
+
+    Maximum or union between img_input1 and img_input2. Results savet in img_output.
+  */
+void vglClBinMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
+  vglCheckContext(img_input1, VGL_CL_CONTEXT);
+  vglCheckContext(img_input2, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClBinMax.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClBinMax", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_input1->getWidthIn();
+  if (img_input1->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input1->getWidthStep();
+  }
+  if (img_input2->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input2->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+/** Minimum or intersection between two images.
+
+    Minimum or intersection between img_input1 and img_input2. Results savet in img_output.
+  */
+void vglClBinMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
+  vglCheckContext(img_input1, VGL_CL_CONTEXT);
+  vglCheckContext(img_input2, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClBinMin.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClBinMin", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_input1->getWidthIn();
+  if (img_input1->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input1->getWidthStep();
+  }
+  if (img_input2->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input2->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
 /** Negation of binary image img_input. Result is stored in img_output.
 
   */
@@ -431,6 +587,161 @@ void vglClBinNot(VglImage* img_input, VglImage* img_output)
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+/** Generate ROI.
+
+    Generate ROI (Region Of Interest). Useful to be used as mask to do intersection
+    with other images.
+
+  */
+void vglClBinRoi(VglImage* img_output, int x0, int y0, int xf, int yf)
+{
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClBinRoi.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClBinRoi", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( int ), &x0 );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  _err = clSetKernelArg( _kernel, 2, sizeof( int ), &y0 );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &xf );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
+
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &yf );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
+
+  int _ndim = 2;
+  if (img_output->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_output->getWidthIn();
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_output->getHeightIn(),  img_output->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+/** Subtraction or difference between two binary images.
+
+    Subtraction or difference between two binary images. Finds img_input1 minus img_input2 and
+    saves in img_output.
+  */
+void vglClBinSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
+{
+  vglCheckContext(img_input1, VGL_CL_CONTEXT);
+  vglCheckContext(img_input2, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClBinSub.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClBinSub", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input1->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_input2->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
+  int _ndim = 2;
+  if (img_input1->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_input1->getWidthIn();
+  if (img_input1->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input1->getWidthStep();
+  }
+  if (img_input2->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input2->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );

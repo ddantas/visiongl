@@ -19,9 +19,9 @@ __kernel void vglClBinThreshold(__read_only image2d_t img_input,
       float4 p = read_imagef(img_input, smp, (int2)(8*coords.x + 7 - bit, coords.y));
       uint4 result_bit;
       if (p.x >= thresh)
-        result_bit.x = 0;
-      else
         result_bit.x = 1;
+      else
+        result_bit.x = 0;
       result += result_bit.x << bit;
     }
     write_imageui(img_output, coords, result);
