@@ -12,6 +12,13 @@
 
 #include "vglStrEl.h"
 
+/** Threshold of grayscale image with binary result.
+
+    Threshold of grayscale image img_input. Result is binary, stored in img_output. Parameter
+    thresh is float between 0.0 and 1.0.
+  */
+void vglCl3dBinThreshold(VglImage* img_input, VglImage* img_output, float thresh);
+
 /** Conway game of life.
 
   */

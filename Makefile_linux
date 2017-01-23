@@ -22,6 +22,8 @@ BENCHMARK_CL_NAME    = benchmark_cl
 BENCHMARK_CL3D_NAME  = benchmark_cl3d
 BENCHMARK_CLND_NAME  = benchmark_clnd
 BENCHMARK_MM_NAME    = benchmark_MM
+BENCHMARK_CLBIN_NAME = benchmark_clbin
+BENCHMARK_CL3DBIN_NAME = benchmark_cl3dbin
 BENCHMARK_FUZZYTOPHAT_NAME    = benchmark_FuzzyTophat
 BENCHMARK_MP_NAME    = benchmark_MP
 COLORDECONV_NAME     = colordeconv
@@ -290,6 +292,18 @@ ifeq ($(WITH_OPENCL), 1)
                          -lvisiongl \
                          $(LINUXAMD64_DIRS_LIBS) \
 
+        LINUXAMD64_DEMO_BENCHMARK_CLBIN = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_CLBIN_NAME) \
+                         src/demo/$(BENCHMARK_CLBIN_NAME).cpp src/demo/timer.cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS) \
+
+        LINUXAMD64_DEMO_BENCHMARK_CL3DBIN = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/demo_$(BENCHMARK_CL3DBIN_NAME) \
+                         src/demo/$(BENCHMARK_CL3DBIN_NAME).cpp src/demo/timer.cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS) \
+
 endif
 
 LINUXAMD64_DEMO_BENCHMARK_CV = $(CC) $(COMPILER_FLAGS) \
@@ -376,6 +390,10 @@ demobenchmark:
 	$(LINUXAMD64_DEMO_BENCHMARK_MM)
 	$(LINUXAMD64_DEMO_BENCHMARK_FUZZYTOPHAT)
 
+demobenchmarkclbin:
+	$(LINUXAMD64_DEMO_BENCHMARK_CLBIN)
+	$(LINUXAMD64_DEMO_BENCHMARK_CL3DBIN)
+
 demobenchmarkclnd:
 	$(LINUXAMD64_DEMO_BENCHMARK_CLND)
 
@@ -445,6 +463,7 @@ rundemoio:
 
 rundemobin:
 	cd $(OUTPUT_BINPATH); ./demo_$(BIN_NAME) ../images/test_mm.pgm /tmp 0
+	#cd $(OUTPUT_BINPATH); ./demo_$(BIN_NAME) ../images/lena_std.ppm /tmp 0
 
 rundemobinconway:
 	cd $(OUTPUT_BINPATH); ./demo_$(BIN_NAME) ../images/test_conway.pgm /tmp 40
@@ -458,14 +477,14 @@ rundemokey:
 
 
 rundemobenchmark:
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 10 /tmp
+	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/lena_std.tif 10 /tmp
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif 10 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/lena_std.tif 1 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 1 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/01_test.tif 10 /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_FUZZYTOPHAT_NAME) ../images/01_test.tif 10 /tmp
 
-STEPS=10
+STEPS=100
 rundemobenchmarkclnd:
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 2048 10752
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 256 86016 -1d
@@ -475,12 +494,16 @@ rundemobenchmarkclnd:
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLND_NAME) ../images/mitosis/mitosis-5d%04d.tif 0 335 $(STEPS) /tmp 0 0 2 24 7
 
 rundemobenchmark16:
-	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/E1154S7I_001.tif $(STEPS) /tmp
+	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CV_NAME) ../images/E1154S7I_001.tif $(STEPS) /tmp
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CVOCL_NAME) ../images/lena_std.tif $(STEPS) /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL_NAME) ../images/E1154S7I_001.tif $(STEPS)  /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3D_NAME) ../images/E1154S7I_00%d.tif 1 7 $(STEPS) /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_MM_NAME) ../images/E1154S7I_001.tif $(STEPS) /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_FUZZYTOPHAT_NAME) ../images/E1154S7I_001.tif $(STEPS) /tmp
+
+rundemobenchmarkclbin:
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLBIN_NAME) ../images/lena_std.tif $(STEPS) /tmp
+	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3DBIN_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 $(STEPS) /tmp
 
 rundemocolordeconv:
 	cd $(OUTPUT_BINPATH); ./demo_$(COLORDECONV_NAME) ../images/Emphysema_H_and_E.jpg 1 /tmp/image.%d.pgm 0.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 0.0
