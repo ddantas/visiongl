@@ -1,6 +1,6 @@
 /** Maximum or union between two images.
 
-    Maximum or union between img_input1 and img_input2. Results savet in img_output.
+    Maximum or union between img_input1 and img_input2. Result saved in img_output.
   */
 __kernel void vglClBinMax(__read_only image2d_t img_input1,
                           __read_only image2d_t img_input2,

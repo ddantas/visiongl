@@ -15,6 +15,8 @@
 #include <vglClShape.h>
 #endif
 
+// printf
+#include <stdio.h>
 
 ////////// VglShape
 
@@ -31,14 +33,15 @@ class VglShape{
   int       shape[VGL_MAX_DIM+1];  
   int       offset[VGL_MAX_DIM+1];
   int       size;
+  int       bps;                 // bits per sample
 
   VglShape(VglShape* vglShape);
-  VglShape(int* shape, int ndim);
+  VglShape(int* shape, int ndim, int bps = 8);
   VglShape(int w, int h);
   VglShape(int nChannels, int w, int h);
   VglShape(int nChannels, int w, int h, int d3);
   ~VglShape();
-  void vglCreateShape(int* shape, int ndim);
+  void vglCreateShape(int* shape, int ndim, int bps = 8);
   void printArray(int* arr, int ndim);
   void printInfo();
   void print(char* msg = (char*)"");
@@ -49,6 +52,7 @@ class VglShape{
   int getSize();
   int getNpixels();
   int getNdim();
+  int getBps();
   int* getShape();
   int* getOffset();
 
@@ -61,10 +65,13 @@ class VglShape{
   int getHeightIn();
   int getNFrames();
 
+  static int findBitsPerSample(int depth);
+  static int findWidthStep(int bps, int width, int nChannels);
+
 #ifdef __OPENCL__
   VglClShape* asVglClShape();
 #endif
- 
+
 };
 
 //VglShape* VglCreateShape(int* shape, int ndim);
@@ -75,3 +82,4 @@ class VglShape{
 //int getSize();
 
 #endif
+

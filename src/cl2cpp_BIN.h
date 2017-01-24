@@ -12,12 +12,65 @@
 
 #include "vglStrEl.h"
 
+/** Copy of binary image img_input to img_output.
+
+  */
+void vglCl3dBinCopy(VglImage* img_input, VglImage* img_output);
+
+/** Dilation of img_input by mask. Result is stored in img_output.
+
+  */
+void vglCl3dBinDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+
+/** Dilation of img_input by mask. Result is stored in img_output.
+
+  */
+void vglCl3dBinErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+
+/** Maximum or union between two images.
+
+    Maximum or union between img_input1 and img_input2. Result save in img_output.
+  */
+void vglCl3dBinMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Minimum or intersection between two images.
+
+    Minimum or intersection between img_input1 and img_input2. Result saved in img_output.
+  */
+void vglCl3dBinMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Negation of binary image img_input. Result is stored in img_output.
+
+  */
+void vglCl3dBinNot(VglImage* img_input, VglImage* img_output);
+
+/** Generate ROI.
+
+    Generate ROI (Region Of Interest). Useful to be used as mask to do intersection
+    with other images.
+
+  */
+void vglCl3dBinRoi(VglImage* img_output, int x0, int y0, int z0, int xf, int yf, int zf);
+
+/** Subtraction or difference between two binary images.
+
+    Subtraction or difference between two binary images. Finds img_input1 minus img_input2 and
+    saves in img_output.
+  */
+void vglCl3dBinSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
 /** Threshold of grayscale image with binary result.
 
     Threshold of grayscale image img_input. Result is binary, stored in img_output. Parameter
     thresh is float between 0.0 and 1.0.
   */
 void vglCl3dBinThreshold(VglImage* img_input, VglImage* img_output, float thresh);
+
+/** Convert binary image to grayscale.
+
+    Convert binary image to grayscale.
+  */
+void vglCl3dBinToGray(VglImage* img_input, VglImage* img_output);
 
 /** Conway game of life.
 
@@ -41,13 +94,13 @@ void vglClBinErode(VglImage* img_input, VglImage* img_output, float* convolution
 
 /** Maximum or union between two images.
 
-    Maximum or union between img_input1 and img_input2. Results savet in img_output.
+    Maximum or union between img_input1 and img_input2. Result saved in img_output.
   */
 void vglClBinMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 
 /** Minimum or intersection between two images.
 
-    Minimum or intersection between img_input1 and img_input2. Results savet in img_output.
+    Minimum or intersection between img_input1 and img_input2. Result saved in img_output.
   */
 void vglClBinMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 

@@ -64,6 +64,7 @@ int main(int argc, char* argv[])
     }
 
     printf("CREATING COPY\n");
+    int ndim = 3;
     int shape[VGL_MAX_DIM];
     shape[VGL_SHAPE_NCHANNELS] = 1;
     shape[VGL_SHAPE_WIDTH]     = vglIn->getWidth();
@@ -72,16 +73,18 @@ int main(int argc, char* argv[])
 
     VglImage* vglGray   = vglCreateImage(vglIn);
     vglPrintImageInfo(vglIn, (char*) "vglIn (8bit)");
-    VglImage* vglThresh = vglCreateImage(shape, IPL_DEPTH_1U, 3);
+
+    VglImage* vglThresh = vglCreateImage(shape, IPL_DEPTH_1U, ndim);
     vglPrintImageInfo(vglThresh, (char*) "vglThresh (1bit)");
-    VglImage* vglBin    = vglCreateImage(shape, IPL_DEPTH_1U, 3);
-    VglImage* vglRoi    = vglCreateImage(shape, IPL_DEPTH_1U, 3);
+    vglThresh->vglShape->print();
+    VglImage* vglBin    = vglCreateImage(shape, IPL_DEPTH_1U, ndim);
+    VglImage* vglRoi    = vglCreateImage(shape, IPL_DEPTH_1U, ndim);
     int p;
 
     printf("CREATED COPY\n");
     //First call to Threshold
     TimerStart();
-    vglCl3dBinThreshold(vglIn, vglThresh, 0.5);
+    vglCl3dBinThreshold(vglIn, vglThresh, 0.2);
     vglClFlush();
     printf("Fisrt call to              Threshold:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Threshold
@@ -90,20 +93,18 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglCl3dBinThreshold(vglIn, vglThresh, 0.5);
+        vglCl3dBinThreshold(vglIn, vglThresh, 0.2);
     }
     vglClFlush();
     printf("Time spent on %8d     Threshold:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_thresh.pbm");
-    iplSavePgm(outFilename, vglThresh->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_thresh_%03d.pbm");
+    vglSave3dImage(outFilename, vglThresh, 0);
 
-
-    /*
     //First call to BinToGray
     TimerStart();
-    vglClBinToGray(vglThresh, vglGray);
+    vglCl3dBinToGray(vglThresh, vglGray);
     vglClFlush();
     printf("Fisrt call to              BinToGray:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations BinToGray
@@ -112,18 +113,18 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinToGray(vglThresh, vglGray);
+        vglCl3dBinToGray(vglThresh, vglGray);
     }
     vglClFlush();
     printf("Time spent on %8d     BinToGray:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglGray, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_togray.pbm");
-    iplSavePgm(outFilename, vglGray->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_togray_%03d.pgm");
+    vglSave3dImage(outFilename, vglGray, 0);
 
     //First call to Not
     TimerStart();
-    vglClBinNot(vglThresh, vglBin);
+    vglCl3dBinNot(vglThresh, vglBin);
     vglClFlush();
     printf("Fisrt call to                    Not:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Not
@@ -132,20 +133,22 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinNot(vglThresh, vglBin);
+        vglCl3dBinNot(vglThresh, vglBin);
     }
     vglClFlush();
     printf("Time spent on %8d           Not:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_not.pbm");
-    iplSavePgm(outFilename, vglBin->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_not_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
 
-    float strEl[9] = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+    float strEl[27] = { 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, 1, 1, 1, };
 
     //First call to Dilate
     TimerStart();
-    vglClBinDilate(vglThresh, vglBin, strEl, 3, 3);
+    vglCl3dBinDilate(vglThresh, vglBin, strEl, 3, 3, 3);
     vglClFlush();
     printf("Fisrt call to                 Dilate:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Dilate
@@ -154,18 +157,18 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinDilate(vglThresh, vglBin, strEl, 3, 3);
+        vglCl3dBinDilate(vglThresh, vglBin, strEl, 3, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d        Dilate:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate.pbm");
-    iplSavePgm(outFilename, vglBin->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
 
     //First call to Erode
     TimerStart();
-    vglClBinErode(vglThresh, vglBin, strEl, 3, 3);
+    vglCl3dBinErode(vglThresh, vglBin, strEl, 3, 3, 3);
     vglClFlush();
     printf("Fisrt call to                  Erode:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Erode
@@ -174,18 +177,18 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinErode(vglThresh, vglBin, strEl, 3, 3);
+        vglCl3dBinErode(vglThresh, vglBin, strEl, 3, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d         Erode:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode.pbm");
-    iplSavePgm(outFilename, vglBin->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_erode_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
 
     //First call to Roi
     TimerStart();
-    vglClBinRoi(vglRoi, 4, 4, 300, 300);
+    vglCl3dBinRoi(vglRoi, 4, 4, 4, 300, 300, 10);
     vglClFlush();
     printf("Fisrt call to                    Roi:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Roi
@@ -194,18 +197,18 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinRoi(vglRoi, 4, 4, 300, 300);
+        vglCl3dBinRoi(vglRoi, 4, 4, 4, 300, 300, 10);
     }
     vglClFlush();
     printf("Time spent on %8d           Roi:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglRoi, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_roi.pbm");
-    iplSavePgm(outFilename, vglRoi->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_roi_%03d.pbm");
+    vglSave3dImage(outFilename, vglRoi, 0);
 
     //First call to Max
     TimerStart();
-    vglClBinMax(vglThresh, vglRoi, vglBin);
+    vglCl3dBinMax(vglThresh, vglRoi, vglBin);
     vglClFlush();
     printf("Fisrt call to                    Max:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Max
@@ -214,18 +217,18 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinMax(vglThresh, vglRoi, vglBin);
+        vglCl3dBinMax(vglThresh, vglRoi, vglBin);
     }
     vglClFlush();
     printf("Time spent on %8d           Max:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_max.pbm");
-    iplSavePgm(outFilename, vglBin->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_max_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
 
     //First call to Min
     TimerStart();
-    vglClBinMin(vglThresh, vglRoi, vglBin);
+    vglCl3dBinMin(vglThresh, vglRoi, vglBin);
     vglClFlush();
     printf("Fisrt call to                    Min:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Min
@@ -234,18 +237,18 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinMin(vglThresh, vglRoi, vglBin);
+        vglCl3dBinMin(vglThresh, vglRoi, vglBin);
     }
     vglClFlush();
     printf("Time spent on %8d           Min:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_min.pbm");
-    iplSavePgm(outFilename, vglBin->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_min_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
 
     //First call to Sub
     TimerStart();
-    vglClBinSub(vglThresh, vglRoi, vglBin);
+    vglCl3dBinSub(vglThresh, vglRoi, vglBin);
     vglClFlush();
     printf("Fisrt call to                    Sub:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Sub
@@ -254,18 +257,18 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinSub(vglThresh, vglRoi, vglBin);
+        vglCl3dBinSub(vglThresh, vglRoi, vglBin);
     }
     vglClFlush();
     printf("Time spent on %8d           Sub:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_sub.pbm");
-    iplSavePgm(outFilename, vglBin->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_sub_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
 
     //First call to Copy GPU->GPU
     TimerStart();
-    vglClBinCopy(vglThresh, vglBin);
+    vglCl3dBinCopy(vglThresh, vglBin);
     vglClFlush();
     printf("Fisrt call to          Copy GPU->GPU:           %s\n", getTimeElapsedInSeconds());
     //Total time spent on n operations Copy GPU->GPU
@@ -274,14 +277,14 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinCopy(vglThresh, vglBin);
+        vglCl3dBinCopy(vglThresh, vglBin);
     }
     vglClFlush();
     printf("Time spent on %8d Copy GPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_copy.pbm");
-    iplSavePgm(outFilename, vglBin->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_copy_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
 
     //First call to Copy CPU->GPU
     vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
@@ -303,8 +306,8 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Copy CPU->GPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_upload.pbm");
-    iplSavePgm(outFilename, vglThresh->ipl);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_upload_%03d.pbm");
+    vglSave3dImage(outFilename, vglThresh, 0);
 
     //First call to Copy GPU->CPU
     vglCheckContext(vglThresh, VGL_CL_CONTEXT);
@@ -326,9 +329,9 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Copy GPU->CPU:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_download.pbm");
-    iplSavePgm(outFilename, vglThresh->ipl);
-    */
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_download_%03d.pbm");
+    vglSave3dImage(outFilename, vglThresh, 0);
+
     //flush
     vglClFlush();
     return 0;

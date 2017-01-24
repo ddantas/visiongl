@@ -780,6 +780,11 @@ IplImage* iplLoadImage(char* filename, int iscolor /*= CV_LOAD_IMAGE_UNCHANGED*/
 unsigned byte or short, or PBM file. Can be used with ipl or ndarray type of image.
 */
 int iplGenericSavePgm(char* filename, char* buf, int w, int h, int widthStep, int c, int bps){
+  if (buf == NULL)
+  {
+    fprintf(stderr, "%s:%s: Error: buf pointer is NULL.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
   FILE *fp = fopen(filename, "wb");
   int id;
   if      (bps == 1){
@@ -824,6 +829,11 @@ int iplGenericSavePgm(char* filename, char* buf, int w, int h, int widthStep, in
 
 */
 int iplSavePgm(char* filename, IplImage* ipl){
+  if (ipl == NULL)
+  {
+    fprintf(stderr, "%s:%s: Error: ipl pointer is NULL.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
   char* buf = ipl->imageData;
   int w = ipl->width;
   int h = ipl->height;
@@ -837,6 +847,11 @@ int iplSavePgm(char* filename, IplImage* ipl){
 
 int iplSaveImage(char* filename, IplImage* image, int* params /*=0*/)
 {
+  if (image == NULL)
+  {
+    fprintf(stderr, "%s:%s: Error: image pointer is NULL.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
   IplImage* iplImage;
   int result;
 

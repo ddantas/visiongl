@@ -544,7 +544,8 @@ VglImage* vglCreateImage(int* shape, int depth, int ndim /*=2*/, int has_mipmap 
   {
     vglImage->shape[VGL_SHAPE_HEIGHT] = shape[VGL_SHAPE_HEIGHT];
   }
-  vglImage->vglShape = new VglShape(vglImage->shape, ndim);
+  int bps = VglShape::findBitsPerSample(depth);
+  vglImage->vglShape = new VglShape(vglImage->shape, ndim, bps);
 
   vglImage->ndim      = ndim;
   vglImage->depth     = depth;
@@ -648,6 +649,12 @@ void vglSaveImage(char* filename, VglImage* image)
 
 /** Save PGM 3d images on the disk
 */
+void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd /*= -1*/)
+{
+  vglSaveNdImage(filename, image, lStart);
+}
+
+/*
 void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd)
 {
   //vglDownload(image); //must be fixed before enabling
@@ -684,14 +691,19 @@ void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd)
   cvReleaseImage(&ipl);
   free(temp_image);
 }                
+*/
 
-void vglSaveNdImage(char* filename, VglImage* image, int lStart)
+void vglSaveNdImage(char* filename, VglImage* image, int lStart, int lEndParam /*= -1*/)
 {
   vglCheckContext(image, VGL_RAM_CONTEXT);
 
   int ndim = image->vglShape->getNdim();
   int shapeFrames = image->getNFrames();
   int lEnd = shapeFrames + lStart - 1;
+  if ( (lEnd > lEndParam) && (lEndParam > 0) )
+  {
+    lEnd = lEndParam;
+  }
 
   char* temp_filename = (char*)malloc(strlen(filename)+256);
   sprintf(temp_filename, filename, lStart);
@@ -699,8 +711,8 @@ void vglSaveNdImage(char* filename, VglImage* image, int lStart)
   if (d < 1) d = 1; //d is the byte size of the depth color format
 
   char* ptr = image->getImageData();
-  char* temp_image =   (char*)malloc(image->getHeight() * image->getWidth() * image->nChannels * d);
-  memcpy(temp_image, ptr, image->getHeight() * image->getWidth() * image->nChannels * d);
+  char* temp_image =   (char*)malloc(image->getHeight() * image->getWidthStep());
+  memcpy(temp_image, ptr, image->getHeight() * image->getWidthStep());
 
   IplImage* ipl = cvCreateImage(cvSize(image->getWidthIn(), image->getHeightIn()), image->depth, image->nChannels);
   ipl->imageData = temp_image;
@@ -710,10 +722,10 @@ void vglSaveNdImage(char* filename, VglImage* image, int lStart)
 #else
   iplSaveImage(temp_filename, ipl);
 #endif
-  int c = image->getHeight()*image->getWidth()*d*image->nChannels;
+  int c = image->getHeight()*image->getWidthStep();
   for(int i = lStart+1; i <= lEnd; i++)
   {
-    memcpy(temp_image,((char*)ptr)+c,image->getHeight()*image->getWidth()*image->nChannels*d);
+    memcpy(temp_image,((char*)ptr)+c,image->getHeight()*image->getWidthStep());
     ipl->imageData = temp_image;
     sprintf(temp_filename, filename, i);
 #ifdef __OPENCV__
@@ -721,7 +733,7 @@ void vglSaveNdImage(char* filename, VglImage* image, int lStart)
 #else
     iplSaveImage(temp_filename, ipl);
 #endif
-    c += image->getHeight()*image->getWidth()*image->nChannels*d;
+    c += image->getHeight()*image->getWidthStep();
   }
   cvReleaseImage(&ipl);
   free(temp_image);
@@ -1355,6 +1367,8 @@ VglImage* vglLoad3dImage(char* filename, int lStart, int lEnd, bool has_mipmap /
   int bpp = (ipl->depth & 255) / 8;
   if (bpp == 0)
     bpp = 1;
+
+  int bps = VglShape::findBitsPerSample(ipl->depth); //TODO: refactor replacing bpp with bps
 
   int width = ipl->width;
   int height = ipl->height;
@@ -2165,7 +2179,7 @@ int vglSavePgm(char* filename, VglImage* img){
 
   char* buf = img->getImageData();
   int w = img->getWidth();
-  int h = img->getHeight();
+  int h = img->getHeight() * img->getNFrames();
   int widthStep = img->getWidthStep();
   int c = img->getNChannels();
   int bps = iplFindBitsPerSample(img->depth);

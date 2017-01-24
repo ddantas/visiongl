@@ -235,7 +235,7 @@ int main(int argc, char* argv[])
   {
     //First call to Convert BGR->Gray
     TimerStart();
-    cvCvtColor(img->ipl, gray->ipl, CV_BGR2GRAY);
+    cvCvtColor(img->ipl, gray->ipl, CV_BGRA2GRAY);
     vglClFlush();
     printf("First call to          Convert BGR->Gray (CPU): %s \n", getTimeElapsedInSeconds());
     //Total time spent on n operations Convert BGR->Gray
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        cvCvtColor(img->ipl, gray->ipl, CV_BGR2GRAY);
+        cvCvtColor(img->ipl, gray->ipl, CV_BGRA2GRAY);
     }
     vglClFlush();
     printf("Time spent on %8d Convert BGR->Gray (CPU): %s\n", nSteps, getTimeElapsedInSeconds());

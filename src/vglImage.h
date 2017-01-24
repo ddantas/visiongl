@@ -97,7 +97,10 @@ class VglImage{
         fprintf(stderr, "%s:%s: Error: bits per pixel = %d < 8 and != 1. Image depth may be wrong.\n", __FILE__, __FUNCTION__, bps);
         exit(1);
       }
-      widthStep = (bps / 8) * this->getNChannels() * this->getWidthIn();
+      else
+      {
+        widthStep = (bps / 8) * this->getNChannels() * this->getWidthIn();
+      }
     }
     return widthStep;
   }
@@ -225,8 +228,8 @@ VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 
 VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
 VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int has_mipmap = 0);
 void vglSaveImage(char* filename, VglImage* image);
-void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd);
-void vglSaveNdImage(char* filename, VglImage* image, int lStart);
+void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd = -1);
+void vglSaveNdImage(char* filename, VglImage* image, int lStart, int lEnd = -1);
 VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 void vglReleaseImage(VglImage** p_image);
 void vglReplaceIpl(VglImage* image, IplImage* new_ipl);

@@ -15,15 +15,25 @@
     constructors. Ideally, should be a constructor called from other constructors,
     but C++03 does not support it.
 
-    Receives two parameters:
+    Receives three parameters:
     shape: array with size of each dimension, including number of channels in position 0.
     ndim: number of dimensions.
+    bps: bits per sample.
  */
-void VglShape::vglCreateShape(int* shape, int ndim)
+void VglShape::vglCreateShape(int* shape, int ndim, int bps /*= 8*/)
 {
   this->ndim = ndim;
+  this->bps = bps;
   this->size = 1;
+  if ( (bps == 1) && (shape[0] != 1) )
+  {
+    fprintf(stderr,"%s, %s, Error: Image with 1 bps and nChannels = %d != 1\n", __FILE__, __FUNCTION__, shape[0]);
+    exit(1);
+  }
   int maxi = ndim;
+  int c = shape[VGL_SHAPE_NCHANNELS];
+  int w = shape[VGL_SHAPE_WIDTH];
+  fprintf(stdout,"%s, %s, Debug: NCHANNELS = %d, WIDTH = %d, BPS = %d\n", __FILE__, __FUNCTION__, c, w, bps);
   if (ndim == 1)
   {
     maxi = 2;
@@ -37,6 +47,11 @@ void VglShape::vglCreateShape(int* shape, int ndim)
       if(i == 0)
       {
         this->offset[i] = 1;
+      }
+      else if (i == 2)
+      {
+        this->offset[i] = findWidthStep(bps, w, c);
+        fprintf(stdout,"%s, %s, Debug: i = 2, offset[2] = %d\n", __FILE__, __FUNCTION__, this->offset[i]);
       }
       else
       {
@@ -63,13 +78,14 @@ VglShape::VglShape(VglShape* vglShape)
   
 /** /brief Generic shape constructor.
 
-    Receives two parameters:
+    Receives three parameters:
     shape: array with size of each dimension, including number of channels in position 0.
     ndim: number of dimensions.
+    bps: bits per sample. Default value is 8.
  */
-VglShape::VglShape(int* shape, int ndim)
+VglShape::VglShape(int* shape, int ndim, int bps /*= 8*/)
 {
-  this->vglCreateShape(shape, ndim);
+  this->vglCreateShape(shape, ndim, bps);
 }
   
 /** /brief 1D shape constructor.
@@ -199,6 +215,15 @@ int VglShape::getNdim()
   return this->ndim;
 }
 
+/** /brief Get bits per sample.
+
+    Get number of bits per sample. Valid values are 1, 8 and 16.
+ */
+int VglShape::getBps()
+{
+  return this->bps;
+}
+
 /** /brief Get shape array.
 
     Get shape array, with size of each dimension and number of channels in position 0.
@@ -323,6 +348,26 @@ int VglShape::getNFrames()
 }
 
 
+int VglShape::findBitsPerSample(int depth)
+{
+  return (depth & 255);
+}
+
+int VglShape::findWidthStep(int bps, int width, int nChannels)
+{
+  printf("%s, %s, Debug: NCHANNELS = %d, WIDTH = %d, BPS = %d\n", __FILE__, __FUNCTION__, nChannels, width, bps);
+  //return 69;
+  if (bps == 1){
+    return (width - 1) / 8 + 1;
+  }
+  if (bps < 8)
+  {
+    printf("%s:%s: Error: bits per sample = %d < 8 and != 1. Image depth may be wrong.\n", __FILE__, __FUNCTION__, bps);
+    exit(1);
+  }
+  return (bps / 8) * nChannels * width;
+}
+
 
 
 #ifdef __OPENCL__
@@ -366,3 +411,6 @@ VglClShape* VglShape::asVglClShape()
   return result;
 }
 #endif
+
+
+
