@@ -224,6 +224,7 @@ VglImage* vglCreateImage(VglImage* img_in);
 VglImage* vglCopyCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreateImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreateImage(int* shape, int depth, int ndim = 2, int has_mipmap = 0);
+VglImage* vglCreateImage(VglShape* vglShape, int depth, int has_mipmap = 0);
 VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 3, int ndim = 2, int has_mipmap = 0);
 VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
 VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int has_mipmap = 0);

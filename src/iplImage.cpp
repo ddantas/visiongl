@@ -655,12 +655,12 @@ IplImage* iplLoadPgm(char* filename){
       break;
     case 5:
       img = cvCreateImage(cvSize(w, h), iplDepth, 1);
-      img->widthStep = h*b;
+      img->widthStep = w*b;
       fread(img->imageData, w*h*b, 1, fp);
       break;
     case 6:
       img = cvCreateImage(cvSize(w, h), iplDepth, 3);
-      img->widthStep = h*b*3;
+      img->widthStep = w*b*3;
       fread(img->imageData, w*h*b*3, 1, fp);
       break;
     default:

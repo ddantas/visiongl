@@ -1696,3 +1696,404 @@ void vglClBinToGray(VglImage* img_input, VglImage* img_output)
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
 
+/** Negation of binary image img_input. Result is stored in img_output.
+
+  */
+void vglClNdBinNot(VglImage* img_input, VglImage* img_output)
+{
+  if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  vglCheckContext(img_input, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClNdBinNot.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClNdBinNot", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  vglSetContext(img_input, VGL_CL_CONTEXT);
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+/** Generate ROI.
+
+    Generate ROI (Region Of Interest). Useful to be used as mask to do intersection
+    with other images.
+
+  */
+void vglClNdBinRoi(VglImage* img_output, int* p0, int* pf)
+{
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  cl_mem mobj_p0 = NULL;
+  mobj_p0 = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (VGL_ARR_SHAPE_SIZE)*sizeof(int), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer p0" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_p0, CL_TRUE, 0, (VGL_ARR_SHAPE_SIZE)*sizeof(int), p0, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer p0" );
+
+  cl_mem mobj_pf = NULL;
+  mobj_pf = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (VGL_ARR_SHAPE_SIZE)*sizeof(int), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer pf" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_pf, CL_TRUE, 0, (VGL_ARR_SHAPE_SIZE)*sizeof(int), pf, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer pf" );
+
+  cl_mem mobj_img_shape = NULL;
+  mobj_img_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer img_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_img_shape, CL_TRUE, 0, sizeof(VglClShape), img_output->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer img_shape" );
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClNdBinRoi.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClNdBinRoi", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (int*) &mobj_p0 );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (int*) &mobj_pf );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
+  _err = clSetKernelArg( _kernel, 3, sizeof( cl_mem ), (void*) &mobj_img_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
+
+  int _ndim = 2;
+  if (img_output->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_output->getWidthIn();
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_output->getHeightIn(),  img_output->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  _err = clReleaseMemObject( mobj_p0 );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_p0");
+
+  _err = clReleaseMemObject( mobj_pf );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_pf");
+
+  _err = clReleaseMemObject( mobj_img_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_img_shape");
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+/** Threshold of img_input by parameter. if the pixel is below thresh,
+    the output is 0, else, the output is 1. Result is stored in img_output.
+    Input image is 8bpp and output is 1bpp.
+  */
+void vglClNdBinThreshold(VglImage* img_input, VglImage* img_output, unsigned char thresh)
+{
+  if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  vglCheckContext(img_input, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  cl_mem mobj_in_shape = NULL;
+  mobj_in_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer in_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_in_shape, CL_TRUE, 0, sizeof(VglClShape), img_input->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer in_shape" );
+
+  cl_mem mobj_out_shape = NULL;
+  mobj_out_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer out_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_out_shape, CL_TRUE, 0, sizeof(VglClShape), img_output->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer out_shape" );
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClNdBinThreshold.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClNdBinThreshold", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  _err = clSetKernelArg( _kernel, 2, sizeof( unsigned char ), &thresh );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
+  _err = clSetKernelArg( _kernel, 3, sizeof( cl_mem ), (void*) &mobj_in_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
+
+  _err = clSetKernelArg( _kernel, 4, sizeof( cl_mem ), (void*) &mobj_out_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
+
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  _err = clReleaseMemObject( mobj_in_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_in_shape");
+
+  _err = clReleaseMemObject( mobj_out_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_out_shape");
+
+  vglSetContext(img_input, VGL_CL_CONTEXT);
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+/** Convert binary image to grayscale.
+
+    Convert binary image to grayscale.
+  */
+void vglClNdBinToGray(VglImage* img_input, VglImage* img_output)
+{
+  if (  ( (img_input->ndim == 2) || (img_input->ndim == 3) )  &&  !(img_input->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_input.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  if (  ( (img_output->ndim == 2) || (img_output->ndim == 3) )  &&  !(img_output->clForceAsBuf)  )
+  {
+    fprintf(stderr, "%s: %s: Error: this function supports only OpenCL data as buffer. Please call vglClForceAsBuf() just after creating img_output.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  vglCheckContext(img_input, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  cl_mem mobj_in_shape = NULL;
+  mobj_in_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer in_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_in_shape, CL_TRUE, 0, sizeof(VglClShape), img_input->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer in_shape" );
+
+  cl_mem mobj_out_shape = NULL;
+  mobj_out_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer out_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_out_shape, CL_TRUE, 0, sizeof(VglClShape), img_output->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer out_shape" );
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClNdBinToGray.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClNdBinToGray", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (void*) &mobj_in_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
+  _err = clSetKernelArg( _kernel, 3, sizeof( cl_mem ), (void*) &mobj_out_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
+
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  _err = clReleaseMemObject( mobj_in_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_in_shape");
+
+  _err = clReleaseMemObject( mobj_out_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_out_shape");
+
+  vglSetContext(img_input, VGL_CL_CONTEXT);
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+

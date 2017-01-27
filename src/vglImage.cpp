@@ -580,6 +580,14 @@ VglImage* vglCreateImage(int* shape, int depth, int ndim /*=2*/, int has_mipmap 
 
 /** Create image as described by the parameters
  */
+VglImage* vglCreateImage(VglShape* vglShape, int depth, int has_mipmap /*=0*/)
+{
+  VglImage* vglImage = vglCreateImage(vglShape->shape, depth, vglShape->ndim, has_mipmap);
+  return vglImage;
+}
+
+/** Create image as described by the parameters
+ */
 VglImage* vglCreateImage(CvSize size, int depth, int nChannels, int ndim, int has_mipmap)
 {
   int shape[VGL_MAX_DIM];
@@ -651,7 +659,7 @@ void vglSaveImage(char* filename, VglImage* image)
 */
 void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd /*= -1*/)
 {
-  vglSaveNdImage(filename, image, lStart);
+  vglSaveNdImage(filename, image, lStart, lEnd);
 }
 
 /*

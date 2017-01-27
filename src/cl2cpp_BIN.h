@@ -137,3 +137,28 @@ void vglClBinThreshold(VglImage* img_input, VglImage* img_output, float thresh);
   */
 void vglClBinToGray(VglImage* img_input, VglImage* img_output);
 
+/** Negation of binary image img_input. Result is stored in img_output.
+
+  */
+void vglClNdBinNot(VglImage* img_input, VglImage* img_output);
+
+/** Generate ROI.
+
+    Generate ROI (Region Of Interest). Useful to be used as mask to do intersection
+    with other images.
+
+  */
+void vglClNdBinRoi(VglImage* img_output, int* p0, int* pf);
+
+/** Threshold of img_input by parameter. if the pixel is below thresh,
+    the output is 0, else, the output is 1. Result is stored in img_output.
+    Input image is 8bpp and output is 1bpp.
+  */
+void vglClNdBinThreshold(VglImage* img_input, VglImage* img_output, unsigned char thresh);
+
+/** Convert binary image to grayscale.
+
+    Convert binary image to grayscale.
+  */
+void vglClNdBinToGray(VglImage* img_input, VglImage* img_output);
+

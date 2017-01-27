@@ -33,7 +33,6 @@ void VglShape::vglCreateShape(int* shape, int ndim, int bps /*= 8*/)
   int maxi = ndim;
   int c = shape[VGL_SHAPE_NCHANNELS];
   int w = shape[VGL_SHAPE_WIDTH];
-  fprintf(stdout,"%s, %s, Debug: NCHANNELS = %d, WIDTH = %d, BPS = %d\n", __FILE__, __FUNCTION__, c, w, bps);
   if (ndim == 1)
   {
     maxi = 2;
@@ -42,7 +41,6 @@ void VglShape::vglCreateShape(int* shape, int ndim, int bps /*= 8*/)
   {
     if (i <= maxi)
     {
-      this->size *= shape[i];
       this->shape[i] = shape[i];
       if(i == 0)
       {
@@ -51,7 +49,6 @@ void VglShape::vglCreateShape(int* shape, int ndim, int bps /*= 8*/)
       else if (i == 2)
       {
         this->offset[i] = findWidthStep(bps, w, c);
-        fprintf(stdout,"%s, %s, Debug: i = 2, offset[2] = %d\n", __FILE__, __FUNCTION__, this->offset[i]);
       }
       else
       {
@@ -64,6 +61,7 @@ void VglShape::vglCreateShape(int* shape, int ndim, int bps /*= 8*/)
       this->offset[i] = 0;
     }
   }
+  this->size *= this->shape[maxi] * this->offset[maxi];
 }
 
 /** /brief Constructs shape from another shape.
@@ -73,7 +71,7 @@ void VglShape::vglCreateShape(int* shape, int ndim, int bps /*= 8*/)
  */
 VglShape::VglShape(VglShape* vglShape)
 {
-  this->vglCreateShape(vglShape->shape, vglShape->ndim);
+  this->vglCreateShape(vglShape->shape, vglShape->ndim, vglShape->bps);
 }
   
 /** /brief Generic shape constructor.
@@ -270,6 +268,7 @@ void VglShape::printInfo()
   printf("\n");
   printf("size    = %d\n", this->getSize());
   printf("npixels = %d\n", this->getNpixels());
+  printf("bps     = %d\n", this->getBps());
 }
 
 
@@ -355,8 +354,6 @@ int VglShape::findBitsPerSample(int depth)
 
 int VglShape::findWidthStep(int bps, int width, int nChannels)
 {
-  printf("%s, %s, Debug: NCHANNELS = %d, WIDTH = %d, BPS = %d\n", __FILE__, __FUNCTION__, nChannels, width, bps);
-  //return 69;
   if (bps == 1){
     return (width - 1) / 8 + 1;
   }
@@ -406,6 +403,7 @@ VglClShape* VglShape::asVglClShape()
   this->printArray(result->offset, result->ndim);
   printf("\n");
   printf("size    = %d\n", result->size);
+  printf("bps     = %d\n", result->bps);
 #endif
 
   return result;
