@@ -137,6 +137,25 @@ void vglClBinThreshold(VglImage* img_input, VglImage* img_output, float thresh);
   */
 void vglClBinToGray(VglImage* img_input, VglImage* img_output);
 
+/** N-dimensional dilation
+
+    SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
+    
+  */
+void vglClNdBinDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window);
+
+/** Maximum or union between two images.
+
+    Maximum or union between img_input1 and img_input2. Result saved in img_output.
+  */
+void vglClNdBinMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Minimum or intersection between two images.
+
+    Minimum or intersection between img_input1 and img_input2. Result saved in img_output.
+  */
+void vglClNdBinMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
 /** Negation of binary image img_input. Result is stored in img_output.
 
   */
@@ -149,6 +168,13 @@ void vglClNdBinNot(VglImage* img_input, VglImage* img_output);
 
   */
 void vglClNdBinRoi(VglImage* img_output, int* p0, int* pf);
+
+/** Subtraction or difference between two binary images.
+
+    Subtraction or difference between two binary images. Finds img_input1 minus img_input2 and
+    saves in img_output.
+  */
+void vglClNdBinSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 
 /** Threshold of img_input by parameter. if the pixel is below thresh,
     the output is 0, else, the output is 1. Result is stored in img_output.

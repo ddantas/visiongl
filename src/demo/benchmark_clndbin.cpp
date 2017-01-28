@@ -137,6 +137,7 @@ obtained from the image file.\
   VglImage* vglThresh = vglCreateImage(vglIn->vglShape, IPL_DEPTH_1U);
   vglClForceAsBuf(vglThresh);
   VglImage* vglBin    = vglCreateImage(vglThresh);
+  VglImage* vglBin2   = vglCreateImage(vglThresh);
   VglImage* vglRoi    = vglCreateImage(vglThresh);
   VglShape* vglShape1bit = new VglShape(vglThresh->vglShape);
 
@@ -187,7 +188,7 @@ if (vglIn->clForceAsBuf){
   TimerStart();
   vglClNdCopy(vglIn, vglGray);
   vglClFlush();
-  printf("First call to                       Copy:       %s\n", getTimeElapsedInSeconds());
+  printf("First call to                  8bit Copy:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional copy
   p = 0;
   TimerStart();
@@ -197,18 +198,18 @@ if (vglIn->clForceAsBuf){
     vglClNdCopy(vglIn, vglGray);
   }
   vglClFlush();
-  printf("Time spent on %8d              Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
+  printf("Time spent on %8d         8bit Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
 
   vglCheckContext(vglGray, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
     vglReshape(vglGray, vglShapeOrig8bit);
   }
-  outFolder = (char*) "clnd_copy";
+  outFolder = (char*) "clnd_copy_8bit";
   saveResult(vglGray, outString, outPath, outFolder, i_0);
   vglReshape(vglGray, vglShape8bit);
   vglPrintImageInfo(vglGray, (char*) "vglGray");
-  vglGray->vglShape->print();
+  vglGray->vglShape->print((char*) "vglGray");
 
 
   char thresh = 108;
@@ -236,6 +237,31 @@ if (vglIn->clForceAsBuf){
   outFolder = (char*) "clnd_thresh";
   saveResult(vglThresh, outString, outPath, outFolder, i_0);
   vglReshape(vglThresh, vglShape1bit);
+
+  //First call to n-dimensional copy
+  TimerStart();
+  vglClNdCopy(vglThresh, vglBin);
+  vglClFlush();
+  printf("First call to                  1bit Copy:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional copy
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdCopy(vglThresh, vglBin);
+  }
+  vglClFlush();
+  printf("Time spent on %8d         1bit Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(vglBin, vglShapeOrig1bit);
+  }
+  outFolder = (char*) "clnd_copy_bin";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
 
   //First call to n-dimensional BinToGray
   TimerStart();
@@ -312,66 +338,16 @@ if (vglIn->clForceAsBuf){
   saveResult(vglRoi, outString, outPath, outFolder, i_0);
   vglReshape(vglRoi, vglShape1bit);
 
-
-
-  /*
-  //First call to n-dimensional mean
-  TimerStart();
-  vglClNdConvolution(img, out, seMean);
-  vglClFlush();
-  printf("First call to             Convolution nD:       %s\n", getTimeElapsedInSeconds());
-  //Total time spent on n operations n-dimensional mean
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    vglClNdConvolution(img, out, seMean);
-  }
-  vglClFlush();
-  printf("Time spent on %8d    Convolution nD:       %s \n", nSteps, getTimeElapsedInSeconds());
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clnd_conv_mean";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
-
-  //Total time spent on n operations n-dimensional sep. mean
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    vglClNdConvolution(img, out2, seMeanArr[1]);
-    for(int i = 2; i <= ndim; i++)
-    {
-      if (i % 2 == 0)
-        vglClNdConvolution(out2, out, seMeanArr[i]);
-      else
-        vglClNdConvolution(out, out2, seMeanArr[i]);
-    }
-  }
-  vglClFlush();
-  printf("Time spent on %8d     Conv. nD sep.:       %s \n", nSteps, getTimeElapsedInSeconds());
-  if (ndim % 2 == 1)
-    vglClNdCopy(out2, out);
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clnd_conv_sep";
-  saveResult(out, outString, outPath, outFolder, i_0);
+  printf("\n");
+  vglIn->vglShape->printArray(roiP0, VGL_MAX_DIM);
+  printf("\n");
+  vglIn->vglShape->printArray(roiPf, VGL_MAX_DIM);
+  printf("\n");
 
 
   //First call to n-dimensional dilation
   TimerStart();
-  vglClNdDilate(img, out, seCube);
+  //vglClNdBinDilate(vglThresh, vglBin, seCube);
   vglClFlush();
   printf("First call to           Dilation nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional dilation
@@ -380,19 +356,19 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdDilate(img, out, seCube);
+    //vglClNdBinDilate(vglThresh, vglBin, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d  Dilation nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglCheckContext(out, VGL_RAM_CONTEXT);
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(out, origVglShape);
+    vglReshape(vglBin, vglShapeOrig1bit);
   }
   outFolder = (char*) "clnd_dilate_cube";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
 
   //Total time spent on n operations n-dimensional sep. dilation
   p = 0;
@@ -400,52 +376,53 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdDilate(img, out2, seCubeArr[1]);
+    vglClNdBinDilate(vglThresh, vglBin2, seCubeArr[1]);
     for(int i = 2; i <= ndim; i++)
     {
       if (i % 2 == 0)
-        vglClNdDilate(out2, out, seCubeArr[i]);
+        vglClNdBinDilate(vglBin2, vglBin, seCubeArr[i]);
       else
-        vglClNdDilate(out, out2, seCubeArr[i]);
+        vglClNdBinDilate(vglBin, vglBin2, seCubeArr[i]);
     }
   }
   vglClFlush();
   printf("Time spent on %8d  Dilation nD sep.:       %s \n", nSteps, getTimeElapsedInSeconds());
   if (ndim % 2 == 1)
-    vglClNdCopy(out2, out);
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
+  {
+    vglClNdCopy(vglBin2, vglBin);
+  }
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(out, origVglShape);
+    vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_conv_sep";
-  saveResult(out, outString, outPath, outFolder, i_0);
+  outFolder = (char*) "clnd_dilate_sep";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
 
-
-  //Total time spent on n operations n-dimensional dilation
+  //Total time spent on n operations n-dimensional dilation by cross
   p = 0;
   TimerStart();
   while (p < nSteps)
   {
     p++;
-    vglClNdDilate(img, out, seCross);
+    vglClNdBinDilate(vglThresh, vglBin, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d Dilation nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglCheckContext(out, VGL_RAM_CONTEXT);
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(out, origVglShape);
+    vglReshape(vglBin, vglShapeOrig1bit);
   }
   outFolder = (char*) "clnd_dilate_cross";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
 
   //First call to n-dimensional negation
   TimerStart();
-  vglClNdNot(img, out);
+  vglClNdNot(vglThresh, vglBin);
   vglClFlush();
   printf("First call to                   Negation:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional negation
@@ -454,44 +431,95 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdNot(img, out);
+    vglClNdNot(vglThresh, vglBin);
   }
   vglClFlush();
   printf("Time spent on %8d          Negation:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglCheckContext(out, VGL_RAM_CONTEXT);
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(out, origVglShape);
+    vglReshape(vglBin, vglShapeOrig1bit);
   }
   outFolder = (char*) "clnd_invert";
-  saveResult(out, outString, outPath, outFolder, i_0);
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
 
-
-  //First call to n-dimensional copy
+  //First call to n-dimensional maximum
   TimerStart();
-  vglClNdCopy(img, out);
+  vglClNdBinMax(vglThresh, vglRoi, vglBin);
   vglClFlush();
-  printf("First call to                       Copy:       %s\n", getTimeElapsedInSeconds());
-  //Total time spent on n operations n-dimensional negation
+  printf("First call to                    Maximum:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional maximum
   p = 0;
   TimerStart();
   while (p < nSteps)
   {
     p++;
-    vglClNdCopy(img, out);
+    vglClNdBinMax(vglThresh, vglRoi, vglBin);
   }
   vglClFlush();
-  printf("Time spent on %8d              Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
+  printf("Time spent on %8d           Maximum:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglCheckContext(out, VGL_RAM_CONTEXT);
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(out, origVglShape);
+    vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_copy";
-  saveResult(out, outString, outPath, outFolder, i_0);
-  */
+  outFolder = (char*) "clnd_max";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
+
+  //First call to n-dimensional minimum
+  TimerStart();
+  vglClNdBinMin(vglThresh, vglRoi, vglBin);
+  vglClFlush();
+  printf("First call to                    Minimum:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional minimum
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdBinMin(vglThresh, vglRoi, vglBin);
+  }
+  vglClFlush();
+  printf("Time spent on %8d           Minimum:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(vglBin, vglShapeOrig1bit);
+  }
+  outFolder = (char*) "clnd_min";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
+
+  //First call to n-dimensional subtraction
+  TimerStart();
+  vglClNdBinSub(vglThresh, vglRoi, vglBin);
+  vglClFlush();
+  printf("First call to                Subtraction:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional subtraction
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdBinSub(vglThresh, vglRoi, vglBin);
+  }
+  vglClFlush();
+  printf("Time spent on %8d       Subtraction:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(vglBin, vglShapeOrig1bit);
+  }
+  outFolder = (char*) "clnd_sub";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
+
 }
 else
 {
@@ -707,12 +735,11 @@ else
   */
 }
 
-/*
   //First call to n-dimensional Copy CPU->GPU
-  vglCheckContext(img, VGL_RAM_CONTEXT);
+  vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
   TimerStart();
-  vglSetContext(img, VGL_RAM_CONTEXT);
-  vglClUpload(img);
+  vglSetContext(vglThresh, VGL_RAM_CONTEXT);
+  vglClUpload(vglThresh);
   vglClFlush();
   printf("First call to              Copy CPU->GPU:       %s \n", getTimeElapsedInSeconds());
   //Total time spent on n operations Copy CPU->GPU
@@ -721,26 +748,27 @@ else
   while (p < nSteps)
   {
     p++;
-    vglSetContext(img, VGL_RAM_CONTEXT);
-    vglClUpload(img);
+    vglSetContext(vglThresh, VGL_RAM_CONTEXT);
+    vglClUpload(vglThresh);
   }
   vglClFlush();
   printf("Time spent on %8d     Copy CPU->GPU:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglCheckContext(out, VGL_RAM_CONTEXT);
+  vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(out, origVglShape);
+    vglReshape(vglThresh, vglShapeOrig1bit);
   }
   outFolder = (char*) "clnd_upload";
-  saveResult(out, outString, outPath, outFolder, i_0);
+  saveResult(vglThresh, outString, outPath, outFolder, i_0);
+  vglReshape(vglThresh, vglShape1bit);
 
 
   //First call to n-dimensional Copy GPU->CPU
-  vglCheckContext(img, VGL_CL_CONTEXT);
+  vglCheckContext(vglThresh, VGL_CL_CONTEXT);
   TimerStart();
-  vglSetContext(img, VGL_CL_CONTEXT);
-  vglClDownload(img);
+  vglSetContext(vglThresh, VGL_CL_CONTEXT);
+  vglClDownload(vglThresh);
   vglClFlush();
   printf("First call to              Copy GPU->CPU:       %s \n", getTimeElapsedInSeconds());
   //Total time spent on n operations Copy GPU->CPU
@@ -749,20 +777,20 @@ else
   while (p < nSteps)
   {
     p++;
-    vglSetContext(img, VGL_CL_CONTEXT);
-    vglClDownload(img);
+    vglSetContext(vglThresh, VGL_CL_CONTEXT);
+    vglClDownload(vglThresh);
   }
   vglClFlush();
   printf("Time spent on %8d     Copy GPU->CPU:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglCheckContext(out, VGL_RAM_CONTEXT);
+  vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(out, origVglShape);
+    vglReshape(vglThresh, vglShapeOrig1bit);
   }
   outFolder = (char*) "clnd_download";
-  saveResult(out, outString, outPath, outFolder, i_0);
-*/
+  saveResult(vglThresh, outString, outPath, outFolder, i_0);
+  vglReshape(vglThresh, vglShape1bit);
 
   return 0;
 }

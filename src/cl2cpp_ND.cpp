@@ -80,7 +80,7 @@ void vglClNdConvolution(VglImage* img_input, VglImage* img_output, VglStrEl* win
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClNdConvolution", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClNdConvolution", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -101,7 +101,18 @@ void vglClNdConvolution(VglImage* img_input, VglImage* img_output, VglStrEl* win
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -162,7 +173,7 @@ void vglClNdCopy(VglImage* img_input, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClNdCopy", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClNdCopy", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -177,7 +188,18 @@ void vglClNdCopy(VglImage* img_input, VglImage* img_output)
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -246,7 +268,7 @@ void vglClNdDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClNdDilate", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClNdDilate", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -267,7 +289,18 @@ void vglClNdDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window)
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -342,7 +375,7 @@ void vglClNdErode(VglImage* img_input, VglImage* img_output, VglStrEl* window)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClNdErode", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClNdErode", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -363,7 +396,18 @@ void vglClNdErode(VglImage* img_input, VglImage* img_output, VglStrEl* window)
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -424,7 +468,7 @@ void vglClNdNot(VglImage* img_input, VglImage* img_output)
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClNdNot", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClNdNot", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -439,7 +483,18 @@ void vglClNdNot(VglImage* img_input, VglImage* img_output)
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
@@ -494,7 +549,7 @@ void vglClNdThreshold(VglImage* img_input, VglImage* img_output, unsigned char t
   static cl_kernel _kernel = NULL;
   if (_kernel == NULL)
   {
-    _kernel = clCreateKernel( _program, "vglClNdThreshold", &_err ); 
+    _kernel = clCreateKernel( _program, "vglClNdThreshold", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
@@ -515,7 +570,18 @@ void vglClNdThreshold(VglImage* img_input, VglImage* img_output, unsigned char t
   if (img_input->ndim > 2){
     _ndim = 3;
   }
-  size_t worksize[] = { img_input->getWidthIn(), img_input->getHeightIn(),  img_input->getNFrames() };
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
   clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
 
   vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
