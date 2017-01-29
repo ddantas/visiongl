@@ -32,7 +32,7 @@ __kernel void vglClNdBinThreshold(__global char* img_input,
     int i = (coord / ws);
     unsigned char p = img_input[(i * w) + j];
     unsigned char result_bit;
-    if (p >= thresh)
+    if (p > thresh)
       result_bit = 1;
     else
       result_bit = 0;
