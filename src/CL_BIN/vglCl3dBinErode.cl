@@ -42,16 +42,16 @@ __kernel void vglCl3dBinErode(__read_only image3d_t img_input,
         {
           for(int j_w = -w_r; j_w <= w_r; j_w++)
           {
-            int i_img = coords.y - i_w;
-            int j_img = 8 * coords.x + 7 - bit - j_w;
-            int k_img = coords.z - k_w;
+            int k_img = coords.z + k_w;
+            int i_img = coords.y + i_w;
+            int j_img = 8 * coords.x + 7 - bit + j_w;
             i_img = clamp(i_img, 0, h_img-1);
             j_img = clamp(j_img, 0, w_img-1);
             k_img = clamp(k_img, 0, l_img-1);
 
             uint4 p = read_imageui(img_input, smp, (int4)((j_img) / 8, i_img, k_img, 0));
             unsigned int result_bit;
-            result_bit = p.x & (1 << ((pad + bit + j_w) % 8));
+            result_bit = p.x & (1 << ((pad + bit - j_w) % 8));
 
             if (!(convolution_window[i_raster] == 0))
               if (result_bit == 0)

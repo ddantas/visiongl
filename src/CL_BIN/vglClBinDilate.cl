@@ -27,27 +27,27 @@ __kernel void vglClBinDilate(__read_only image2d_t img_input,
     int h_img = img_shape->shape[VGL_SHAPE_HEIGHT];
     int pad = ((w_r / 8) + 1) * 8; // Avoids negative remainder.
     int i_l;
-    uint4 pmax;
+    uint4 pmax;  // In erosion, replace pmax with pmin
     uint4 result = 0;
     for (int bit = 0; bit < 8; bit++)
     {
-      pmax = 0;
+      pmax = 0;  // In erosion, replace 0 with 1
       i_l = 0; 
       for(int i_w = -h_r; i_w <= h_r && pmax.x == 0; i_w++)
       {
         for(int j_w = -w_r; j_w <= w_r && pmax.x == 0; j_w++)
         {
-          int i_img = coords.y - i_w;
-          int j_img = 8 * coords.x + 7 - bit - j_w;
+          int i_img = coords.y - i_w;                // In erosion, replace - with +
+          int j_img = 8 * coords.x + 7 - bit - j_w;  // In erosion, replace - j_w with + j_w
           i_img = clamp(i_img, 0, h_img-1);
           j_img = clamp(j_img, 0, w_img-1);
 
           uint4 p = read_imageui(img_input, smp, (int2)((j_img) / 8, i_img));
           unsigned int result_bit;
-          result_bit = p.x & (1 << ((pad + bit + j_w) % 8));
+          result_bit = p.x & (1 << ((pad + bit + j_w) % 8));  // In erosion, replace + j_w with - j_w
 
           if (!(convolution_window[i_l] == 0))
-            if (result_bit > 0)
+            if (result_bit > 0)  // In erosion, replace > with ==
               pmax.x = 1;
 
           i_l++;
