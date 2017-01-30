@@ -54,9 +54,6 @@ int main(int argc, char* argv[])
       exit(1);
     }
 
-    vglIn->vglShape->print();
-    iplPrintImageInfo(vglIn->ipl);
-
     printf("CHECKING IF IS NULL\n");
     if (vglIn == NULL)
     {
@@ -69,7 +66,11 @@ int main(int argc, char* argv[])
     VglImage* vglBin    = vglCreateImage(cvSize(vglIn->getWidth(), vglIn->getHeight()), IPL_DEPTH_1U, 1);
     VglImage* vglBin2   = vglCreateImage(cvSize(vglIn->getWidth(), vglIn->getHeight()), IPL_DEPTH_1U, 1);
     VglImage* vglRoi    = vglCreateImage(cvSize(vglIn->getWidth(), vglIn->getHeight()), IPL_DEPTH_1U, 1);
+    VglImage* vglDil    = vglCreateImage(cvSize(vglIn->getWidth(), vglIn->getHeight()), IPL_DEPTH_1U, 1);
     int p;
+
+    vglPrintImageInfo(vglBin, (char*) "vglBin");
+    vglBin->vglShape->print((char*) "vglBin");
 
     printf("CREATED COPY\n");
     //First call to Threshold
@@ -134,6 +135,7 @@ int main(int argc, char* argv[])
 
     float seCube[9] = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
     float seCross[9] = { 0, 1, 0, 1, 1, 1, 0, 1, 0 };
+    float seAngle[9] = { 0, 0, 0, 0, 1, 1, 0, 1, 0 };
     float seSep[3] = { 1, 1, 1 };
 
     //First call to Dilate
@@ -147,14 +149,14 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinDilate(vglThresh, vglBin, seCube, 3, 3);
+        vglClBinDilate(vglThresh, vglDil, seCube, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d  Dilation 2D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
 
-    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    vglCheckContext(vglDil, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_cube.pbm");
-    iplSavePgm(outFilename, vglBin->ipl);
+    iplSavePgm(outFilename, vglDil->ipl);
 
     //Total time spent on n operations Dilate sep.
     p = 0;
@@ -187,24 +189,169 @@ int main(int argc, char* argv[])
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_cross.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
-    //First call to Erode
-    TimerStart();
-    vglClBinErode(vglThresh, vglBin, seCube, 3, 3);
-    vglClFlush();
-    printf("First call to            Erosion 2D cube:           %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations Erode
+    //Total time spent on n operations Dilate angle
     p = 0;
     TimerStart();
     while (p < nSteps)
     {
         p++;
-        vglClBinErode(vglThresh, vglBin, seCube, 3, 3);
+        vglClBinDilate(vglThresh, vglBin, seAngle, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d Dilation 2D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_angle.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //First call to Dilate pack
+    TimerStart();
+    vglClBinDilatePack(vglThresh, vglBin, seCube, 3, 3);
+    vglClFlush();
+    printf("First call to           Dilation 2D cube:           %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Dilate pack cube
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinDilatePack(vglThresh, vglBin, seCube, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Dila Pac 2D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_cube.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Dilate cross pack
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinDilatePack(vglThresh, vglBin, seCross, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d Dila Pac 2D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_cross.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Dilate angle pack
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinDilatePack(vglThresh, vglBin, seAngle, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d Dila Pac 2D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_angle.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //First call to Erode
+    TimerStart();
+    vglClBinErode(vglThresh, vglBin, seCube, 3, 3);
+    vglClFlush();
+    printf("First call to            Erosion 2D cube:           %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Erode cube
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErode(vglDil,    vglBin, seCube, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d   Erosion 2D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_cube.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Erode cube
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErode(vglDil,    vglBin, seCross, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Erosion 2D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_cross.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Erode angle
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErode(vglDil,    vglBin, seAngle, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Erosion 2D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_angle.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //First call to Erode pack
+    TimerStart();
+    vglClBinErodePack(vglDil,    vglBin, seCube, 3, 3);
+    vglClFlush();
+    printf("First call to            Ero pac 2D cube:           %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Erode pack cube
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErodePack(vglDil,    vglBin, seCube, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d   Ero Pac 2D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_cube.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Erode pack cross
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErodePack(vglDil,    vglBin, seCross, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Ero Pac 2D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_cross.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Erode pack angle
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErodePack(vglDil,    vglBin, seAngle, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Ero Pac 2D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_angle.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
     //First call to Roi

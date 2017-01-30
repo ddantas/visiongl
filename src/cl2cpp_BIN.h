@@ -87,10 +87,20 @@ void vglClBinCopy(VglImage* img_input, VglImage* img_output);
   */
 void vglClBinDilate(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
+/** Dilation of img_input by mask. Result is stored in img_output.
+
+  */
+void vglClBinDilatePack(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+
 /** Erosion of img_input by mask. Result is stored in img_output.
 
   */
 void vglClBinErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
+
+/** Dilation of img_input by mask. Result is stored in img_output.
+
+  */
+void vglClBinErodePack(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y);
 
 /** Maximum or union between two images.
 

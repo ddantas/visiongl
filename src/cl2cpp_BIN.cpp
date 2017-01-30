@@ -1073,6 +1073,105 @@ void vglClBinDilate(VglImage* img_input, VglImage* img_output, float* convolutio
   vglSetContext(img_output, VGL_CL_CONTEXT);
 }
 
+/** Dilation of img_input by mask. Result is stored in img_output.
+
+  */
+void vglClBinDilatePack(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y)
+{
+  vglCheckContext(img_input, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  cl_mem mobj_convolution_window = NULL;
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
+
+  cl_mem mobj_img_shape = NULL;
+  mobj_img_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer img_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_img_shape, CL_TRUE, 0, sizeof(VglClShape), img_input->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer img_shape" );
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClBinDilatePack.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClBinDilatePack", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
+
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
+
+  _err = clSetKernelArg( _kernel, 5, sizeof( cl_mem ), (void*) &mobj_img_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
+
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
+
+  _err = clReleaseMemObject( mobj_img_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_img_shape");
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
 /** Erosion of img_input by mask. Result is stored in img_output.
 
   */
@@ -1121,6 +1220,105 @@ void vglClBinErode(VglImage* img_input, VglImage* img_output, float* convolution
   if (_kernel == NULL)
   {
     _kernel = clCreateKernel( _program, "vglClBinErode", &_err );
+    vglClCheckError(_err, (char*) "clCreateKernel" );
+  }
+
+
+  _err = clSetKernelArg( _kernel, 0, sizeof( cl_mem ), (void*) &img_input->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 0" );
+
+  _err = clSetKernelArg( _kernel, 1, sizeof( cl_mem ), (void*) &img_output->oclPtr );
+  vglClCheckError( _err, (char*) "clSetKernelArg 1" );
+
+  _err = clSetKernelArg( _kernel, 2, sizeof( cl_mem ), (float*) &mobj_convolution_window );
+  vglClCheckError( _err, (char*) "clSetKernelArg 2" );
+
+  _err = clSetKernelArg( _kernel, 3, sizeof( int ), &window_size_x );
+  vglClCheckError( _err, (char*) "clSetKernelArg 3" );
+
+  _err = clSetKernelArg( _kernel, 4, sizeof( int ), &window_size_y );
+  vglClCheckError( _err, (char*) "clSetKernelArg 4" );
+
+  _err = clSetKernelArg( _kernel, 5, sizeof( cl_mem ), (void*) &mobj_img_shape );
+  vglClCheckError( _err, (char*) "clSetKernelArg 5" );
+
+  int _ndim = 2;
+  if (img_input->ndim > 2){
+    _ndim = 3;
+  }
+
+  size_t _worksize_0 = img_input->getWidthIn();
+  if (img_input->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_input->getWidthStep();
+  }
+  if (img_output->depth == IPL_DEPTH_1U)
+  {
+    _worksize_0 = img_output->getWidthStep();
+  }
+
+  size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
+  clEnqueueNDRangeKernel( cl.commandQueue, _kernel, _ndim, NULL, worksize, 0, 0, 0, 0 );
+
+  vglClCheckError( _err, (char*) "clEnqueueNDRangeKernel" );
+
+  _err = clReleaseMemObject( mobj_convolution_window );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_convolution_window");
+
+  _err = clReleaseMemObject( mobj_img_shape );
+  vglClCheckError(_err, (char*) "clReleaseMemObject mobj_img_shape");
+
+  vglSetContext(img_output, VGL_CL_CONTEXT);
+}
+
+/** Dilation of img_input by mask. Result is stored in img_output.
+
+  */
+void vglClBinErodePack(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y)
+{
+  vglCheckContext(img_input, VGL_CL_CONTEXT);
+  vglCheckContext(img_output, VGL_CL_CONTEXT);
+
+  cl_int _err;
+
+  cl_mem mobj_convolution_window = NULL;
+  mobj_convolution_window = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, (window_size_x*window_size_y)*sizeof(float), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer convolution_window" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_convolution_window, CL_TRUE, 0, (window_size_x*window_size_y)*sizeof(float), convolution_window, 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer convolution_window" );
+
+  cl_mem mobj_img_shape = NULL;
+  mobj_img_shape = clCreateBuffer(cl.context, CL_MEM_READ_ONLY, sizeof(VglClShape), NULL, &_err);
+  vglClCheckError( _err, (char*) "clCreateBuffer img_shape" );
+  _err = clEnqueueWriteBuffer(cl.commandQueue, mobj_img_shape, CL_TRUE, 0, sizeof(VglClShape), img_input->vglShape->asVglClShape(), 0, NULL, NULL);
+  vglClCheckError( _err, (char*) "clEnqueueWriteBuffer img_shape" );
+
+  static cl_program _program = NULL;
+  if (_program == NULL)
+  {
+    char* _file_path = (char*) "CL_BIN/vglClBinErodePack.cl";
+    printf("Compiling %s\n", _file_path);
+    std::ifstream _file(_file_path);
+    if(_file.fail())
+    {
+      fprintf(stderr, "%s:%s: Error: File %s not found.\n", __FILE__, __FUNCTION__, _file_path);
+      exit(1);
+    }
+    std::string _prog( std::istreambuf_iterator<char>( _file ), ( std::istreambuf_iterator<char>() ) );
+    const char *_source_str = _prog.c_str();
+#ifdef __DEBUG__
+    printf("Kernel to be compiled:\n%s\n", _source_str);
+#endif
+    _program = clCreateProgramWithSource(cl.context, 1, (const char **) &_source_str, 0, &_err );
+    vglClCheckError(_err, (char*) "clCreateProgramWithSource" );
+    _err = clBuildProgram(_program, 1, cl.deviceId, "-I CL_BIN/", NULL, NULL );
+    vglClBuildDebug(_err, _program);
+  }
+
+  static cl_kernel _kernel = NULL;
+  if (_kernel == NULL)
+  {
+    _kernel = clCreateKernel( _program, "vglClBinErodePack", &_err );
     vglClCheckError(_err, (char*) "clCreateKernel" );
   }
 
