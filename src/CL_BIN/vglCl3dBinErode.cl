@@ -36,11 +36,11 @@ __kernel void vglCl3dBinErode(__read_only image3d_t img_input,
     {
       pmin = 1;
       i_raster = 0; 
-      for(int i_w = -h_r; i_w <= h_r; i_w++)
+      for(int k_w = -l_r; k_w <= l_r; k_w++)
       {
-        for(int j_w = -w_r; j_w <= w_r; j_w++)
+        for(int i_w = -h_r; i_w <= h_r; i_w++)
         {
-          for(int k_w = -l_r; k_w <= l_r; k_w++)
+          for(int j_w = -w_r; j_w <= w_r; j_w++)
           {
             int i_img = coords.y - i_w;
             int j_img = 8 * coords.x + 7 - bit - j_w;

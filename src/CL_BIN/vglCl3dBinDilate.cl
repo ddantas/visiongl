@@ -36,15 +36,15 @@ __kernel void vglCl3dBinDilate(__read_only image3d_t img_input,
     {
       pmax = 0;
       i_raster = 0; 
-      for(int i_w = -h_r; i_w <= h_r && pmax.x == 0; i_w++)
+      for(int k_w = -l_r; k_w <= l_r && pmax.x == 0; k_w++)
       {
-        for(int j_w = -w_r; j_w <= w_r && pmax.x == 0; j_w++)
+        for(int i_w = -h_r; i_w <= h_r && pmax.x == 0; i_w++)
         {
-          for(int k_w = -l_r; k_w <= l_r && pmax.x == 0; k_w++)
+          for(int j_w = -w_r; j_w <= w_r && pmax.x == 0; j_w++)
           {
+            int k_img = coords.z - k_w;
             int i_img = coords.y - i_w;
             int j_img = 8 * coords.x + 7 - bit - j_w;
-            int k_img = coords.z - k_w;
             i_img = clamp(i_img, 0, h_img-1);
             j_img = clamp(j_img, 0, w_img-1);
             k_img = clamp(k_img, 0, l_img-1);

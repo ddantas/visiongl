@@ -76,6 +76,7 @@ int main(int argc, char* argv[])
     VglImage* vglBin    = vglCreateImage(shape, IPL_DEPTH_1U, ndim);
     VglImage* vglBin2   = vglCreateImage(shape, IPL_DEPTH_1U, ndim);
     VglImage* vglRoi    = vglCreateImage(shape, IPL_DEPTH_1U, ndim);
+    VglImage* vglDil    = vglCreateImage(shape, IPL_DEPTH_1U, ndim);
     int p;
 
     printf("CREATED COPY\n");
@@ -145,6 +146,9 @@ int main(int argc, char* argv[])
     float seCross[27] = { 0, 0, 0, 0, 1, 0, 0, 0, 0,
                           0, 1, 0, 1, 1, 1, 0, 1, 0,
                           0, 0, 0, 0, 1, 0, 0, 0, 0, };
+    float seAngle[27] = { 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 1, 1, 0, 1, 0,
+                          0, 0, 0, 0, 1, 0, 0, 0, 0, };
     float seSep[3]    = { 1, 1, 1 };
 
     //First call to Dilate
@@ -158,14 +162,14 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglCl3dBinDilate(vglThresh, vglBin, seCube, 3, 3, 3);
+        vglCl3dBinDilate(vglThresh, vglDil, seCube, 3, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d  Dilation 3D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
 
-    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_cube_%03d.pbm");
-    vglSave3dImage(outFilename, vglBin, 0);
+    vglCheckContext(vglDil, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_std_cube_%03d.pbm");
+    vglSave3dImage(outFilename, vglDil, 0);
 
     //Total time spent on n operations Dilate sep.
     p = 0;
@@ -181,7 +185,7 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d  Dilation 3D sep.:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_sep_%03d.pbm");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_std_sep_%03d.pbm");
     vglSave3dImage(outFilename, vglBin, 0);
 
     //Total time spent on n operations Dilate cross
@@ -196,7 +200,72 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d Dilation 3D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_cube_%03d.pbm");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_std_cube_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
+
+    //Total time spent on n operations Dilate angle
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglCl3dBinDilate(vglThresh, vglBin, seAngle, 3, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d Dilation 3D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_std_angle_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
+
+    //First call to Dilate pack
+    TimerStart();
+    vglCl3dBinDilatePack(vglThresh, vglBin, seCube, 3, 3, 3);
+    vglClFlush();
+    printf("First call to           Dila pac 3D cube:           %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Dilate pack angle
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglCl3dBinDilatePack(vglThresh, vglBin, seCube, 3, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Dila pac 3D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_pack_cube_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
+
+    //Total time spent on n operations Dilate pack angle
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglCl3dBinDilatePack(vglThresh, vglBin, seCross, 3, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d Dila pac 3D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_pack_cross_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
+
+    //Total time spent on n operations Dilate pack angle
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglCl3dBinDilatePack(vglThresh, vglBin, seAngle, 3, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d Dila pac 3D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_dilate_pack_angle_%03d.pbm");
     vglSave3dImage(outFilename, vglBin, 0);
 
     //First call to Erode
@@ -204,19 +273,99 @@ int main(int argc, char* argv[])
     vglCl3dBinErode(vglThresh, vglBin, seCube, 3, 3, 3);
     vglClFlush();
     printf("Fisrt call to                      Erode:           %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations Erode
+    //Total time spent on n operations Erode cube
     p = 0;
     TimerStart();
     while (p < nSteps)
     {
         p++;
-        vglCl3dBinErode(vglThresh, vglBin, seCube, 3, 3, 3);
+        vglCl3dBinErode(vglDil,    vglBin, seCube, 3, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d   Erosion 3D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_erode_cube_%03d.pbm");
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_erode_std_cube_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
+
+    //Total time spent on n operations Erode cross
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglCl3dBinErode(vglDil,    vglBin, seCross, 3, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Erosion 3D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_erode_std_cross_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
+
+    //Total time spent on n operations Erode angle
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglCl3dBinErode(vglDil,    vglBin, seAngle, 3, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Erosion 3D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_erode_std_angle_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
+
+    //First call to Erode pack
+    TimerStart();
+    vglCl3dBinErodePack(vglThresh, vglBin, seCube, 3, 3, 3);
+    vglClFlush();
+    printf("Fisrt call to                    Ero pac:           %s\n", getTimeElapsedInSeconds());
+    //Total time spent on n operations Erode cube
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglCl3dBinErodePack(vglDil,    vglBin, seCube, 3, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d   Ero pac 3D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_erode_pack_cube_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
+
+    //Total time spent on n operations Erode cross
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglCl3dBinErodePack(vglDil,    vglBin, seCross, 3, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Ero pac 3D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_erode_pack_cross_%03d.pbm");
+    vglSave3dImage(outFilename, vglBin, 0);
+
+    //Total time spent on n operations Erode angle
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglCl3dBinErodePack(vglDil,    vglBin, seAngle, 3, 3, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Ero pac 3D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_cl3dbin_erode_pack_angle_%03d.pbm");
     vglSave3dImage(outFilename, vglBin, 0);
 
     //First call to Roi

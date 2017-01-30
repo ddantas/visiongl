@@ -25,7 +25,17 @@ void vglCl3dBinDilate(VglImage* img_input, VglImage* img_output, float* convolut
 /** Dilation of img_input by mask. Result is stored in img_output.
 
   */
+void vglCl3dBinDilatePack(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+
+/** Dilation of img_input by mask. Result is stored in img_output.
+
+  */
 void vglCl3dBinErode(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
+
+/** Erosion of img_input by mask. Result is stored in img_output.
+
+  */
+void vglCl3dBinErodePack(VglImage* img_input, VglImage* img_output, float* convolution_window, int window_size_x, int window_size_y, int window_size_z);
 
 /** Maximum or union between two images.
 
