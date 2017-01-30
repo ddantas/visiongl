@@ -144,6 +144,13 @@ void vglClBinToGray(VglImage* img_input, VglImage* img_output);
   */
 void vglClNdBinDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window);
 
+/** N-dimensional erosion
+
+    SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
+    
+  */
+void vglClNdBinErode(VglImage* img_input, VglImage* img_output, VglStrEl* window);
+
 /** Maximum or union between two images.
 
     Maximum or union between img_input1 and img_input2. Result saved in img_output.

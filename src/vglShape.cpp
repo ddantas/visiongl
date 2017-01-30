@@ -95,7 +95,7 @@ VglShape::VglShape(int* shape, int ndim, int bps /*= 8*/)
 VglShape::VglShape(int w, int h)
 {
   int shape[VGL_MAX_DIM+1];
-  int ndim = 1;
+  int ndim = 2;
   shape[0] = 1;
   shape[1] = w;
   shape[2] = h;

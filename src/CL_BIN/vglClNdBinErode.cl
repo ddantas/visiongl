@@ -1,4 +1,4 @@
-/** N-dimensional dilation
+/** N-dimensional erosion
 
     SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
     
@@ -9,7 +9,7 @@
 #include "vglClShape.h"
 #include "vglClStrEl.h"
 
-__kernel void vglClNdBinDilate(__global unsigned char* img_input, 
+__kernel void vglClNdBinErode(__global unsigned char* img_input, 
                             __global unsigned char* img_output,  
                             __constant VglClShape* img_shape,
                             __constant VglClStrEl* window)
@@ -36,15 +36,15 @@ __kernel void vglClNdBinDilate(__global unsigned char* img_input,
     idim = ires / off;
     ires = ires - idim * off;
     if (d == VGL_SHAPE_WIDTH)
-      img_coord[d] = 8 * idim + ((window->shape[d] - 1) / 2); //In erosion, replace + with -
+      img_coord[d] = 8 * idim - ((window->shape[d] - 1) / 2);
     else
-      img_coord[d] =     idim + ((window->shape[d] - 1) / 2); //In erosion, replace + with -
+      img_coord[d] =     idim - ((window->shape[d] - 1) / 2);
   }
 
   for (int bit = 0; bit < 8; bit++)
   {
-    unsigned char pmax = 0;
-    for(int i = 0; i < window->size && pmax == 0; i++)
+    unsigned char pmin = 1;
+    for(int i = 0; i < window->size && pmax == 1; i++)
     {
       int j_bit;
       int j_byte;
@@ -62,7 +62,7 @@ __kernel void vglClNdBinDilate(__global unsigned char* img_input,
           int off = window->offset[d];
           idim = ires / off;
           ires = ires - idim * off;
-          win_coord[d] = - idim + img_coord[d]; //In erosion, remove the -
+          win_coord[d] = idim + img_coord[d];
           win_coord[d] = clamp(win_coord[d], 0, img_shape->shape[d]-1);
 
           if (d == VGL_SHAPE_WIDTH)
@@ -83,10 +83,10 @@ __kernel void vglClNdBinDilate(__global unsigned char* img_input,
           result_bit = 1;
         else
           result_bit = 0;
-        pmax = max(pmax, result_bit);
+        pmin = min(pmin, result_bit);
       }
     }
-    result += pmax << bit;
+    result += pmin << bit;
   }
   img_output[coord] = result;
 }

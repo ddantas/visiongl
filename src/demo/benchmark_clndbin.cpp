@@ -146,6 +146,11 @@ obtained from the image file.\
   vglThresh->vglShape->print((char*)"vglThresh");
   vglRoi->vglShape->print((char*)"vglRoi");
 
+  VglShape* shp3x3  = new VglShape(3, 3);
+  float     dataAngle[9] = { 0, 0, 0,  0, 1, 1,  0, 1, 0 };
+  VglStrEl* seAngle = new VglStrEl(dataAngle, shp3x3);
+  seAngle->print((char*)"seAngle");
+
   VglStrEl* seCross = new VglStrEl(VGL_STREL_CROSS, ndim);
   VglStrEl* seCube = new VglStrEl(VGL_STREL_CUBE, ndim);
   VglStrEl* seMean = new VglStrEl(VGL_STREL_MEAN, ndim);
@@ -154,6 +159,7 @@ obtained from the image file.\
   VglStrEl* seCubeArr[ndim+1];
   VglStrEl* seMeanArr[ndim+1];
   seMean->print((char*) "seMean");
+  seCube->print((char*) "seCube");
   int diam = 3;
   float diamf = (float)diam;
   float dataCube[3] = { 1.0,       1.0,       1.0     };
@@ -347,7 +353,7 @@ if (vglIn->clForceAsBuf){
 
   //First call to n-dimensional dilation
   TimerStart();
-  //vglClNdBinDilate(vglThresh, vglBin, seCube);
+  vglClNdBinDilate(vglThresh, vglBin, seCube);
   vglClFlush();
   printf("First call to           Dilation nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional dilation
@@ -356,7 +362,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    //vglClNdBinDilate(vglThresh, vglBin, seCube);
+    vglClNdBinDilate(vglThresh, vglBin, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d  Dilation nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -417,6 +423,26 @@ if (vglIn->clForceAsBuf){
     vglReshape(vglBin, vglShapeOrig1bit);
   }
   outFolder = (char*) "clnd_dilate_cross";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
+
+  //Total time spent on n operations n-dimensional dilation by angle
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdBinDilate(vglThresh, vglBin, seAngle);
+  }
+  vglClFlush();
+  printf("Time spent on %8d Dilation nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(vglBin, vglShapeOrig1bit);
+  }
+  outFolder = (char*) "clnd_dilate_angle";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
