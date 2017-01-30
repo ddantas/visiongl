@@ -33,9 +33,9 @@ __kernel void vglClBinDilate(__read_only image2d_t img_input,
     {
       pmax = 0;
       i_l = 0; 
-      for(int i_w = -h_r; i_w <= h_r; i_w++)
+      for(int i_w = -h_r; i_w <= h_r && pmax.x == 0; i_w++)
       {
-        for(int j_w = -w_r; j_w <= w_r; j_w++)
+        for(int j_w = -w_r; j_w <= w_r && pmax.x == 0; j_w++)
         {
           int i_img = coords.y - i_w;
           int j_img = 8 * coords.x + 7 - bit - j_w;

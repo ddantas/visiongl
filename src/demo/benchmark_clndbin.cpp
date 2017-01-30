@@ -15,7 +15,7 @@
 // strcmp, strlen
 #include <string.h>
 
-int saveResult(VglImage* out, char* outString, char* outPath, char* outFolder, int i_0)
+void saveResult(VglImage* out, char* outString, char* outPath, char* outFolder, int i_0)
 {
   char *cmd         = (char*) malloc(strlen(outPath) + 255);
   char* outFilename = (char*) malloc(strlen(outPath) + 255);
@@ -156,8 +156,8 @@ obtained from the image file.\
   VglStrEl* seMean = new VglStrEl(VGL_STREL_MEAN, ndim);
   VglStrEl* seCube1 = new VglStrEl(VGL_STREL_CUBE, 1);
   VglStrEl* seMean1 = new VglStrEl(VGL_STREL_MEAN, 1);
-  VglStrEl* seCubeArr[ndim+1];
-  VglStrEl* seMeanArr[ndim+1];
+  VglStrEl* seCubeArr[VGL_ARR_SHAPE_SIZE];
+  VglStrEl* seMeanArr[VGL_ARR_SHAPE_SIZE];
   seMean->print((char*) "seMean");
   seCube->print((char*) "seCube");
   int diam = 3;
