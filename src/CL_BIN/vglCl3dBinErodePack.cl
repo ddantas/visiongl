@@ -22,7 +22,7 @@ __kernel void vglCl3dBinErodePack(__read_only image3d_t img_input,
     const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
                           CLK_ADDRESS_CLAMP_TO_EDGE |   //Clamp to next edge
                           CLK_FILTER_NEAREST;           //Don't interpolate
-    
+
     int w_r = floor((float)window_size_x / 2.0f);
     int h_r = floor((float)window_size_y / 2.0f);
     int l_r = floor((float)window_size_z / 2.0f);

@@ -21,13 +21,12 @@ __kernel void vglClNdBinDilate(__global unsigned char* img_input,
 #else
   int coord = get_global_linear_id();
 #endif
- 
+
   int ires;
   int idim;
   ires = coord;
   unsigned char result = 0;
   int img_coord[VGL_ARR_SHAPE_SIZE];
-  int img_bit_coord;
   int win_coord[VGL_ARR_SHAPE_SIZE];
 
   for(int d = img_shape->ndim; d >= 1; d--)

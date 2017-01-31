@@ -20,17 +20,15 @@ __kernel void vglClBinDilatePack(__read_only image2d_t img_input,
     const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
                           CLK_ADDRESS_CLAMP_TO_EDGE |   //Clamp to next edge
                           CLK_FILTER_NEAREST;           //Don't interpolate
-    
+
     int w_r = floor((float)window_size_x / 2.0f);
     int h_r = floor((float)window_size_y / 2.0f);
-    int w_img = img_shape->shape[VGL_SHAPE_WIDTH];
     int ws_img = img_shape->offset[VGL_SHAPE_HEIGHT] - 1;
-    int h_img = img_shape->shape[VGL_SHAPE_HEIGHT];
     int i_l = 0;
     uint4 pad = 255 << 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];  // In erosion replace ( << ) with ( >> 8 - )
     uint4 boundary = 0;        // In erosion, 255
     unsigned char result = 0;  // In erosion, 255
-    int bit = 0;
+    // In erosion, create aux var here
     for(int i_w = -h_r; i_w <= h_r; i_w++)
     {
       for(int j_w = -w_r; j_w <= w_r; j_w++)

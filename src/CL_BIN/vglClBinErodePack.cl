@@ -23,16 +23,12 @@ __kernel void vglClBinErodePack(__read_only image2d_t img_input,
     
     int w_r = floor((float)window_size_x / 2.0f);
     int h_r = floor((float)window_size_y / 2.0f);
-    int w_img = img_shape->shape[VGL_SHAPE_WIDTH];
     int ws_img = img_shape->offset[VGL_SHAPE_HEIGHT] - 1;
-    int h_img = img_shape->shape[VGL_SHAPE_HEIGHT];
-    int pad = ((w_r / 8) + 1) * 8; // Avoids negative remainder.
     int i_l = 0;
     uint4 pad = 255 >> 8 - 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];
     uint4 boundary = 255;
     unsigned char result = 255;
     unsigned char aux;
-    int bit = 0;
     for(int i_w = -h_r; i_w <= h_r; i_w++)
     {
       for(int j_w = -w_r; j_w <= w_r; j_w++)

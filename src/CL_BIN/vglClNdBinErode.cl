@@ -27,7 +27,6 @@ __kernel void vglClNdBinErode(__global unsigned char* img_input,
   ires = coord;
   unsigned char result = 0;
   int img_coord[VGL_ARR_SHAPE_SIZE];
-  int img_bit_coord;
   int win_coord[VGL_ARR_SHAPE_SIZE];
 
   for(int d = img_shape->ndim; d >= 1; d--)
