@@ -515,6 +515,7 @@ rundemobenchmarkclbin:
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLBIN_NAME) ../images/lena_std.tif $(STEPS) /tmp
 	cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLBIN_NAME) ../images/test_mm.pgm $(STEPS) /tmp
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3DBIN_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 $(STEPS) /tmp
+	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CL3DBIN_NAME) ../images/test_mm.pgm 0 1 $(STEPS) /tmp
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLNDBIN_NAME) ../images/lena_gray_500.pgm 0 0 $(STEPS) /tmp 500 512
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLNDBIN_NAME) ../images/lena_gray.tif 0 0 $(STEPS) /tmp 512 512
 	#cd $(OUTPUT_BINPATH); ./demo_$(BENCHMARK_CLNDBIN_NAME) ../images/test_mm.pgm 0 0 $(STEPS) /tmp 0 0

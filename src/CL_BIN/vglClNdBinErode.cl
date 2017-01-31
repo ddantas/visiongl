@@ -44,7 +44,7 @@ __kernel void vglClNdBinErode(__global unsigned char* img_input,
   for (int bit = 0; bit < 8; bit++)
   {
     unsigned char pmin = 1;
-    for(int i = 0; i < window->size && pmax == 1; i++)
+    for(int i = 0; i < window->size && pmin == 1; i++)
     {
       int j_bit;
       int j_byte;
@@ -63,17 +63,19 @@ __kernel void vglClNdBinErode(__global unsigned char* img_input,
           idim = ires / off;
           ires = ires - idim * off;
           win_coord[d] = idim + img_coord[d];
-          win_coord[d] = clamp(win_coord[d], 0, img_shape->shape[d]-1);
 
           if (d == VGL_SHAPE_WIDTH)
 	  {
-            j_bit = img_shape->offset[d] * win_coord[d] + 7 - bit;
+            win_coord[d] += bit;
+            win_coord[d] = clamp(win_coord[d], 0, img_shape->shape[d]-1);
+            j_bit = img_shape->offset[d] * win_coord[d];
             j_byte = j_bit / 8;
             j_bit  = j_bit - j_byte * 8;
             conv_coord += j_byte;
 	  }
           else
 	  {
+            win_coord[d] = clamp(win_coord[d], 0, img_shape->shape[d]-1);
             conv_coord += img_shape->offset[d] * win_coord[d];
 	  }
         }
@@ -86,7 +88,7 @@ __kernel void vglClNdBinErode(__global unsigned char* img_input,
         pmin = min(pmin, result_bit);
       }
     }
-    result += pmin << bit;
+    result += pmin << (7 - bit);
   }
   img_output[coord] = result;
 }

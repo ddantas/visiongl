@@ -224,7 +224,7 @@ int main(int argc, char* argv[])
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_cube.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
-    //Total time spent on n operations Dilate cross pack
+    //Total time spent on n operations Dilate pack cross
     p = 0;
     TimerStart();
     while (p < nSteps)
@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_cross.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
-    //Total time spent on n operations Dilate angle pack
+    //Total time spent on n operations Dilate pack angle
     p = 0;
     TimerStart();
     while (p < nSteps)
@@ -353,6 +353,10 @@ int main(int argc, char* argv[])
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_angle.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
+
+
+    ////////// Pixelwise
+
 
     //First call to Roi
     TimerStart();

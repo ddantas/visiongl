@@ -28,6 +28,7 @@ __kernel void vglCl3dBinDilatePack(__read_only image3d_t img_input,
     int l_r = floor((float)window_size_z / 2.0f);
     int ws_img = img_shape->offset[VGL_SHAPE_HEIGHT] - 1;
     int i_l = 0;
+    uint4 pad = 255 << 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];  // In erosion replace ( << ) with ( >> 8 - )
     uint4 boundary = 0;        // In erosion, 255
     unsigned char result = 0;  // In erosion, 255
     for(int k_w = -l_r; k_w <= l_r; k_w++)
@@ -45,6 +46,8 @@ __kernel void vglCl3dBinDilatePack(__read_only image3d_t img_input,
             if (j_w < 0)
             {
               p = read_imageui(img_input, smp, (int4)(j_img, i_img, k_img, 0));
+              if (j_img == ws_img)
+                p = p & pad;  // In erosion, replace & with |
               result = result | (p.x << ( -j_w));
               if (j_img == ws_img)
                 p = boundary;
@@ -54,7 +57,7 @@ __kernel void vglCl3dBinDilatePack(__read_only image3d_t img_input,
             }
             else if (j_w > 0)
             {
-              p = read_imageui(img_input, smp, (int4)(j_img, i_img, k_img, 0));
+              p = read_imageui(img_input, smp, (int4)(j_img, i_img, k_img, 0));  // In erosion, place pad if in the next line
               result = result | (p.x >> (  j_w));
               if (j_img == 0)
                 p = boundary;

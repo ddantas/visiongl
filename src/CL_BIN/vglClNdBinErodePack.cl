@@ -1,4 +1,4 @@
-/** N-dimensional dilation
+/** N-dimensional erosion
 
     SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
     
@@ -9,10 +9,10 @@
 #include "vglClShape.h"
 #include "vglClStrEl.h"
 
-__kernel void vglClNdBinDilatePack(__global unsigned char* img_input, 
-                                   __global unsigned char* img_output,  
-                                   __constant VglClShape* img_shape,
-                                   __constant VglClStrEl* window)
+__kernel void vglClNdBinErodePack(__global unsigned char* img_input, 
+                                  __global unsigned char* img_output,  
+                                  __constant VglClShape* img_shape,
+                                  __constant VglClStrEl* window)
 {
 #if __OPENCL_VERSION__ < 200
   int coord = (  (get_global_id(2) - get_global_offset(2)) * get_global_size(1) * get_global_size(0)) +
@@ -45,10 +45,10 @@ __kernel void vglClNdBinDilatePack(__global unsigned char* img_input,
     img_coord[d] = idim;
   }
 
-  unsigned char pad = 255 << 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];  // In erosion replace ( << ) with ( >> 8 - )
-  unsigned char boundary = 0;  // In erosion, 255
-  unsigned char result = 0;    // In erosion, 255
-  // In erosion, create aux var here
+  unsigned char pad = 255 >> 8 - 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];
+  unsigned char boundary = 255;
+  unsigned char result = 255;    // In erosion, 255
+  unsigned char aux;
   for(int i = 0; i < window->size; i++)
   {
     int conv_coord;
@@ -72,7 +72,7 @@ __kernel void vglClNdBinDilatePack(__global unsigned char* img_input,
         }
         else
         {
-          win_coord[d] = - idim + img_coord[d] + win_radius[d];  // In erosion, ( - idim + img_coord[d] + win_radius[d]; )
+          win_coord[d] = idim + img_coord[d] - win_radius[d];
           win_coord[d] = clamp(win_coord[d], 0, img_shape->shape[d]-1);
 	}
         conv_coord += img_shape->offset[d] * win_coord[d];
@@ -84,30 +84,33 @@ __kernel void vglClNdBinDilatePack(__global unsigned char* img_input,
             if (j_w < 0)
             {
               p = img_input[conv_coord];
-              if (j_img == ws_img)
-                p = p & pad;  // In erosion, replace & with |
-              result = result | (p << ( -j_w));
-              if (j_img == ws_img)
-                p = boundary;
-              else
-                p = img_input[conv_coord + 1];
-              result = result | (p >> (8+j_w));
-            }
-            else if (j_w > 0)
-            {
-              p = img_input[conv_coord];  // In erosion, place pad if in the next line
-              result = result | (p >> (  j_w));
+              aux =       (p >> ( -j_w));
               if (j_img == 0)
                 p = boundary;
               else
                 p = img_input[conv_coord - 1];
-              result = result | (p << (8-j_w));
+              aux = aux | (p << (8+j_w));
+              result = result & aux;
+            }
+            else if (j_w > 0)
+            {
+              p = img_input[conv_coord];
+              if (j_img == ws_img)
+                p = p | pad;
+              aux =       (p << (  j_w));
+              if (j_img == ws_img)
+                p = boundary;
+              else
+                p = img_input[conv_coord + 1];
+              aux = aux | (p >> (8-j_w));
+              result = result & aux;
             }
             else
             {
               p = img_input[conv_coord];
-              result = result | p;
+              result = result & p;
             }
+
 	}
       }
     }
