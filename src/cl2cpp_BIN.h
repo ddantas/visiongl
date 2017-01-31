@@ -164,6 +164,13 @@ void vglClBinToGray(VglImage* img_input, VglImage* img_output);
   */
 void vglClNdBinDilate(VglImage* img_input, VglImage* img_output, VglStrEl* window);
 
+/** N-dimensional dilation
+
+    SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
+    
+  */
+void vglClNdBinDilatePack(VglImage* img_input, VglImage* img_output, VglStrEl* window);
+
 /** N-dimensional erosion
 
     SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.

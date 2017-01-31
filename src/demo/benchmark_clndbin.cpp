@@ -372,7 +372,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_cube";
+  outFolder = (char*) "clnd_dilate_std_cube";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -402,7 +402,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_sep";
+  outFolder = (char*) "clnd_dilate_std_sep";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -422,7 +422,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_cross";
+  outFolder = (char*) "clnd_dilate_std_cross";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -442,9 +442,106 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_angle";
+  outFolder = (char*) "clnd_dilate_std_angle";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
+
+
+  //First call to n-dimensional dilation pack
+  TimerStart();
+  vglClNdBinDilatePack(vglThresh, vglBin, seCube);
+  vglClFlush();
+  printf("First call to           Dila pac nD cube:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional dilation pack cube
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdBinDilatePack(vglThresh, vglBin, seCube);
+  }
+  vglClFlush();
+  printf("Time spent on %8d  Dila pac nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(vglBin, vglShapeOrig1bit);
+  }
+  outFolder = (char*) "clnd_dilate_pack_cube";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
+
+  //Total time spent on n operations n-dimensional dilation pack sep.
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdBinDilatePack(vglThresh, vglBin2, seCubeArr[1]);
+    for(int i = 2; i <= ndim; i++)
+    {
+      if (i % 2 == 0)
+        vglClNdBinDilatePack(vglBin2, vglBin, seCubeArr[i]);
+      else
+        vglClNdBinDilatePack(vglBin, vglBin2, seCubeArr[i]);
+    }
+  }
+  vglClFlush();
+  printf("Time spent on %8d  Dila pac nD sep.:       %s \n", nSteps, getTimeElapsedInSeconds());
+  if (ndim % 2 == 1)
+  {
+    vglClNdCopy(vglBin2, vglBin);
+  }
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(vglBin, vglShapeOrig1bit);
+  }
+  outFolder = (char*) "clnd_dilate_pack_sep";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
+
+  //Total time spent on n operations n-dimensional dilation pack cross
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdBinDilatePack(vglThresh, vglBin, seCross);
+  }
+  vglClFlush();
+  printf("Time spent on %8d Dila pac nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(vglBin, vglShapeOrig1bit);
+  }
+  outFolder = (char*) "clnd_dilate_pack_cross";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
+
+  //Total time spent on n operations n-dimensional dilation pack angle
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdBinDilatePack(vglThresh, vglBin, seAngle);
+  }
+  vglClFlush();
+  printf("Time spent on %8d Dila pac nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(vglBin, vglShapeOrig1bit);
+  }
+  outFolder = (char*) "clnd_dilate_pack_angle";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
+
 
   //First call to n-dimensional negation
   TimerStart();

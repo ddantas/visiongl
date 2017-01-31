@@ -3,3 +3,5 @@ src/AMDOpenCLDebug.log
 src/AMDOpenCLDebugAPIUsage.log
 src/OpenCL.dll
 src/OpenCL.pdb
+bin/
+*~
