@@ -1,6 +1,9 @@
 /** Negation of binary image img_input. Result is stored in img_output.
 
   */
+
+#include "vglConst.h"
+
 __kernel void vglClBinNot(__read_only image2d_t img_input,
 			  __write_only image2d_t img_output)
 {
@@ -25,5 +28,5 @@ __kernel void vglClBinNot(__read_only image2d_t img_input,
     }
     */
     //write_imageui(img_output, coords, 0x7f ^ p);
-    write_imageui(img_output, coords, 0xff & ~p);
+    write_imageui(img_output, coords, VGL_PACK_MAX_UINT & ~p);
 }

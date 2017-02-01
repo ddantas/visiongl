@@ -40,8 +40,25 @@
 
 //CL
 //#ifdef __OPENCL__
-#define VGL_ARR_CLSTREL_SIZE 256
+  #define VGL_ARR_CLSTREL_SIZE 256
 //#endif
 
 #endif
 
+#define VGL_PACK_32
+
+#ifdef VGL_PACK_8
+  #define VGL_PACK_SIZE_BITS 8
+  #define VGL_PACK_SIZE_BYTES 1
+  #define VGL_PACK_MAX_UINT 0xff
+  #define VGL_PACK_CL_CONST_TYPE CL_UNSIGNED_INT8
+  #define VGL_PACK_CL_SHADER_TYPE unsigned char
+#endif
+
+#ifdef VGL_PACK_32
+  #define VGL_PACK_SIZE_BITS 32
+  #define VGL_PACK_SIZE_BYTES 4
+  #define VGL_PACK_MAX_UINT 0xffffffff
+  #define VGL_PACK_CL_CONST_TYPE CL_UNSIGNED_INT32
+  #define VGL_PACK_CL_SHADER_TYPE uint
+#endif

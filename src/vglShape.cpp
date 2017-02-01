@@ -355,7 +355,7 @@ int VglShape::findBitsPerSample(int depth)
 int VglShape::findWidthStep(int bps, int width, int nChannels)
 {
   if (bps == 1){
-    return (width - 1) / 8 + 1;
+    return (width - 1) / VGL_PACK_SIZE_BITS + 1;
   }
   if (bps < 8)
   {

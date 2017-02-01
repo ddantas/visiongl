@@ -81,16 +81,16 @@ class VglImage{
   int getWidthStep()
   {
     int widthStep;
-    if (this->ipl)
+    /*if (this->ipl) // TODO: fix this
     {
       widthStep = this->ipl->widthStep;
     }
-    else
+    else*/
     {
       int bps = this->getBitsPerSample();
       if (bps == 1)
       {
-        widthStep = (this->getWidthIn() - 1) / 8 + 1;
+        widthStep = (this->getWidthIn() - 1) / VGL_PACK_SIZE_BITS + 1;
       }
       else if (bps < 8)
       {

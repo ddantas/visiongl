@@ -144,6 +144,11 @@ void vglClBinRoi(VglImage* img_output, int x0, int y0, int xf, int yf);
   */
 void vglClBinSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
 
+/** Negation of binary image img_input. Result is stored in img_output.
+
+  */
+void vglClBinSwap(VglImage* img_input, VglImage* img_output);
+
 /** Threshold of grayscale image with binary result.
 
     Threshold of grayscale image img_input. Result is binary, stored in img_output. Parameter
