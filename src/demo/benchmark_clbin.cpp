@@ -284,8 +284,7 @@ int main(int argc, char* argv[])
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_angle.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
-    exit(0);
-
+ /*
     //First call to Erode
     TimerStart();
     vglClBinErode(vglThresh, vglBin, seCube, 3, 3);
@@ -386,7 +385,7 @@ int main(int argc, char* argv[])
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_angle.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
-
+ */
     ////////// Pixelwise
 
 
@@ -406,9 +405,10 @@ int main(int argc, char* argv[])
     vglClFlush();
     printf("Time spent on %8d               Roi:           %s\n", nSteps, getTimeElapsedInSeconds());
 
-    vglCheckContext(vglRoi, VGL_RAM_CONTEXT);
+    vglClBinSwap(vglRoi, vglBin);
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_roi.pbm");
-    iplSavePgm(outFilename, vglRoi->ipl);
+    iplSavePgm(outFilename, vglBin->ipl);
 
     //First call to Max
     TimerStart();
@@ -421,11 +421,12 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinMax(vglThresh, vglRoi, vglBin);
+        vglClBinMax(vglSwap, vglRoi, vglBin2);
     }
     vglClFlush();
     printf("Time spent on %8d               Max:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_max.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
@@ -441,11 +442,12 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinMin(vglThresh, vglRoi, vglBin);
+        vglClBinMin(vglSwap, vglRoi, vglBin2);
     }
     vglClFlush();
     printf("Time spent on %8d               Min:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_min.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
@@ -461,11 +463,12 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinSub(vglThresh, vglRoi, vglBin);
+        vglClBinSub(vglSwap, vglRoi, vglBin2);
     }
     vglClFlush();
     printf("Time spent on %8d               Sub:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_sub.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
