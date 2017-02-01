@@ -176,14 +176,15 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinDilate(vglThresh, vglDil, seCube, 3, 3);
+        vglClBinDilate(vglSwap,   vglDil, seCube, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d  Dilation 2D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
 
-    vglCheckContext(vglDil, VGL_RAM_CONTEXT);
+    vglClBinSwap(vglDil, vglBin);
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_std_cube.pbm");
-    iplSavePgm(outFilename, vglDil->ipl);
+    iplSavePgm(outFilename, vglBin->ipl);
 
     //Total time spent on n operations Dilate sep.
     p = 0;
@@ -191,12 +192,13 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinDilate(vglThresh, vglBin2, seSep, 3, 1);
-        vglClBinDilate(vglBin2, vglBin, seSep, 1, 3);
+        vglClBinDilate(vglSwap,   vglBin, seSep, 3, 1);
+        vglClBinDilate(vglBin2, vglBin2, seSep, 1, 3);
     }
     vglClFlush();
     printf("Time spent on %8d  Dilation 2D sep.:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_std_sep.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
@@ -207,11 +209,12 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinDilate(vglThresh, vglBin, seCross, 3, 3);
+        vglClBinDilate(vglSwap,   vglBin2, seCross, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d Dilation 2D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_std_cross.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
@@ -222,11 +225,12 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinDilate(vglThresh, vglBin, seAngle, 3, 3);
+        vglClBinDilate(vglSwap,   vglBin2, seAngle, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d Dilation 2D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_std_angle.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
@@ -250,6 +254,23 @@ int main(int argc, char* argv[])
     vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_cube.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Dilate pack sep.
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinDilatePack(vglSwap,   vglBin, seSep, 3, 1);
+        vglClBinDilatePack(vglBin, vglBin2, seSep, 1, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Dilation 2D sep.:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglClBinSwap(vglBin2, vglBin);
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_sep.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
     //Total time spent on n operations Dilate pack cross

@@ -752,9 +752,7 @@ void vglClDownload(VglImage* img)
 
         if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  && (img->depth == IPL_DEPTH_1U) )
 	{
-fprintf(stdout, "%s: %s: defining size3d.\n", __FILE__, __FUNCTION__);
             size_t Size3d[3] = {img->getWidthStep(), img->getHeight(), nFrames};
-fprintf(stdout, "%s: %s: defining size3d as (%d, %d, %d)\n", __FILE__, __FUNCTION__, img->getWidthStep(), img->getHeight(), nFrames);
             cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, imageData, 0, NULL, NULL );
             vglClCheckError( err_cl, (char*) "clEnqueueReadImage" );
 	}

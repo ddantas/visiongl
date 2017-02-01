@@ -37,14 +37,15 @@ __kernel void vglClBinDilate(__read_only image2d_t img_input,
       {
         for(int j_w = -w_r; j_w <= w_r && pmax.x == 0; j_w++)
         {
-          int i_img = coords.y - i_w;                // In erosion, replace - with +
-          int j_img = VGL_PACK_SIZE_BITS * coords.x + VGL_PACK_SIZE_BITS - 1 - bit - j_w;  // In erosion, replace - j_w with + j_w
+          int i_img = coords.y - i_w;                             // In erosion, replace - with +
+          int j_img = VGL_PACK_SIZE_BITS * coords.x + bit - j_w;  // In erosion, replace - j_w with + j_w
           i_img = clamp(i_img, 0, h_img-1);
           j_img = clamp(j_img, 0, w_img-1);
 
-          uint4 p = read_imageui(img_input, smp, (int2)((j_img) / VGL_PACK_SIZE_BITS, i_img));
+          int j_img_word = (j_img) / VGL_PACK_SIZE_BITS;
+          uint4 p = read_imageui(img_input, smp, (int2)(j_img_word, i_img));
           unsigned int result_bit;
-          result_bit = p.x & (1 << ((pad + bit + j_w) % VGL_PACK_SIZE_BITS));  // In erosion, replace + j_w with - j_w
+          result_bit = p.x & (1 << (j_img - j_img_word * VGL_PACK_SIZE_BITS));  // In erosion, replace + j_w with - j_w
 
           if (!(convolution_window[i_l] == 0))
             if (result_bit > 0)  // In erosion, replace > with ==
