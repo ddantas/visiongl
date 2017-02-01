@@ -224,6 +224,22 @@ int main(int argc, char* argv[])
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_cube.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
+    //Total time spent on n operations Dilate pack sep.
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinDilatePack(vglThresh, vglBin2, seSep, 3, 1);
+        vglClBinDilatePack(vglBin2, vglBin, seSep, 1, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d  Dila pac 2D sep.:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_sep.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
     //Total time spent on n operations Dilate pack cross
     p = 0;
     TimerStart();
@@ -274,6 +290,22 @@ int main(int argc, char* argv[])
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_std_cube.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
+    //Total time spent on n operations Erode sep.
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErode(vglDil,    vglBin2, seSep, 3, 1);
+        vglClBinErode(vglBin2, vglBin, seSep, 1, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d   Erosion 2D sep.:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_std_sep.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
     //Total time spent on n operations Erode cross
     p = 0;
     TimerStart();
@@ -322,6 +354,22 @@ int main(int argc, char* argv[])
 
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_cube.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Erode pack sep.
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErodePack(vglDil,    vglBin2, seSep, 3, 1);
+        vglClBinErodePack(vglBin2, vglBin, seSep, 1, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d   Ero pac 2D sep.:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_sep.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
     //Total time spent on n operations Erode pack cross
