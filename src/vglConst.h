@@ -43,8 +43,6 @@
   #define VGL_ARR_CLSTREL_SIZE 256
 //#endif
 
-#endif
-
 #define VGL_PACK_32
 
 #ifdef VGL_PACK_8
@@ -62,3 +60,7 @@
   #define VGL_PACK_CL_CONST_TYPE CL_UNSIGNED_INT32
   #define VGL_PACK_CL_SHADER_TYPE uint
 #endif
+
+
+#endif
+
