@@ -84,8 +84,40 @@ int vglCheckContext(VglImage* img, int context){
 #ifdef __OPENCL__
       else
       if (vglIsInContext(img, VGL_CL_CONTEXT)){
-        //printf("%s: case 2\n", __FUNCTION__);
-        vglClDownload(img);
+        printf("%s: case 2\n", __FUNCTION__);
+	/*
+        if (img->getBitsPerSample() == 1 && VGL_PACK_SIZE_BYTES > 1)
+	{
+          VglImage aux* = vglCreateImage(img);
+          if ( !(img->clForceAsBuf) )
+	  {
+            if (img->ndim == 2)
+            {
+              vglClBinSwap(img, aux);
+	    }
+            else if (img->ndim == 3)
+              vglCl3dBinSwap(img, aux);
+	    }
+            vglClDownload(aux);
+            memcpy(img->getImageData(), aux->getImageData(), img->getImageSizeInBytes());
+            vglReleaseImage(aux);
+            vglAddContext(img, VGL_RAM_CONTEXT);
+	  }
+          else
+	  {
+            fprintf(stdout, "%s:%s: Error: clForceAsBuf case not implemented\n", __FILE__, __FUNCTION__);
+            //vglNdClBinSwap(img, aux);
+            //vglClDownload(aux);
+            //memcpy(img->getImageData(), aux->getImageData(), img->getImageSizeInBytes());
+            //vglReleaseImage(aux);
+            //vglAddContext(img, VGL_RAM_CONTEXT);
+	  }
+	}
+        else
+	*/
+	{
+          vglClDownload(img);
+	}
       }
 #endif
       else

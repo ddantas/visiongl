@@ -3,6 +3,9 @@
     Threshold of grayscale image img_input. Result is binary, stored in img_output. Parameter
     thresh is float between 0.0 and 1.0.
   */
+
+#include "vglConst.h"
+
 __kernel void vglCl3dBinThreshold(__read_only image3d_t img_input,
 			  __write_only image3d_t img_output,
                           float thresh)
@@ -12,10 +15,24 @@ __kernel void vglCl3dBinThreshold(__read_only image3d_t img_input,
                           CLK_ADDRESS_CLAMP_TO_EDGE |   //Clamp to next edge
                           CLK_FILTER_NEAREST;           //Don't interpolate
 
+
     uint4 result = 0;
-    for (int bit = 0; bit < 8; bit++)
+    for (int bit = 0; bit < VGL_PACK_SIZE_BITS; bit++)
     {
-      float4 p = read_imagef(img_input, smp, (int4)(8*coords.x + 7 - bit, coords.y, coords.z, 0));
+      int off;
+      if (VGL_PACK_SIZE_BYTES == 1)
+      {
+        off = 7 - bit;
+      }
+      else
+      {
+        int byte = bit / 8;
+        int rem = bit - 8 * byte;
+        off = byte * 8 + 7 - rem;
+      }
+
+      float4 p = read_imagef(  img_input, smp, (int4)( VGL_PACK_SIZE_BITS * coords.x + off, 
+                                                       coords.y, coords.z, 0 )  );
       uint4 result_bit;
       if (p.x >= thresh)
         result_bit.x = 1;
@@ -24,4 +41,5 @@ __kernel void vglCl3dBinThreshold(__read_only image3d_t img_input,
       result += result_bit.x << bit;
     }
     write_imageui(img_output, coords, result);
+
 }

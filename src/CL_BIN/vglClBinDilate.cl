@@ -25,7 +25,7 @@ __kernel void vglClBinDilate(__read_only image2d_t img_input,
     int h_r = floor((float)window_size_y / 2.0f);
     int w_img = img_shape->shape[VGL_SHAPE_WIDTH];
     int h_img = img_shape->shape[VGL_SHAPE_HEIGHT];
-    int pad = 32;// ((w_r / VGL_PACK_SIZE_BITS) + 1) * VGL_PACK_SIZE_BITS; // Avoids negative remainder.
+    //int pad = 32;// ((w_r / VGL_PACK_SIZE_BITS) + 1) * VGL_PACK_SIZE_BITS; // Avoids negative remainder.
     int i_l;
     uint4 pmax;  // In erosion, replace pmax with pmin
     uint4 result = 0;
@@ -45,7 +45,7 @@ __kernel void vglClBinDilate(__read_only image2d_t img_input,
           int j_img_word = (j_img) / VGL_PACK_SIZE_BITS;
           uint4 p = read_imageui(img_input, smp, (int2)(j_img_word, i_img));
           unsigned int result_bit;
-          result_bit = p.x & (1 << (j_img - j_img_word * VGL_PACK_SIZE_BITS));  // In erosion, replace + j_w with - j_w
+          result_bit = p.x & (1 << (j_img - j_img_word * VGL_PACK_SIZE_BITS));
 
           if (!(convolution_window[i_l] == 0))
             if (result_bit > 0)  // In erosion, replace > with ==

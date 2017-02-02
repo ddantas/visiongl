@@ -25,10 +25,11 @@ __kernel void vglClBinErodePack(__read_only image2d_t img_input,
     int h_r = floor((float)window_size_y / 2.0f);
     int ws_img = img_shape->offset[VGL_SHAPE_HEIGHT] - 1;
     int i_l = 0;
-    uint4 pad = 255 >> 8 - 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];
-    uint4 boundary = 255;
-    unsigned char result = 255;
-    unsigned char aux;
+    uint4 pad = VGL_PACK_MAX_UINT << VGL_PACK_SIZE_BITS - VGL_PACK_SIZE_BITS * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];
+    uint4 boundary = VGL_PACK_MAX_UINT;
+    VGL_PACK_CL_SHADER_TYPE result = VGL_PACK_MAX_UINT;
+    VGL_PACK_CL_SHADER_TYPE aux;
+
     for(int i_w = -h_r; i_w <= h_r; i_w++)
     {
       for(int j_w = -w_r; j_w <= w_r; j_w++)
@@ -41,12 +42,12 @@ __kernel void vglClBinErodePack(__read_only image2d_t img_input,
           if (j_w < 0)
           {
             p = read_imageui(img_input, smp, (int2)(j_img, i_img));
-            aux =       p.x >> ( -j_w);
+            aux =       p.x << ( -j_w);
             if (j_img == 0)
               p = boundary;
             else
               p = read_imageui(img_input, smp, (int2)(j_img - 1, i_img));
-            aux = aux | p.x << (8+j_w);
+            aux = aux | p.x >> (VGL_PACK_SIZE_BITS+j_w);
             result = result & aux;
           }
           else if (j_w > 0)
@@ -54,12 +55,12 @@ __kernel void vglClBinErodePack(__read_only image2d_t img_input,
             p = read_imageui(img_input, smp, (int2)(j_img, i_img));
             if (j_img == ws_img)
               p = p | pad;
-            aux =       p.x << (  j_w);
+            aux =       p.x >> (  j_w);
             if (j_img == ws_img)
               p = boundary;
             else
               p = read_imageui(img_input, smp, (int2)(j_img + 1, i_img));
-            aux = aux | p.x >> (8-j_w);
+            aux = aux | p.x << (VGL_PACK_SIZE_BITS-j_w);
             result = result & aux;
           }
           else

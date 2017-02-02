@@ -28,10 +28,11 @@ __kernel void vglCl3dBinErodePack(__read_only image3d_t img_input,
     int l_r = floor((float)window_size_z / 2.0f);
     int ws_img = img_shape->offset[VGL_SHAPE_HEIGHT] - 1;
     int i_l = 0;
-    uint4 pad = 255 >> 8 - 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];
-    uint4 boundary = 255;
-    unsigned char result = 255;
-    unsigned char aux;
+    uint4 pad = VGL_PACK_MAX_UINT << VGL_PACK_SIZE_BITS - VGL_PACK_SIZE_BITS * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];
+    uint4 boundary = VGL_PACK_MAX_UINT;
+    VGL_PACK_CL_SHADER_TYPE result = VGL_PACK_MAX_UINT;
+    VGL_PACK_CL_SHADER_TYPE aux;
+
     for(int k_w = -l_r; k_w <= l_r; k_w++)
     {
       for(int i_w = -h_r; i_w <= h_r; i_w++)
@@ -47,12 +48,12 @@ __kernel void vglCl3dBinErodePack(__read_only image3d_t img_input,
             if (j_w < 0)
             {
               p = read_imageui(img_input, smp, (int4)(j_img, i_img, k_img, 0));
-              aux =       p.x >> ( -j_w);
+              aux =       p.x << ( -j_w);
               if (j_img == 0)
                 p = boundary;
               else
                 p = read_imageui(img_input, smp, (int4)(j_img - 1, i_img, k_img, 0));
-              aux = aux | p.x << (8+j_w);
+              aux = aux | p.x >> (VGL_PACK_SIZE_BITS+j_w);
               result = result & aux;
             }
             else if (j_w > 0)
@@ -60,12 +61,12 @@ __kernel void vglCl3dBinErodePack(__read_only image3d_t img_input,
               p = read_imageui(img_input, smp, (int4)(j_img, i_img, k_img, 0));
               if (j_img == ws_img)
                 p = p | pad;
-              aux =       p.x << (  j_w);
+              aux =       p.x >> (  j_w);
               if (j_img == ws_img)
                 p = boundary;
               else
                 p = read_imageui(img_input, smp, (int4)(j_img + 1, i_img, k_img, 0));
-              aux = aux | p.x >> (8-j_w);
+              aux = aux | p.x << (VGL_PACK_SIZE_BITS-j_w);
               result = result & aux;
             }
             else

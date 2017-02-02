@@ -708,7 +708,7 @@ void vglSaveNdImage(char* filename, VglImage* image, int lStart, int lEndParam /
   int ndim = image->vglShape->getNdim();
   int shapeFrames = image->getNFrames();
   int lEnd = shapeFrames + lStart - 1;
-  if ( (lEnd > lEndParam) && (lEndParam > 0) )
+  if ( (lEnd > lEndParam) && (lEndParam >= 0) )
   {
     lEnd = lEndParam;
   }
@@ -719,10 +719,10 @@ void vglSaveNdImage(char* filename, VglImage* image, int lStart, int lEndParam /
   if (d < 1) d = 1; //d is the byte size of the depth color format
 
   char* ptr = image->getImageData();
-  char* temp_image =   (char*)malloc(image->getHeight() * image->getWidthStep());
-  memcpy(temp_image, ptr, image->getHeight() * image->getWidthStep());
-
+  char* temp_image =   (char*)malloc(image->getHeight() * image->getRowSizeInBytes());
+  memcpy(temp_image, ptr, image->getHeight() * image->getRowSizeInBytes());
   IplImage* ipl = cvCreateImage(cvSize(image->getWidthIn(), image->getHeightIn()), image->depth, image->nChannels);
+
   ipl->imageData = temp_image;
 
 #ifdef __OPENCV__
@@ -730,10 +730,10 @@ void vglSaveNdImage(char* filename, VglImage* image, int lStart, int lEndParam /
 #else
   iplSaveImage(temp_filename, ipl);
 #endif
-  int c = image->getHeight()*image->getWidthStep();
+  int c = image->getHeight()*image->getRowSizeInBytes();
   for(int i = lStart+1; i <= lEnd; i++)
   {
-    memcpy(temp_image,((char*)ptr)+c,image->getHeight()*image->getWidthStep());
+    memcpy(temp_image,((char*)ptr)+c,image->getHeight()*image->getRowSizeInBytes());
     ipl->imageData = temp_image;
     sprintf(temp_filename, filename, i);
 #ifdef __OPENCV__
@@ -741,7 +741,7 @@ void vglSaveNdImage(char* filename, VglImage* image, int lStart, int lEndParam /
 #else
     iplSaveImage(temp_filename, ipl);
 #endif
-    c += image->getHeight()*image->getWidthStep();
+    c += image->getHeight()*image->getRowSizeInBytes();
   }
   cvReleaseImage(&ipl);
   free(temp_image);
@@ -1534,7 +1534,12 @@ int vglReshape(VglImage* img, VglShape* newShape)
   if (origSize != newSize)
   {
     fprintf(stderr, "%s: %s: Error: original shape size = %d != %d = new shape size\n", __FILE__, __FUNCTION__, origSize, newSize);
-    return 1;
+    exit(1);
+  }
+  if ( (img->ipl != NULL) && (newShape->ndim > 2) )
+  {
+    fprintf(stderr, "%s: %s: Error: unable to reshape ipl image to shape with more than 2 dimensions\n", __FILE__, __FUNCTION__);
+    exit(1);
   }
   img->vglShape = new VglShape(newShape);
   delete(origShape);

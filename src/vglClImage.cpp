@@ -515,25 +515,28 @@ void vglClUpload(VglImage* img)
                 format.image_channel_data_type = CL_UNORM_INT8;
 	    }
 
+
             // TODO: Generalize to higher dimensions
-            if ( (img->ndim == 2) && !(img->clForceAsBuf) && (img->depth == IPL_DEPTH_1U) )
+            int w = img->getWidth();
+            if (img->depth == IPL_DEPTH_1U)
+	    {
+              w = img->getWidthStep();
+	      fprintf(stdout, "%s: %s: 1bpp w = %d\n", __FILE__, __FUNCTION__, w);
+	    }
+
+            if ( (img->ndim == 2) && !(img->clForceAsBuf) )
             {
-                img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->getWidthStep(), img->getHeight(), 0, NULL, &err);
-                vglClCheckError( err, (char*) "clCreateImage2D" );
-            }
-            else if ( (img->ndim == 2) && !(img->clForceAsBuf) )
-            {
-                img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, img->getWidth(), img->getHeight(), 0, NULL, &err);
+                img->oclPtr = clCreateImage2D(cl.context, CL_MEM_READ_WRITE, &format, w, img->getHeight(), 0, NULL, &err);
                 vglClCheckError( err, (char*) "clCreateImage2D" );
             }
             else if ( (img->ndim == 3) && !(img->clForceAsBuf) )
             {
-                img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, img->getWidth(), img->getHeight(), img->getLength(), 0, 0, NULL, &err);
+                img->oclPtr = clCreateImage3D(cl.context, CL_MEM_READ_WRITE, &format, w, img->getHeight(), img->getLength(), 0, 0, NULL, &err);
                 vglClCheckError( err, (char*) "clCreateImage3D" );
             }
             else
             {
-                img->oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img->getTotalSizeInBytes(), NULL, &err);
+                img->oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img->getTotalSizeInBytes() / VGL_PACK_SIZE_BYTES, NULL, &err);
                 vglClCheckError( err, (char*) "clCreateNDImage" );
             }
             /*

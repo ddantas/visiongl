@@ -115,9 +115,24 @@ class VglImage{
     return this->vglShape->getHeightIn() * this->vglShape->getNFrames();
   }
 
+  size_t getRowSizeInBytes()
+  {
+      int bps = this->getBitsPerSample();
+      if (bps == 1)
+      {
+        return this->getWidthStep() * VGL_PACK_SIZE_BYTES;
+      }
+      else if (bps < 8)
+      {
+        fprintf(stderr, "%s:%s: Error: bits per pixel = %d < 8 and != 1. Image depth may be wrong.\n", __FILE__, __FUNCTION__, bps);
+        exit(1);
+      }
+      return this->getWidthStep();
+  }
+
   size_t getTotalSizeInBytes()
   {
-    return this->getTotalRows() * this->getWidthStep();
+    return this->getTotalRows() * this->getRowSizeInBytes();
   }
 
   char* getImageData()

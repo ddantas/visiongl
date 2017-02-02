@@ -28,9 +28,11 @@ __kernel void vglCl3dBinDilatePack(__read_only image3d_t img_input,
     int l_r = floor((float)window_size_z / 2.0f);
     int ws_img = img_shape->offset[VGL_SHAPE_HEIGHT] - 1;
     int i_l = 0;
-    uint4 pad = 255 << 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];  // In erosion replace ( << ) with ( >> 8 - )
-    uint4 boundary = 0;        // In erosion, 255
-    unsigned char result = 0;  // In erosion, 255
+    VGL_PACK_CL_SHADER_TYPE pad = VGL_PACK_MAX_UINT >> (VGL_PACK_SIZE_BITS * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->shape[VGL_SHAPE_WIDTH]);  // In erosion replace ( << ) with ( >> 8 - )
+    VGL_PACK_CL_SHADER_TYPE boundary = 0;  // In erosion, 255
+    VGL_PACK_CL_SHADER_TYPE result = 0;    // In erosion, 255
+    // In erosion, create aux var here
+
     for(int k_w = -l_r; k_w <= l_r; k_w++)
     {
       for(int i_w = -h_r; i_w <= h_r; i_w++)
@@ -48,22 +50,22 @@ __kernel void vglCl3dBinDilatePack(__read_only image3d_t img_input,
               p = read_imageui(img_input, smp, (int4)(j_img, i_img, k_img, 0));
               if (j_img == ws_img)
                 p = p & pad;  // In erosion, replace & with |
-              result = result | (p.x << ( -j_w));
+              result = result | (p.x >> ( -j_w));
               if (j_img == ws_img)
                 p = boundary;
               else
                 p = read_imageui(img_input, smp, (int4)(j_img + 1, i_img, k_img, 0));
-              result = result | (p.x >> (8+j_w));
+              result = result | (p.x << (VGL_PACK_SIZE_BITS+j_w));
             }
             else if (j_w > 0)
             {
               p = read_imageui(img_input, smp, (int4)(j_img, i_img, k_img, 0));  // In erosion, place pad if in the next line
-              result = result | (p.x >> (  j_w));
+              result = result | (p.x << (  j_w));
               if (j_img == 0)
                 p = boundary;
               else
                 p = read_imageui(img_input, smp, (int4)(j_img - 1, i_img, k_img, 0));
-              result = result | (p.x << (8-j_w));
+              result = result | (p.x >> (VGL_PACK_SIZE_BITS-j_w));
             }
             else
             {

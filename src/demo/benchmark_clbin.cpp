@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinThreshold(vglIn, vglThresh, 0.5);
+        vglClBinThreshold(vglIn, vglThresh, 0.282);
         printf("CHK\n");
     }
     printf("CHK1\n");
@@ -103,19 +103,19 @@ int main(int argc, char* argv[])
     vglClBinSwap(vglThresh, vglSwap);
     vglClFlush();
     printf("First call to                       Swap:           %s\n", getTimeElapsedInSeconds());
-    //Total time spent on n operations Threshold
+    //Total time spent on n operations Swap
     p = 0;
     TimerStart();
     while (p < nSteps)
     {
         p++;
         vglClBinSwap(vglThresh, vglSwap);
-        vglClBinSwap(vglSwap, vglBin);
         printf("CHK\n");
     }
     vglClFlush();
     printf("Time spent on %8d              Swap:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglSwap, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_swap.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
@@ -165,6 +165,10 @@ int main(int argc, char* argv[])
     float seAngle[9] = { 0, 0, 0, 0, 1, 1, 0, 1, 0 };
     float seSep[3] = { 1, 1, 1 };
 
+
+    ////////// Dilation
+
+
     //First call to Dilate
     TimerStart();
     vglClBinDilate(vglThresh, vglBin, seCube, 3, 3);
@@ -193,7 +197,7 @@ int main(int argc, char* argv[])
     {
         p++;
         vglClBinDilate(vglSwap,   vglBin, seSep, 3, 1);
-        vglClBinDilate(vglBin2, vglBin2, seSep, 1, 3);
+        vglClBinDilate(vglBin, vglBin2, seSep, 1, 3);
     }
     vglClFlush();
     printf("Time spent on %8d  Dilation 2D sep.:           %s\n", nSteps, getTimeElapsedInSeconds());
@@ -305,7 +309,10 @@ int main(int argc, char* argv[])
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_angle.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
- /*
+
+    ////////// Erosion
+
+
     //First call to Erode
     TimerStart();
     vglClBinErode(vglThresh, vglBin, seCube, 3, 3);
@@ -317,13 +324,31 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinErode(vglDil,    vglBin, seCube, 3, 3);
+        vglClBinErode(vglDil,    vglBin2, seCube, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d   Erosion 2D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_std_cube.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Erode sep.
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErode(vglSwap,   vglBin, seSep, 3, 1);
+        vglClBinErode(vglBin, vglBin2, seSep, 1, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d   Erosion 2D sep.:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglClBinSwap(vglBin2, vglBin);
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_erodee_std_sep.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
     //Total time spent on n operations Erode cross
@@ -332,11 +357,12 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinErode(vglDil,    vglBin, seCross, 3, 3);
+        vglClBinErode(vglDil,    vglBin2, seCross, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d  Erosion 2D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_std_cross.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
@@ -347,11 +373,12 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinErode(vglDil,    vglBin, seAngle, 3, 3);
+        vglClBinErode(vglDil,    vglBin2, seAngle, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d  Erosion 2D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_std_angle.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
@@ -367,13 +394,31 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinErodePack(vglDil,    vglBin, seCube, 3, 3);
+        vglClBinErodePack(vglDil,    vglBin2, seCube, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d   Ero Pac 2D cube:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_cube.pbm");
+    iplSavePgm(outFilename, vglBin->ipl);
+
+    //Total time spent on n operations Erode pack sep.
+    p = 0;
+    TimerStart();
+    while (p < nSteps)
+    {
+        p++;
+        vglClBinErodePack(vglSwap,   vglBin, seSep, 3, 1);
+        vglClBinErodePack(vglBin, vglBin2, seSep, 1, 3);
+    }
+    vglClFlush();
+    printf("Time spent on %8d   Ero pac 2D sep.:           %s\n", nSteps, getTimeElapsedInSeconds());
+
+    vglClBinSwap(vglBin2, vglBin);
+    vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_dilate_pack_sep.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
     //Total time spent on n operations Erode pack cross
@@ -382,11 +427,12 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinErodePack(vglDil,    vglBin, seCross, 3, 3);
+        vglClBinErodePack(vglDil,    vglBin2, seCross, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d  Ero Pac 2D cross:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_cross.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
@@ -397,16 +443,17 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinErodePack(vglDil,    vglBin, seAngle, 3, 3);
+        vglClBinErodePack(vglDil,    vglBin2, seAngle, 3, 3);
     }
     vglClFlush();
     printf("Time spent on %8d  Ero Pac 2D angle:           %s\n", nSteps, getTimeElapsedInSeconds());
 
+    vglClBinSwap(vglBin2, vglBin);
     vglCheckContext(vglBin, VGL_RAM_CONTEXT);
     sprintf(outFilename, "%s%s", outPath, "/out_clbin_erode_pack_angle.pbm");
     iplSavePgm(outFilename, vglBin->ipl);
 
- */
+
     ////////// Pixelwise
 
 
