@@ -26,7 +26,7 @@ __kernel void vglClBinDilatePack(__read_only image2d_t img_input,
     int h_r = floor((float)window_size_y / 2.0f);
     int ws_img = img_shape->offset[VGL_SHAPE_HEIGHT] - 1;
     int i_l = 0;
-    VGL_PACK_CL_SHADER_TYPE pad = VGL_PACK_MAX_UINT >> (VGL_PACK_SIZE_BITS * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->shape[VGL_SHAPE_WIDTH]);  // In erosion replace ( << ) with ( >> 8 - )
+    VGL_PACK_CL_SHADER_TYPE pad = VGL_PACK_MAX_UINT >> (VGL_PACK_SIZE_BITS * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->shape[VGL_SHAPE_WIDTH]);  // In erosion replace ( >> ) with ( << VGL_PACK_SIZE_BITS - )
     VGL_PACK_CL_SHADER_TYPE boundary = 0;  // In erosion, 255
     VGL_PACK_CL_SHADER_TYPE result = 0;    // In erosion, 255
     // In erosion, create aux var here

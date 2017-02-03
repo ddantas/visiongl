@@ -9,8 +9,8 @@
 #include "vglClShape.h"
 #include "vglClStrEl.h"
 
-__kernel void vglClNdBinErodePack(__global unsigned char* img_input, 
-                                  __global unsigned char* img_output,  
+__kernel void vglClNdBinErodePack(__global VGL_PACK_CL_SHADER_TYPE* img_input, 
+                                  __global VGL_PACK_CL_SHADER_TYPE* img_output,  
                                   __constant VglClShape* img_shape,
                                   __constant VglClStrEl* window)
 {
@@ -45,10 +45,10 @@ __kernel void vglClNdBinErodePack(__global unsigned char* img_input,
     img_coord[d] = idim;
   }
 
-  unsigned char pad = 255 >> 8 - 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];
-  unsigned char boundary = 255;
-  unsigned char result = 255;    // In erosion, 255
-  unsigned char aux;
+  VGL_PACK_CL_SHADER_TYPE pad = VGL_PACK_MAX_UINT << VGL_PACK_MAX_UINT - VGL_PACK_MAX_UINT * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];
+  VGL_PACK_CL_SHADER_TYPE boundary = VGL_PACK_MAX_UINT;
+  VGL_PACK_CL_SHADER_TYPE result = VGL_PACK_MAX_UINT;
+  VGL_PACK_CL_SHADER_TYPE aux;
   for(int i = 0; i < window->size; i++)
   {
     int conv_coord;
@@ -80,16 +80,16 @@ __kernel void vglClNdBinErodePack(__global unsigned char* img_input,
         if (d == VGL_SHAPE_WIDTH)
         {
             int j_w = idim - win_radius[VGL_SHAPE_WIDTH];
-            unsigned char p; 
+            VGL_PACK_CL_SHADER_TYPE p; 
             if (j_w < 0)
             {
               p = img_input[conv_coord];
-              aux =       (p >> ( -j_w));
+              aux =       (p << ( -j_w));
               if (j_img == 0)
                 p = boundary;
               else
                 p = img_input[conv_coord - 1];
-              aux = aux | (p << (8+j_w));
+              aux = aux | (p >> (VGL_PACK_SIZE_BITS+j_w));
               result = result & aux;
             }
             else if (j_w > 0)
@@ -97,12 +97,12 @@ __kernel void vglClNdBinErodePack(__global unsigned char* img_input,
               p = img_input[conv_coord];
               if (j_img == ws_img)
                 p = p | pad;
-              aux =       (p << (  j_w));
+              aux =       (p >> (  j_w));
               if (j_img == ws_img)
                 p = boundary;
               else
                 p = img_input[conv_coord + 1];
-              aux = aux | (p >> (8-j_w));
+              aux = aux | (p << (VGL_PACK_SIZE_BITS-j_w));
               result = result & aux;
             }
             else

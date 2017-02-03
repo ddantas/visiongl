@@ -22,7 +22,6 @@ __kernel void vglClNdBinSwap(__global VGL_PACK_CL_SHADER_TYPE*  img_input,
 
     for (int i = 0; i < VGL_PACK_SIZE_BITS; i++)
     {
-      //printf("out[%2d] = %8x mask = %8x\n", i, output[i], mask);
       if (input & mask)
       {
         result = result | outputSwapMask[i];

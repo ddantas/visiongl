@@ -9,8 +9,8 @@
 #include "vglClShape.h"
 #include "vglClStrEl.h"
 
-__kernel void vglClNdBinDilatePack(__global unsigned char* img_input, 
-                                   __global unsigned char* img_output,  
+__kernel void vglClNdBinDilatePack(__global VGL_PACK_CL_SHADER_TYPE* img_input, 
+                                   __global VGL_PACK_CL_SHADER_TYPE* img_output,  
                                    __constant VglClShape* img_shape,
                                    __constant VglClStrEl* window)
 {
@@ -45,10 +45,11 @@ __kernel void vglClNdBinDilatePack(__global unsigned char* img_input,
     img_coord[d] = idim;
   }
 
-  unsigned char pad = 255 << 8 * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];  // In erosion replace ( << ) with ( >> 8 - )
-  unsigned char boundary = 0;  // In erosion, 255
-  unsigned char result = 0;    // In erosion, 255
+  VGL_PACK_CL_SHADER_TYPE pad = VGL_PACK_MAX_UINT >> VGL_PACK_SIZE_BITS * img_shape->offset[VGL_SHAPE_HEIGHT] - img_shape->offset[VGL_SHAPE_WIDTH];  // In erosion replace ( >> ) with ( << VGL_PACK_SIZE_BITS - )
+  VGL_PACK_CL_SHADER_TYPE boundary = 0;  // In erosion, VGL_PACK_MAX_UINT
+  VGL_PACK_CL_SHADER_TYPE result = 0;    // In erosion, VGL_PACK_MAX_UINT
   // In erosion, create aux var here
+
   for(int i = 0; i < window->size; i++)
   {
     int conv_coord;
@@ -72,7 +73,7 @@ __kernel void vglClNdBinDilatePack(__global unsigned char* img_input,
         }
         else
         {
-          win_coord[d] = - idim + img_coord[d] + win_radius[d];  // In erosion, ( - idim + img_coord[d] + win_radius[d]; )
+          win_coord[d] = - idim + img_coord[d] + win_radius[d];  // In erosion, remove -
           win_coord[d] = clamp(win_coord[d], 0, img_shape->shape[d]-1);
 	}
         conv_coord += img_shape->offset[d] * win_coord[d];
@@ -80,28 +81,28 @@ __kernel void vglClNdBinDilatePack(__global unsigned char* img_input,
         if (d == VGL_SHAPE_WIDTH)
         {
             int j_w = idim - win_radius[VGL_SHAPE_WIDTH];
-            unsigned char p; 
+            VGL_PACK_CL_SHADER_TYPE p; 
             if (j_w < 0)
             {
               p = img_input[conv_coord];
               if (j_img == ws_img)
                 p = p & pad;  // In erosion, replace & with |
-              result = result | (p << ( -j_w));
+              result = result | (p >> ( -j_w));
               if (j_img == ws_img)
                 p = boundary;
               else
                 p = img_input[conv_coord + 1];
-              result = result | (p >> (8+j_w));
+              result = result | (p << (VGL_PACK_SIZE_BITS+j_w));
             }
             else if (j_w > 0)
             {
               p = img_input[conv_coord];  // In erosion, place pad if in the next line
-              result = result | (p >> (  j_w));
+              result = result | (p << (  j_w));
               if (j_img == 0)
                 p = boundary;
               else
                 p = img_input[conv_coord - 1];
-              result = result | (p << (8-j_w));
+              result = result | (p >> (VGL_PACK_SIZE_BITS-j_w));
             }
             else
             {
