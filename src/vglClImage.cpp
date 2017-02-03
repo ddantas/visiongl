@@ -521,7 +521,6 @@ void vglClUpload(VglImage* img)
             if (img->depth == IPL_DEPTH_1U)
 	    {
               w = img->getWidthStep();
-	      fprintf(stdout, "%s: %s: 1bpp w = %d\n", __FILE__, __FUNCTION__, w);
 	    }
 
             if ( (img->ndim == 2) && !(img->clForceAsBuf) )
@@ -536,7 +535,7 @@ void vglClUpload(VglImage* img)
             }
             else
             {
-                img->oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img->getTotalSizeInBytes() / VGL_PACK_SIZE_BYTES, NULL, &err);
+                img->oclPtr = clCreateBuffer(cl.context, CL_MEM_READ_WRITE, img->getTotalSizeInBytes(), NULL, &err);
                 vglClCheckError( err, (char*) "clCreateNDImage" );
             }
             /*

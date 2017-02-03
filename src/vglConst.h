@@ -51,6 +51,8 @@
   #define VGL_PACK_MAX_UINT 0xff
   #define VGL_PACK_CL_CONST_TYPE CL_UNSIGNED_INT8
   #define VGL_PACK_CL_SHADER_TYPE unsigned char
+  #define VGL_PACK_OUTPUT_SWAP_MASK    VGL_PACK_CL_SHADER_TYPE \
+                    outputSwapMask[32] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, };
 #endif
 
 #ifdef VGL_PACK_32
@@ -59,7 +61,13 @@
   #define VGL_PACK_MAX_UINT 0xffffffff
   #define VGL_PACK_CL_CONST_TYPE CL_UNSIGNED_INT32
   #define VGL_PACK_CL_SHADER_TYPE uint
+  #define VGL_PACK_OUTPUT_SWAP_MASK    VGL_PACK_CL_SHADER_TYPE \
+                    outputSwapMask[32] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01, \
+                                          0x8000, 0x4000, 0x2000, 0x1000, 0x0800, 0x0400, 0x0200, 0x0100, \
+                                          0x800000, 0x400000, 0x200000, 0x100000, 0x080000, 0x040000, 0x020000, 0x010000, \
+                                          0x80000000, 0x40000000, 0x20000000, 0x10000000, 0x08000000, 0x04000000, 0x02000000, 0x01000000, };
 #endif
+
 
 
 #endif

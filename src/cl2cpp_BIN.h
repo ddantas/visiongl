@@ -167,6 +167,11 @@ void vglClBinThreshold(VglImage* img_input, VglImage* img_output, float thresh);
   */
 void vglClBinToGray(VglImage* img_input, VglImage* img_output);
 
+/** Copy N-dimensional image word by word.
+
+  */
+void vglClNdBinCopy(VglImage* img_input, VglImage* img_output);
+
 /** N-dimensional dilation
 
     SHAPE directive passes a structure with size of each dimension, offsets and number of dimensions. Parameter does not appear in wrapper parameter list. The C expression between parenthesis returns the desired shape of type VglClShape.
@@ -226,6 +231,11 @@ void vglClNdBinRoi(VglImage* img_output, int* p0, int* pf);
     saves in img_output.
   */
 void vglClNdBinSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output);
+
+/** Negation of binary image img_input. Result is stored in img_output.
+
+  */
+void vglClNdBinSwap(VglImage* img_input, VglImage* img_output);
 
 /** Threshold of img_input by parameter. if the pixel is below thresh,
     the output is 0, else, the output is 1. Result is stored in img_output.

@@ -9,7 +9,7 @@
 #include "vglClShape.h"
 
 __kernel void vglClNdBinThreshold(__global char* img_input,
-                                  __global char* img_output,
+                                  __global VGL_PACK_CL_SHADER_TYPE* img_output,
                                   unsigned char thresh,
                                   __constant VglClShape* in_shape,
                                   __constant VglClShape* out_shape)
@@ -22,23 +22,16 @@ __kernel void vglClNdBinThreshold(__global char* img_input,
   int coord = get_global_linear_id();
 #endif
 
-  int ws = out_shape->offset[VGL_SHAPE_HEIGHT];
-  int w  = in_shape->shape[VGL_SHAPE_WIDTH];
+  VGL_PACK_OUTPUT_SWAP_MASK
 
-  unsigned char result = 0;
-  for (int bit = 0; bit < 8; bit++)
+  VGL_PACK_CL_SHADER_TYPE result = 0;
+  for (int bit = 0; bit < VGL_PACK_SIZE_BITS; bit++)
   {
-    int j = (coord % ws) * 8 + 7 - bit;
-    int i = (coord / ws);
-    unsigned char p = img_input[(i * w) + j];
-    unsigned char result_bit;
-    if (p > thresh)
-      result_bit = 1;
-    else
-      result_bit = 0;
-    result += result_bit << bit;
+    unsigned char p = img_input[coord * VGL_PACK_SIZE_BITS + bit];
+    if (p >= thresh)
+    {
+      result = result | outputSwapMask[bit];
+    }
   }
-
   img_output[coord] = result;
-
 }

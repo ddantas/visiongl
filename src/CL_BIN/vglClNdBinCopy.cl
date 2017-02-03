@@ -1,11 +1,10 @@
-/** Negation of binary image img_input. Result is stored in img_output.
+/** Copy N-dimensional image word by word.
 
   */
 
 #include "vglConst.h"
 
-__kernel void vglClNdBinNot(__global VGL_PACK_CL_SHADER_TYPE* img_input,
-                            __global VGL_PACK_CL_SHADER_TYPE* img_output)
+__kernel void vglClNdBinCopy(__global VGL_PACK_CL_SHADER_TYPE* img_input, __global VGL_PACK_CL_SHADER_TYPE* img_output)
 {
 #if __OPENCL_VERSION__ < 200
   int coord = (  (get_global_id(2) - get_global_offset(2)) * get_global_size(1) * get_global_size(0)) +
@@ -15,6 +14,6 @@ __kernel void vglClNdBinNot(__global VGL_PACK_CL_SHADER_TYPE* img_input,
   int coord = get_global_linear_id();
 #endif
 
-  VGL_PACK_CL_SHADER_TYPE p = img_input[coord];
-  img_output[coord] = VGL_PACK_MAX_UINT & ~p;
+  img_output[coord] = img_input[coord];
+
 }

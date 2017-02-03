@@ -107,7 +107,11 @@ obtained from the image file.\
 
   VglImage* vglIn = vglLoadNdImage((char*) inFilename, i_0, i_n, shape, ndim);
   VglShape* vglShape8bit = new VglShape(vglIn->vglShape);
-  vglPrintImageInfo(vglIn);
+  printf("\n\n");
+
+  vglPrintImageInfo(vglIn, (char*)"Input image");
+  vglIn->vglShape->print((char*)"Input image");
+  printf("\n\n");
 
   // start: Creating ROI
   int* pShape = vglIn->vglShape->shape;
@@ -191,11 +195,34 @@ obtained from the image file.\
 if (vglIn->clForceAsBuf){
   // Benchmarks:
 
+  printf("\n\n");
+
+  vglPrintImageInfo(vglIn, (char*)"Input image");
+  vglIn->vglShape->print((char*)"Input image");
+  printf("\n\n");
+
+  vglPrintImageInfo(vglThresh, (char*)"vglThresh");
+  vglThresh->vglShape->print((char*)"vglThresh");
+  printf("\n\n");
+
+  vglAddContext(vglThresh, VGL_RAM_CONTEXT);
+  vglClUpload(vglThresh);
+  vglClDownload(vglThresh);
+
+
+
+  vglRoi->vglShape->print((char*)"vglRoi");
+  printf("\n\n");
+
+  vglClUpload(vglIn);
+
+
+
   //First call to n-dimensional copy
   TimerStart();
   vglClNdCopy(vglIn, vglGray);
   vglClFlush();
-  printf("First call to                  8bit Copy:       %s\n", getTimeElapsedInSeconds());
+  printf("First call to             gray byte Copy:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional copy
   p = 0;
   TimerStart();
@@ -205,21 +232,20 @@ if (vglIn->clForceAsBuf){
     vglClNdCopy(vglIn, vglGray);
   }
   vglClFlush();
-  printf("Time spent on %8d         8bit Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
+  printf("Time spent on %8d    gray byte Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
 
   vglCheckContext(vglGray, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
     vglReshape(vglGray, vglShapeOrig8bit);
   }
-  outFolder = (char*) "clnd_copy_8bit";
+  outFolder = (char*) "clndbin_copy_gray_byte";
   saveResult(vglGray, outString, outPath, outFolder, i_0);
   vglReshape(vglGray, vglShape8bit);
   vglPrintImageInfo(vglGray, (char*) "vglGray");
   vglGray->vglShape->print((char*) "vglGray");
 
-
-  char thresh = 108;
+  char thresh = 109;
   //First call to n-dimensional threshold
   TimerStart();
   vglClNdBinThreshold(vglIn, vglThresh, thresh);
@@ -241,15 +267,19 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglThresh, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_thresh";
+  outFolder = (char*) "clndbin_thresh";
   saveResult(vglThresh, outString, outPath, outFolder, i_0);
   vglReshape(vglThresh, vglShape1bit);
+
+  printf("vgThresh->widthStep words = %d\n", vglThresh->getWidthStepWords());
+  printf("vgThresh->widthStep = %d\n", vglThresh->getWidthStep());
+  printf("vgThresh->widthIn   = %d\n", vglThresh->getWidthIn());
 
   //First call to n-dimensional copy
   TimerStart();
   vglClNdCopy(vglThresh, vglBin);
   vglClFlush();
-  printf("First call to                  1bit Copy:       %s\n", getTimeElapsedInSeconds());
+  printf("First call to              bin byte Copy:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional copy
   p = 0;
   TimerStart();
@@ -259,14 +289,39 @@ if (vglIn->clForceAsBuf){
     vglClNdCopy(vglThresh, vglBin);
   }
   vglClFlush();
-  printf("Time spent on %8d         1bit Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
+  printf("Time spent on %8d     bin byte Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
 
   vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_copy_bin";
+  outFolder = (char*) "clndbin_copy_byte";
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
+
+  //First call to n-dimensional copy
+  TimerStart();
+  vglClNdBinCopy(vglThresh, vglBin);
+  vglClFlush();
+  printf("First call to              bin word Copy:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional copy
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdBinCopy(vglThresh, vglBin);
+  }
+  vglClFlush();
+  printf("Time spent on %8d     bin word Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  if (ndim <= 2)
+  {
+    vglReshape(vglBin, vglShapeOrig1bit);
+  }
+  outFolder = (char*) "clndbin_copy_word";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -291,9 +346,41 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglGray, vglShapeOrig8bit);
   }
-  outFolder = (char*) "clnd_togray";
+  outFolder = (char*) "clndbin_togray";
   saveResult(vglGray, outString, outPath, outFolder, i_0);
   vglReshape(vglGray, vglShape8bit);
+
+  //First call to n-dimensional swap
+  TimerStart();
+  vglClNdBinSwap(vglBin, vglBin2);
+  vglClFlush();
+  printf("First call to             swap byte Copy:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional swap
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClNdBinSwap(vglBin, vglBin2);
+  }
+  vglClFlush();
+  printf("Time spent on %8d    swap byte Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
+
+  //First call to n-dimensional swap word
+  TimerStart();
+  vglClBinSwap(vglBin, vglBin2);
+  vglClFlush();
+  printf("First call to             swap word Copy:       %s\n", getTimeElapsedInSeconds());
+  //Total time spent on n operations n-dimensional swap word
+  p = 0;
+  TimerStart();
+  while (p < nSteps)
+  {
+    p++;
+    vglClBinSwap(vglBin, vglBin2);
+  }
+  vglClFlush();
+  printf("Time spent on %8d    swap word Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
 
   //First call to n-dimensional Not
   TimerStart();
@@ -316,7 +403,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_invert";
+  outFolder = (char*) "clndbin_invert";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -341,7 +428,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglRoi, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_roi";
+  outFolder = (char*) "clndbin_roi";
   saveResult(vglRoi, outString, outPath, outFolder, i_0);
   vglReshape(vglRoi, vglShape1bit);
 
@@ -354,7 +441,7 @@ if (vglIn->clForceAsBuf){
 
   ////////// Dilation 
 
-
+/*
   //First call to n-dimensional Dilate
   TimerStart();
   vglClNdBinDilate(vglThresh, vglBin, seCube);
@@ -376,7 +463,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglDil, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_std_cube";
+  outFolder = (char*) "clndbin_dilate_std_cube";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -406,7 +493,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_std_sep";
+  outFolder = (char*) "clndbin_dilate_std_sep";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -426,7 +513,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_std_cross";
+  outFolder = (char*) "clndbin_dilate_std_cross";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -446,7 +533,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_std_angle";
+  outFolder = (char*) "clndbin_dilate_std_angle";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -472,7 +559,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_pack_cube";
+  outFolder = (char*) "clndbin_dilate_pack_cube";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -502,7 +589,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_pack_sep";
+  outFolder = (char*) "clndbin_dilate_pack_sep";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -522,7 +609,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_pack_cross";
+  outFolder = (char*) "clndbin_dilate_pack_cross";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -542,7 +629,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_dilate_pack_angle";
+  outFolder = (char*) "clndbin_dilate_pack_angle";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -571,7 +658,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_erode_std_cube";
+  outFolder = (char*) "clndbin_erode_std_cube";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -601,7 +688,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_erode_std_sep";
+  outFolder = (char*) "clndbin_erode_std_sep";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -621,7 +708,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_erode_std_cross";
+  outFolder = (char*) "clndbin_erode_std_cross";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -641,7 +728,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_erode_std_angle";
+  outFolder = (char*) "clndbin_erode_std_angle";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -667,7 +754,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_erode_pack_cube";
+  outFolder = (char*) "clndbin_erode_pack_cube";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -697,7 +784,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_erode_pack_sep";
+  outFolder = (char*) "clndbin_erode_pack_sep";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -717,7 +804,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_erode_pack_cross";
+  outFolder = (char*) "clndbin_erode_pack_cross";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -737,10 +824,10 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_erode_pack_angle";
+  outFolder = (char*) "clndbin_erode_pack_angle";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
-
+*/
   
   ////////// Pixelwise
 
@@ -791,7 +878,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_max";
+  outFolder = (char*) "clndbin_max";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -816,7 +903,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_min";
+  outFolder = (char*) "clndbin_min";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -841,7 +928,7 @@ if (vglIn->clForceAsBuf){
   {
     vglReshape(vglBin, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_sub";
+  outFolder = (char*) "clndbin_sub";
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
@@ -872,7 +959,7 @@ else
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_conv_mean";
+  outFolder = (char*) "clndbin_conv_mean";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -903,7 +990,7 @@ else
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_conv_sep";
+  outFolder = (char*) "clndbin_conv_sep";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -928,7 +1015,7 @@ else
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_dilate_cube";
+  outFolder = (char*) "clndbin_dilate_cube";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -959,7 +1046,7 @@ else
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_conv_sep";
+  outFolder = (char*) "clndbin_conv_sep";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -979,7 +1066,7 @@ else
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_dilate_cross";
+  outFolder = (char*) "clndbin_dilate_cross";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -1004,7 +1091,7 @@ else
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_invert";
+  outFolder = (char*) "clndbin_invert";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -1030,7 +1117,7 @@ else
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_thresh";
+  outFolder = (char*) "clndbin_thresh";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -1055,7 +1142,7 @@ else
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_copy";
+  outFolder = (char*) "clndbin_copy";
   saveResult(out, outString, outPath, outFolder, i_0);
   */
 }
@@ -1084,7 +1171,7 @@ else
   {
     vglReshape(vglThresh, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_upload";
+  outFolder = (char*) "clndbin_upload";
   saveResult(vglThresh, outString, outPath, outFolder, i_0);
   vglReshape(vglThresh, vglShape1bit);
 
@@ -1113,7 +1200,7 @@ else
   {
     vglReshape(vglThresh, vglShapeOrig1bit);
   }
-  outFolder = (char*) "clnd_download";
+  outFolder = (char*) "clndbin_download";
   saveResult(vglThresh, outString, outPath, outFolder, i_0);
   vglReshape(vglThresh, vglShape1bit);
 

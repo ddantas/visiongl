@@ -78,6 +78,9 @@ class VglImage{
     return this->depth & 255;
   }
 
+  /** widthStep in bytes
+
+   */
   int getWidthStep()
   {
     int widthStep;
@@ -90,7 +93,7 @@ class VglImage{
       int bps = this->getBitsPerSample();
       if (bps == 1)
       {
-        widthStep = (this->getWidthIn() - 1) / VGL_PACK_SIZE_BITS + 1;
+        widthStep = (this->getWidthIn() - 1) / 8 + 1;
       }
       else if (bps < 8)
       {
@@ -105,6 +108,14 @@ class VglImage{
     return widthStep;
   }
 
+  /** widthStep in words
+
+   */
+  int getWidthStepWords()
+  {
+    return (this->getWidthStep() - 1) / VGL_PACK_SIZE_BYTES + 1;
+  }
+ 
   /** Total number of rows
 
       Get total number of rows. Notice that, in images with more than 2D, may be 
@@ -115,12 +126,16 @@ class VglImage{
     return this->vglShape->getHeightIn() * this->vglShape->getNFrames();
   }
 
+  /** Get row size in bytes
+
+      This is the same as widthStep and can be eliminated.
+  */
   size_t getRowSizeInBytes()
   {
       int bps = this->getBitsPerSample();
       if (bps == 1)
       {
-        return this->getWidthStep() * VGL_PACK_SIZE_BYTES;
+        return this->getWidthStep();
       }
       else if (bps < 8)
       {

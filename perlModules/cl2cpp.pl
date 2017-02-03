@@ -635,7 +635,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
   for ($i = 0; $i <= $#type; $i++){
     print ">>>$type[$i]<<< becomes ";
     if ( ($semantics[$i] eq "__read_only") or ($semantics[$i] eq "__write_only") or ($semantics[$i] eq "__global") ){
-      if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") or ($type[$i] eq "char*") or ($type[$i] eq "int*") or ($type[$i] eq "unsigned char*") or ($type[$i] eq "unsigned int*") ){
+      if ( ($type[$i] eq "image2d_t") or ($type[$i] eq "image3d_t") or ($type[$i] eq "char*") or ($type[$i] eq "int*") or ($type[$i] eq "unsigned char*") or ($type[$i] eq "unsigned int*") or ($type[$i] eq "VGL_PACK_CL_SHADER_TYPE*") ){
         $type[$i] = "VglImage*";
       }
     }
@@ -817,7 +817,7 @@ sub PrintCppFile { # ($basename, $comment, $semantics, $type, $variable, $defaul
       print CPP "
   if ($variable[$i]->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = $variable[$i]->getWidthStep();
+    _worksize_0 = $variable[$i]->getWidthStepWords();
   }";
     }
   }

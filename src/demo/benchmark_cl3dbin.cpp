@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     while (p < nSteps)
     {
         p++;
-        vglClBinSwap(vglThresh, vglSwap);
+        vglCl3dBinSwap(vglThresh, vglSwap);
     }
     vglClFlush();
     printf("Time spent on %8d              Swap:           %s\n", nSteps, getTimeElapsedInSeconds());

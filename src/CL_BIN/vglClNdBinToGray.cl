@@ -8,7 +8,7 @@
 
 #include "vglClShape.h"
 
-__kernel void vglClNdBinToGray(__global char* img_input,
+__kernel void vglClNdBinToGray(__global VGL_PACK_CL_SHADER_TYPE* img_input,
                                __global char* img_output,
                                __constant VglClShape* in_shape,
                                __constant VglClShape* out_shape)
@@ -21,24 +21,16 @@ __kernel void vglClNdBinToGray(__global char* img_input,
   int coord = get_global_linear_id();
 #endif
 
-  int ws = in_shape->offset[VGL_SHAPE_HEIGHT];
-  int w  = out_shape->shape[VGL_SHAPE_WIDTH];
-
-  if (coord == 0)
-    printf("ws = %d, w = %d\n", ws, w);
+  VGL_PACK_OUTPUT_SWAP_MASK
 
   unsigned char result = 0;
-  unsigned char p = img_input[coord];
-  for (int bit = 0; bit < 8; bit++)
+  VGL_PACK_CL_SHADER_TYPE p = img_input[coord];
+  for (int bit = 0; bit < VGL_PACK_SIZE_BITS; bit++)
   {
-    unsigned char result_bit = p & (1 << bit);
+    VGL_PACK_CL_SHADER_TYPE result_bit = p & outputSwapMask[bit];
     if (result_bit)
-      result = 255;
+      img_output[coord * VGL_PACK_SIZE_BITS + bit] = 255;
     else
-      result = 0;
-    int j = (coord % ws) * 8 + 7 - bit;
-    int i = (coord / ws);
-    if (j < w)
-      img_output[(i * w) + j] = result;
+      img_output[coord * VGL_PACK_SIZE_BITS + bit] = 0;
   }
 }

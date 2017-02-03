@@ -11,7 +11,7 @@
 
 #include "vglClShape.h"
 
-__kernel void vglClNdBinRoi(__global char* img_output,
+__kernel void vglClNdBinRoi(__global VGL_PACK_CL_SHADER_TYPE* img_output,
                             __constant int* p0,
                             __constant int* pf,
                             __constant VglClShape* img_shape)
@@ -25,30 +25,32 @@ __kernel void vglClNdBinRoi(__global char* img_output,
   int coord = get_global_linear_id();
 #endif
 
-  unsigned char result = 0;
-  unsigned char in_roi = 1;
+  VGL_PACK_OUTPUT_SWAP_MASK
+
+  VGL_PACK_CL_SHADER_TYPE result = 0;
+  VGL_PACK_CL_SHADER_TYPE in_roi = 1;
   int ires = coord;
   int idim;
-  //int img_coord[VGL_ARR_SHAPE_SIZE] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
   for (int d = img_shape->ndim; d >= VGL_SHAPE_WIDTH && in_roi > 0; d--)
   {
     int off = img_shape->offset[d];
     idim = ires / off;
     ires = ires - idim * off;
-    //img_coord[d] = idim;
+
     if (  (!(d == VGL_SHAPE_WIDTH))  &&  ( (idim < p0[d]) || (idim > pf[d]) )  )
     {
       in_roi = 0;
     }
   }
-  //int j_byte = img_coord[VGL_SHAPE_WIDTH];
-  int j_byte = idim;
-  for (int bit = 0; bit < 8 && in_roi > 0; bit++)
+
+  int j_word = idim;
+  for (int bit = 0; bit < VGL_PACK_SIZE_BITS && in_roi > 0; bit++)
   {
-    int j_bit = j_byte * 8 + 7 - bit;
+    int j_bit = j_word * VGL_PACK_SIZE_BITS + bit;
     if ( (j_bit >= p0[VGL_SHAPE_WIDTH]) && (j_bit <= pf[VGL_SHAPE_WIDTH]) )
     {
-      result += 1 << bit;
+      result = result | outputSwapMask[bit];
     }
   }
   img_output[coord] = result;

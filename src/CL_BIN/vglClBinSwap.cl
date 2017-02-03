@@ -17,16 +17,14 @@ __kernel void vglClBinSwap(__read_only image2d_t img_input,
     VGL_PACK_CL_SHADER_TYPE result = 0;
     VGL_PACK_CL_SHADER_TYPE mask   = 1;
     VGL_PACK_CL_SHADER_TYPE input  = p.x;   
-    VGL_PACK_CL_SHADER_TYPE output[32] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01,
-                                          0x8000, 0x4000, 0x2000, 0x1000, 0x0800, 0x0400, 0x0200, 0x0100, 
-                                          0x800000, 0x400000, 0x200000, 0x100000, 0x080000, 0x040000, 0x020000, 0x010000, 
-                                          0x80000000, 0x40000000, 0x20000000, 0x10000000, 0x08000000, 0x04000000, 0x02000000, 0x01000000, };
+    VGL_PACK_OUTPUT_SWAP_MASK
+
     for (int i = 0; i < VGL_PACK_SIZE_BITS; i++)
     {
       //printf("out[%2d] = %8x mask = %8x\n", i, output[i], mask);
       if (input & mask)
       {
-        result = result | output[i];
+        result = result | outputSwapMask[i];
       }
       mask = mask << 1;
     }
