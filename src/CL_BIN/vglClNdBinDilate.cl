@@ -9,8 +9,8 @@
 #include "vglClShape.h"
 #include "vglClStrEl.h"
 
-__kernel void vglClNdBinDilate(__global unsigned char* img_input, 
-                            __global unsigned char* img_output,  
+__kernel void vglClNdBinDilate(__global VGL_PACK_CL_SHADER_TYPE* img_input, 
+                            __global VGL_PACK_CL_SHADER_TYPE* img_output,  
                             __constant VglClShape* img_shape,
                             __constant VglClStrEl* window)
 {
@@ -25,7 +25,7 @@ __kernel void vglClNdBinDilate(__global unsigned char* img_input,
   int ires;
   int idim;
   ires = coord;
-  unsigned char result = 0;
+  VGL_PACK_CL_SHADER_TYPE result = 0;
   int img_coord[VGL_ARR_SHAPE_SIZE];
   int win_coord[VGL_ARR_SHAPE_SIZE];
 
@@ -35,15 +35,15 @@ __kernel void vglClNdBinDilate(__global unsigned char* img_input,
     idim = ires / off;
     ires = ires - idim * off;
     if (d == VGL_SHAPE_WIDTH)
-      img_coord[d] = 8 * idim + ((window->shape[d] - 1) / 2); //In erosion, replace + with -
+      img_coord[d] = VGL_PACK_SIZE_BITS * idim + ((window->shape[d] - 1) / 2); //In erosion, replace + with -
     else
-      img_coord[d] =     idim + ((window->shape[d] - 1) / 2); //In erosion, replace + with -
+      img_coord[d] =                      idim + ((window->shape[d] - 1) / 2); //In erosion, replace + with -
   }
 
-  for (int bit = 0; bit < 8; bit++)
+  for (int bit = 0; bit < VGL_PACK_SIZE_BITS; bit++)
   {
-    unsigned char pmax = 0;
-    for(int i = 0; i < window->size /*&& pmax == 0*/; i++)
+    VGL_PACK_CL_SHADER_TYPE pmax = 0;
+    for(int i = 0; i < window->size && pmax == 0; i++)
     {
       int j_bit;
       int j_byte;
@@ -65,11 +65,11 @@ __kernel void vglClNdBinDilate(__global unsigned char* img_input,
 
           if (d == VGL_SHAPE_WIDTH)
 	  {
-            win_coord[d] += bit;
+            win_coord[d] += VGL_PACK_SIZE_BITS - 1 - bit;
             win_coord[d] = clamp(win_coord[d], 0, img_shape->shape[d]-1);
             j_bit = img_shape->offset[d] * win_coord[d];
-            j_byte = j_bit / 8;
-            j_bit  = j_bit - j_byte * 8;
+            j_byte = j_bit / VGL_PACK_SIZE_BITS;
+            j_bit  = j_bit - j_byte * VGL_PACK_SIZE_BITS;
             conv_coord += j_byte;
 	  }
           else
@@ -78,8 +78,8 @@ __kernel void vglClNdBinDilate(__global unsigned char* img_input,
             conv_coord += img_shape->offset[d] * win_coord[d];
 	  }
         }
-        unsigned char p = img_input[conv_coord] & (1 << (7 - j_bit));
-        unsigned char result_bit;
+        VGL_PACK_CL_SHADER_TYPE p = img_input[conv_coord] & (1 << j_bit);
+        VGL_PACK_CL_SHADER_TYPE result_bit;
         if (p)
           result_bit = 1;
         else
@@ -87,7 +87,7 @@ __kernel void vglClNdBinDilate(__global unsigned char* img_input,
         pmax = max(pmax, result_bit);
       }
     }
-    result += pmax << (7 - bit);
+    result += pmax << (VGL_PACK_SIZE_BITS - 1 - bit);
   }
   img_output[coord] = result;
 }
