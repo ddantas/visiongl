@@ -21,7 +21,7 @@ __kernel void vglClNdBinDilate(__global VGL_PACK_CL_SHADER_TYPE* img_input,
 #else
   int coord = get_global_linear_id();
 #endif
-
+  VGL_PACK_OUTPUT_DIRECT_MASK
   int ires;
   int idim;
   ires = coord;
@@ -78,16 +78,17 @@ __kernel void vglClNdBinDilate(__global VGL_PACK_CL_SHADER_TYPE* img_input,
             conv_coord += img_shape->offset[d] * win_coord[d];
 	  }
         }
-        VGL_PACK_CL_SHADER_TYPE p = img_input[conv_coord] & (1 << j_bit);
+        VGL_PACK_CL_SHADER_TYPE p = img_input[conv_coord] & outputDirectMask[j_bit];
         VGL_PACK_CL_SHADER_TYPE result_bit;
         if (p)
-          result_bit = 1;
-        else
-          result_bit = 0;
-        pmax = max(pmax, result_bit);
+          pmax = 1;
+        //else
+        //  result_bit = 0;
+        //pmax = max(pmax, result_bit);
       }
     }
-    result += pmax << (VGL_PACK_SIZE_BITS - 1 - bit);
+    if (pmax)
+      result += outputDirectMask[VGL_PACK_SIZE_BITS - 1 - bit];
   }
   img_output[coord] = result;
 }

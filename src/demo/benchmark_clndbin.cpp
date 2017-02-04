@@ -247,7 +247,7 @@ if (vglIn->clForceAsBuf){
   vglGray->vglShape->print((char*) "vglGray");
 
   char thresh = 109;
-  thresh = 80; 
+  //thresh = 80; // para testes com a lena_std.pgm
   //First call to n-dimensional threshold
   TimerStart();
   vglClNdBinThreshold(vglIn, vglThresh, thresh);
