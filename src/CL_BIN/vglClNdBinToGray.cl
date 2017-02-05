@@ -27,7 +27,7 @@ __kernel void vglClNdBinToGray(__global VGL_PACK_CL_SHADER_TYPE* img_input,
   VGL_PACK_CL_SHADER_TYPE p = img_input[coord];
   for (int bit = 0; bit < VGL_PACK_SIZE_BITS; bit++)
   {
-    VGL_PACK_CL_SHADER_TYPE result_bit = p & outputSwapMask[bit];
+    VGL_PACK_CL_SHADER_TYPE result_bit = p & ( (VGL_PACK_CL_SHADER_TYPE) 1 << (VGL_PACK_CL_SHADER_TYPE) bit ); //outputSwapMask[bit];
     if (result_bit)
       img_output[coord * VGL_PACK_SIZE_BITS + bit] = 255;
     else

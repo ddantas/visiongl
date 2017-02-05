@@ -264,14 +264,15 @@ if (vglIn->clForceAsBuf){
   vglClFlush();
   printf("Time spent on %8d         Threshold:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglThresh, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglThresh, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_thresh";
-  saveResult(vglThresh, outString, outPath, outFolder, i_0);
-  vglReshape(vglThresh, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   printf("vgThresh->widthStep words = %d\n", vglThresh->getWidthStepWords());
   printf("vgThresh->widthStep = %d\n", vglThresh->getWidthStep());
@@ -288,11 +289,12 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdCopy(vglThresh, vglBin);
+    vglClNdCopy(vglThresh, vglBin2);
   }
   vglClFlush();
   printf("Time spent on %8d     bin byte Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
 
+  vglClNdBinSwap(vglBin2, vglBin);
   vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
@@ -313,11 +315,12 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinCopy(vglThresh, vglBin);
+    vglClNdBinCopy(vglThresh, vglBin2);
   }
   vglClFlush();
   printf("Time spent on %8d     bin word Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
 
+  vglClNdBinSwap(vglBin2, vglBin);
   vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
@@ -354,7 +357,7 @@ if (vglIn->clForceAsBuf){
 
   //First call to n-dimensional swap
   TimerStart();
-  vglClNdBinSwap(vglBin, vglSwap);
+  vglClNdBinSwap(vglThresh, vglSwap);
   vglClFlush();
   printf("First call to             swap byte Copy:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional swap
@@ -363,7 +366,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinSwap(vglBin, vglSwap);
+    vglClNdBinSwap(vglThresh, vglSwap);
   }
   vglClFlush();
   printf("Time spent on %8d    swap byte Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -389,11 +392,12 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinNot(vglThresh, vglBin);
+    vglClNdBinNot(vglThresh, vglBin2);
   }
   vglClFlush();
   printf("Time spent on %8d               Not:       %s \n", nSteps, getTimeElapsedInSeconds());
 
+  vglClNdBinSwap(vglBin2, vglBin);
   vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
@@ -419,14 +423,15 @@ if (vglIn->clForceAsBuf){
   vglClFlush();
   printf("Time spent on %8d               Roi:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglCheckContext(vglRoi, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglRoi, vglBin);
+  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglRoi, vglShapeOrig1bit);
+    vglReshape(vglBin, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_roi";
-  saveResult(vglRoi, outString, outPath, outFolder, i_0);
-  vglReshape(vglRoi, vglShape1bit);
+  saveResult(vglBin, outString, outPath, outFolder, i_0);
+  vglReshape(vglBin, vglShape1bit);
 
   printf("\n");
   vglIn->vglShape->printArray(roiP0, VGL_MAX_DIM);
@@ -439,7 +444,7 @@ if (vglIn->clForceAsBuf){
 
   //First call to n-dimensional Dilate
   TimerStart();
-  vglClNdBinDilate(vglSwap,   vglDil, seCube);
+  vglClNdBinDilate(vglThresh,   vglDil, seCube);
   vglClFlush();
   printf("First call to           Dilation nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional Dilate cube
@@ -448,7 +453,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilate(vglSwap,   vglBin2, seCube);
+    vglClNdBinDilate(vglThresh,   vglBin2, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d  Dilation nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -469,7 +474,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilate(vglSwap,   vglBin2, seCubeArr[1]);
+    vglClNdBinDilate(vglThresh, vglBin2, seCubeArr[1]);
     for(int i = 2; i <= ndim; i++)
     {
       if (i % 2 == 0)
@@ -501,7 +506,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilate(vglSwap,   vglBin2, seCross);
+    vglClNdBinDilate(vglThresh, vglBin2, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d Dilation nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -522,7 +527,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilate(vglSwap,   vglBin2, seAngle);
+    vglClNdBinDilate(vglThresh, vglBin2, seAngle);
   }
   vglClFlush();
   printf("Time spent on %8d Dilation nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -540,7 +545,7 @@ if (vglIn->clForceAsBuf){
 
   //First call to n-dimensional Dilate pack
   TimerStart();
-  vglClNdBinDilatePack(vglSwap,   vglDil, seCube);
+  vglClNdBinDilatePack(vglThresh, vglDil, seCube);
   vglClFlush();
   printf("First call to           Dila pac nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional Dilate pack cube
@@ -549,7 +554,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilatePack(vglSwap,   vglBin2, seCube);
+    vglClNdBinDilatePack(vglThresh, vglBin2, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d  Dila pac nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -570,7 +575,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilatePack(vglSwap,   vglBin2, seCubeArr[1]);
+    vglClNdBinDilatePack(vglThresh, vglBin2, seCubeArr[1]);
     for(int i = 2; i <= ndim; i++)
     {
       if (i % 2 == 0)
@@ -602,7 +607,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilatePack(vglSwap,   vglBin2, seCross);
+    vglClNdBinDilatePack(vglThresh, vglBin2, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d Dila pac nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -623,7 +628,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilatePack(vglSwap,   vglBin2, seAngle);
+    vglClNdBinDilatePack(vglThresh, vglBin2, seAngle);
   }
   vglClFlush();
   printf("Time spent on %8d Dila pac nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -644,7 +649,7 @@ if (vglIn->clForceAsBuf){
 
   //First call to n-dimensional Erode
   TimerStart();
-  vglClNdBinErode(vglDil,    vglBin, seCube);
+  vglClNdBinErode(vglThresh, vglBin, seCube);
   vglClFlush();
   printf("First call to            Erosion nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional Erode cube
@@ -653,7 +658,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErode(vglDil,    vglBin2, seCube);
+    vglClNdBinErode(vglThresh, vglBin2, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d   Erosion nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -674,7 +679,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErode(vglDil,    vglBin2, seCubeArr[1]);
+    vglClNdBinErode(vglThresh, vglBin2, seCubeArr[1]);
     for(int i = 2; i <= ndim; i++)
     {
       if (i % 2 == 0)
@@ -705,7 +710,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErode(vglDil,    vglBin2, seCross);
+    vglClNdBinErode(vglThresh, vglBin2, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d  Erosion nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -726,7 +731,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErode(vglDil,    vglBin2, seAngle);
+    vglClNdBinErode(vglThresh, vglBin2, seAngle);
   }
   vglClFlush();
   printf("Time spent on %8d  Erosion nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -744,7 +749,7 @@ if (vglIn->clForceAsBuf){
 
   //First call to n-dimensional Erode pack
   TimerStart();
-  vglClNdBinErodePack(vglDil,    vglBin, seCube);
+  vglClNdBinErodePack(vglThresh, vglBin, seCube);
   vglClFlush();
   printf("First call to            Ero pac nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional Erode pack cube
@@ -753,7 +758,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErodePack(vglDil,    vglBin2, seCube);
+    vglClNdBinErodePack(vglThresh, vglBin2, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d   Ero pac nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -774,7 +779,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErodePack(vglDil,    vglBin2, seCubeArr[1]);
+    vglClNdBinErodePack(vglThresh, vglBin2, seCubeArr[1]);
     for(int i = 2; i <= ndim; i++)
     {
       if (i % 2 == 0)
@@ -805,7 +810,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErodePack(vglDil,    vglBin2, seCross);
+    vglClNdBinErodePack(vglThresh, vglBin2, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d  Ero pac nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -826,7 +831,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErodePack(vglDil,    vglBin2, seAngle);
+    vglClNdBinErodePack(vglThresh, vglBin2, seAngle);
   }
   vglClFlush();
   printf("Time spent on %8d  Ero pac nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -845,31 +850,6 @@ if (vglIn->clForceAsBuf){
   ////////// Pixelwise
 
 
-  //First call to n-dimensional negation
-  TimerStart();
-  vglClNdNot(vglThresh, vglBin);
-  vglClFlush();
-  printf("First call to                   Negation:       %s\n", getTimeElapsedInSeconds());
-  //Total time spent on n operations n-dimensional negation
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    vglClNdNot(vglThresh, vglBin);
-  }
-  vglClFlush();
-  printf("Time spent on %8d          Negation:       %s \n", nSteps, getTimeElapsedInSeconds());
-
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(vglBin, vglShapeOrig1bit);
-  }
-  outFolder = (char*) "clnd_invert";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
-
   //First call to n-dimensional maximum
   TimerStart();
   vglClNdBinMax(vglThresh, vglRoi, vglBin);
@@ -881,11 +861,12 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinMax(vglThresh, vglRoi, vglBin);
+    vglClNdBinMax(vglThresh, vglRoi, vglBin2);
   }
   vglClFlush();
   printf("Time spent on %8d           Maximum:       %s \n", nSteps, getTimeElapsedInSeconds());
 
+  vglClNdBinSwap(vglBin2, vglBin);
   vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
@@ -906,11 +887,12 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinMin(vglThresh, vglRoi, vglBin);
+    vglClNdBinMin(vglThresh, vglRoi, vglBin2);
   }
   vglClFlush();
   printf("Time spent on %8d           Minimum:       %s \n", nSteps, getTimeElapsedInSeconds());
 
+  vglClNdBinSwap(vglBin2, vglBin);
   vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
@@ -931,11 +913,12 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinSub(vglThresh, vglRoi, vglBin);
+    vglClNdBinSub(vglThresh, vglRoi, vglBin2);
   }
   vglClFlush();
   printf("Time spent on %8d       Subtraction:       %s \n", nSteps, getTimeElapsedInSeconds());
 
+  vglClNdBinSwap(vglBin2, vglBin);
   vglCheckContext(vglBin, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {

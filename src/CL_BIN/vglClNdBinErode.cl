@@ -45,7 +45,7 @@ __kernel void vglClNdBinErode(__global VGL_PACK_CL_SHADER_TYPE* img_input,
     VGL_PACK_CL_SHADER_TYPE pmin = 1;
     for(int i = 0; i < window->size && pmin == 1; i++)
     {
-      int j_bit;
+      VGL_PACK_CL_SHADER_TYPE j_bit;
       int j_byte;
       int conv_coord;
       if (!(window->data[i] == 0))
@@ -78,7 +78,7 @@ __kernel void vglClNdBinErode(__global VGL_PACK_CL_SHADER_TYPE* img_input,
             conv_coord += img_shape->offset[d] * win_coord[d];
 	  }
         }
-        VGL_PACK_CL_SHADER_TYPE p = img_input[conv_coord] & (1 << (j_bit));
+        VGL_PACK_CL_SHADER_TYPE p = img_input[conv_coord] & (1l << (j_bit));
         VGL_PACK_CL_SHADER_TYPE result_bit;
         if (p)
           result_bit = 1;
@@ -87,7 +87,7 @@ __kernel void vglClNdBinErode(__global VGL_PACK_CL_SHADER_TYPE* img_input,
         pmin = min(pmin, result_bit);
       }
     }
-    result += pmin << (VGL_PACK_SIZE_BITS - 1 - bit);
+    result += pmin << (VGL_PACK_CL_SHADER_TYPE) (VGL_PACK_SIZE_BITS - 1 - bit);
   }
   img_output[coord] = result;
 }

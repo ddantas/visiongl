@@ -22,15 +22,15 @@ __kernel void vglClNdBinThreshold(__global char* img_input,
   int coord = get_global_linear_id();
 #endif
 
-  VGL_PACK_OUTPUT_SWAP_MASK
+  //VGL_PACK_OUTPUT_SWAP_MASK
 
   VGL_PACK_CL_SHADER_TYPE result = 0;
   for (int bit = 0; bit < VGL_PACK_SIZE_BITS; bit++)
   {
-    unsigned char p = img_input[coord * VGL_PACK_SIZE_BITS + bit];
+    unsigned char p = img_input[coord  * VGL_PACK_SIZE_BITS + bit];
     if (p >= thresh)
     {
-      result = result | outputSwapMask[bit];
+      result = result | ( (VGL_PACK_CL_SHADER_TYPE) 1 << (VGL_PACK_CL_SHADER_TYPE) bit); // outputSwapMask[bit];
     }
   }
   img_output[coord] = result;

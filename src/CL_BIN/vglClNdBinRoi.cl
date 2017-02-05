@@ -25,7 +25,7 @@ __kernel void vglClNdBinRoi(__global VGL_PACK_CL_SHADER_TYPE* img_output,
   int coord = get_global_linear_id();
 #endif
 
-  VGL_PACK_OUTPUT_SWAP_MASK
+  //VGL_PACK_OUTPUT_SWAP_MASK
 
   VGL_PACK_CL_SHADER_TYPE result = 0;
   VGL_PACK_CL_SHADER_TYPE in_roi = 1;
@@ -45,12 +45,12 @@ __kernel void vglClNdBinRoi(__global VGL_PACK_CL_SHADER_TYPE* img_output,
   }
 
   int j_word = idim;
-  for (int bit = 0; bit < VGL_PACK_SIZE_BITS && in_roi > 0; bit++)
+  for (VGL_PACK_CL_SHADER_TYPE bit = 0; bit < VGL_PACK_SIZE_BITS && in_roi > 0; bit++)
   {
     int j_bit = j_word * VGL_PACK_SIZE_BITS + bit;
     if ( (j_bit >= p0[VGL_SHAPE_WIDTH]) && (j_bit <= pf[VGL_SHAPE_WIDTH]) )
     {
-      result = result | outputSwapMask[bit];
+      result = result | ( 1l << bit) ;//outputSwapMask[bit];
     }
   }
   img_output[coord] = result;
