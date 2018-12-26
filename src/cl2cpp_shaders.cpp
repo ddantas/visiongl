@@ -78,11 +78,11 @@ void vglCl3dBlurSq3(VglImage* img_input, VglImage* img_output)
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -165,11 +165,11 @@ void vglCl3dConvolution(VglImage* img_input, VglImage* img_output, float* convol
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -237,11 +237,11 @@ void vglCl3dCopy(VglImage* img_input, VglImage* img_output)
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -324,11 +324,11 @@ void vglCl3dDilate(VglImage* img_input, VglImage* img_output, float* convolution
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -414,11 +414,11 @@ void vglCl3dErode(VglImage* img_input, VglImage* img_output, float* convolution_
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -490,15 +490,15 @@ void vglCl3dMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   size_t _worksize_0 = img_input1->getWidthIn();
   if (img_input1->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input1->getWidthStep();
+    _worksize_0 = img_input1->getWidthStepWords();
   }
   if (img_input2->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input2->getWidthStep();
+    _worksize_0 = img_input2->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
@@ -567,15 +567,15 @@ void vglCl3dMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   size_t _worksize_0 = img_input1->getWidthIn();
   if (img_input1->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input1->getWidthStep();
+    _worksize_0 = img_input1->getWidthStepWords();
   }
   if (img_input2->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input2->getWidthStep();
+    _worksize_0 = img_input2->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
@@ -640,11 +640,11 @@ void vglCl3dNot(VglImage* img_input, VglImage* img_output)
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -713,15 +713,15 @@ void vglCl3dSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   size_t _worksize_0 = img_input1->getWidthIn();
   if (img_input1->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input1->getWidthStep();
+    _worksize_0 = img_input1->getWidthStepWords();
   }
   if (img_input2->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input2->getWidthStep();
+    _worksize_0 = img_input2->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
@@ -790,15 +790,15 @@ void vglCl3dSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output
   size_t _worksize_0 = img_input1->getWidthIn();
   if (img_input1->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input1->getWidthStep();
+    _worksize_0 = img_input1->getWidthStepWords();
   }
   if (img_input2->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input2->getWidthStep();
+    _worksize_0 = img_input2->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
@@ -869,11 +869,11 @@ void vglCl3dThreshold(VglImage* src, VglImage* dst, float thresh, float top)
   size_t _worksize_0 = src->getWidthIn();
   if (src->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = src->getWidthStep();
+    _worksize_0 = src->getWidthStepWords();
   }
   if (dst->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = dst->getWidthStep();
+    _worksize_0 = dst->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, src->getHeightIn(),  src->getNFrames() };
@@ -938,11 +938,11 @@ void vglClBlurSq3(VglImage* img_input, VglImage* img_output)
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -1022,11 +1022,11 @@ void vglClConvolution(VglImage* img_input, VglImage* img_output, float* convolut
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -1094,11 +1094,11 @@ void vglClCopy(VglImage* img_input, VglImage* img_output)
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -1178,11 +1178,11 @@ void vglClDilate(VglImage* img_input, VglImage* img_output, float* convolution_w
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -1265,11 +1265,11 @@ void vglClErode(VglImage* img_input, VglImage* img_output, float* convolution_wi
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -1337,11 +1337,11 @@ void vglClInvert(VglImage* img_input, VglImage* img_output)
   size_t _worksize_0 = img_input->getWidthIn();
   if (img_input->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input->getWidthStep();
+    _worksize_0 = img_input->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input->getHeightIn(),  img_input->getNFrames() };
@@ -1410,15 +1410,15 @@ void vglClMax(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
   size_t _worksize_0 = img_input1->getWidthIn();
   if (img_input1->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input1->getWidthStep();
+    _worksize_0 = img_input1->getWidthStepWords();
   }
   if (img_input2->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input2->getWidthStep();
+    _worksize_0 = img_input2->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
@@ -1487,15 +1487,15 @@ void vglClMin(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
   size_t _worksize_0 = img_input1->getWidthIn();
   if (img_input1->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input1->getWidthStep();
+    _worksize_0 = img_input1->getWidthStepWords();
   }
   if (img_input2->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input2->getWidthStep();
+    _worksize_0 = img_input2->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
@@ -1564,15 +1564,15 @@ void vglClSub(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
   size_t _worksize_0 = img_input1->getWidthIn();
   if (img_input1->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input1->getWidthStep();
+    _worksize_0 = img_input1->getWidthStepWords();
   }
   if (img_input2->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input2->getWidthStep();
+    _worksize_0 = img_input2->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
@@ -1641,15 +1641,15 @@ void vglClSum(VglImage* img_input1, VglImage* img_input2, VglImage* img_output)
   size_t _worksize_0 = img_input1->getWidthIn();
   if (img_input1->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input1->getWidthStep();
+    _worksize_0 = img_input1->getWidthStepWords();
   }
   if (img_input2->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_input2->getWidthStep();
+    _worksize_0 = img_input2->getWidthStepWords();
   }
   if (img_output->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = img_output->getWidthStep();
+    _worksize_0 = img_output->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, img_input1->getHeightIn(),  img_input1->getNFrames() };
@@ -1713,11 +1713,11 @@ void vglClSwapRgb(VglImage* src, VglImage* dst)
   size_t _worksize_0 = src->getWidthIn();
   if (src->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = src->getWidthStep();
+    _worksize_0 = src->getWidthStepWords();
   }
   if (dst->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = dst->getWidthStep();
+    _worksize_0 = dst->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, src->getHeightIn(),  src->getNFrames() };
@@ -1788,11 +1788,11 @@ void vglClThreshold(VglImage* src, VglImage* dst, float thresh, float top)
   size_t _worksize_0 = src->getWidthIn();
   if (src->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = src->getWidthStep();
+    _worksize_0 = src->getWidthStepWords();
   }
   if (dst->depth == IPL_DEPTH_1U)
   {
-    _worksize_0 = dst->getWidthStep();
+    _worksize_0 = dst->getWidthStepWords();
   }
 
   size_t worksize[] = { _worksize_0, src->getHeightIn(),  src->getNFrames() };
