@@ -7,6 +7,7 @@
 // SHAPE out_shape (img_output->vglShape->asVglClShape())
 
 #include "vglClShape.h"
+#include "vglConst.h"
 
 __kernel void vglClNdBinThreshold(__global char* img_input,
                                   __global VGL_PACK_CL_SHADER_TYPE* img_output,
@@ -30,7 +31,8 @@ __kernel void vglClNdBinThreshold(__global char* img_input,
     unsigned char p = img_input[coord  * VGL_PACK_SIZE_BITS + bit];
     if (p >= thresh)
     {
-      result = result | ( (VGL_PACK_CL_SHADER_TYPE) 1 << (VGL_PACK_CL_SHADER_TYPE) bit); // outputSwapMask[bit];
+      result = result | ( (VGL_PACK_CL_SHADER_TYPE) 1 << (VGL_PACK_CL_SHADER_TYPE) bit);
+      //result = result | ( (VGL_PACK_CL_SHADER_TYPE) outputSwapMask[bit]);
     }
   }
   img_output[coord] = result;

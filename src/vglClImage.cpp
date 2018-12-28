@@ -299,7 +299,7 @@ void vglClInit()
 {
     cl_int err;
     cl_uint num_platforms, num_devices;
-    cl_device_type device_type = CL_DEVICE_TYPE_ALL;
+    cl_device_type device_type = CL_DEVICE_TYPE_CPU;
     cl_uint id = 0;
     cl_uint plat = 0;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
@@ -520,7 +520,7 @@ void vglClUpload(VglImage* img)
             int w = img->getWidth();
             if (img->depth == IPL_DEPTH_1U)
 	    {
-              w = img->getWidthStep();
+              w = img->getWidthStepWords();
 	    }
 
             if ( (img->ndim == 2) && !(img->clForceAsBuf) )
@@ -590,7 +590,7 @@ void vglClUpload(VglImage* img)
 
             if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  && (img->depth == IPL_DEPTH_1U) )
             {
-                size_t Size3d[3] = {img->getWidthStep(), img->getHeight(), nFrames};
+                size_t Size3d[3] = {img->getWidthStepWords(), img->getHeight(), nFrames};
                 err = clEnqueueWriteImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, (char*)imageData, 0, NULL, NULL );
                 vglClCheckError( err, (char*) "clEnqueueWriteImage" );
                 clFinish(cl.commandQueue);
@@ -754,7 +754,7 @@ void vglClDownload(VglImage* img)
 
         if (  ( (img->ndim == 2) || (img->ndim == 3) )  &&  !(img->clForceAsBuf)  && (img->depth == IPL_DEPTH_1U) )
 	{
-            size_t Size3d[3] = {img->getWidthStep(), img->getHeight(), nFrames};
+            size_t Size3d[3] = {img->getWidthStepWords(), img->getHeight(), nFrames};
             cl_int err_cl = clEnqueueReadImage( cl.commandQueue, img->oclPtr, CL_TRUE, Origin, Size3d, 0, 0, imageData, 0, NULL, NULL );
             vglClCheckError( err_cl, (char*) "clEnqueueReadImage" );
 	}
