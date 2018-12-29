@@ -19,19 +19,7 @@ __kernel void vglCl3dBinThreshold(__read_only image3d_t img_input,
     uint4 result = 0;
     for (int bit = 0; bit < VGL_PACK_SIZE_BITS; bit++)
     {
-      int off;
-      if (VGL_PACK_SIZE_BYTES == 1)
-      {
-        off = 7 - bit;
-      }
-      else
-      {
-        int byte = bit / 8;
-        int rem = bit - 8 * byte;
-        off = byte * 8 + 7 - rem;
-      }
-
-      float4 p = read_imagef(  img_input, smp, (int4)( VGL_PACK_SIZE_BITS * coords.x + off, 
+      float4 p = read_imagef(  img_input, smp, (int4)( VGL_PACK_SIZE_BITS * coords.x + bit, 
                                                        coords.y, coords.z, 0 )  );
       uint4 result_bit;
       if (p.x >= thresh)

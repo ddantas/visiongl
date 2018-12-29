@@ -166,6 +166,7 @@ obtained from the image file.\
   VglStrEl* seMeanArr[VGL_ARR_SHAPE_SIZE];
   seMean->print((char*) "seMean");
   seCube->print((char*) "seCube");
+  seCross->print((char*) "seCross");
   int diam = 3;
   float diamf = (float)diam;
   float dataCube[3] = { 1.0,       1.0,       1.0     };
@@ -193,7 +194,11 @@ obtained from the image file.\
 
   int p;
 
-if (vglIn->clForceAsBuf){
+  if (!vglIn->clForceAsBuf){
+    fprintf(stderr, "%s: %s: Error: please call vglClForceAsBuf(vglIn). This program requires images to be loaded as OpenCL BUF.\n", __FILE__, __FUNCTION__);
+    exit(1);
+  }
+  
   // Benchmarks:
 
   printf("\n\n");
@@ -273,10 +278,6 @@ if (vglIn->clForceAsBuf){
   outFolder = (char*) "clndbin_thresh";
   saveResult(vglSwap, outString, outPath, outFolder, i_0);
   vglReshape(vglSwap, vglShape1bit);
-
-  printf("vgThresh->widthStep words = %d\n", vglThresh->getWidthStepWords());
-  printf("vgThresh->widthStep = %d\n", vglThresh->getWidthStep());
-  printf("vgThresh->widthIn   = %d\n", vglThresh->getWidthIn());
 
   //First call to n-dimensional copy
   TimerStart();
@@ -392,20 +393,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinNot(vglThresh, vglBin2);
+    vglClNdBinNot(vglThresh, vglBin);
   }
   vglClFlush();
   printf("Time spent on %8d               Not:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_invert";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //First call to n-dimensional Roi
   TimerStart();
@@ -423,15 +424,15 @@ if (vglIn->clForceAsBuf){
   vglClFlush();
   printf("Time spent on %8d               Roi:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglRoi, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglRoi, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_roi";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   printf("\n");
   vglIn->vglShape->printArray(roiP0, VGL_MAX_DIM);
@@ -444,7 +445,7 @@ if (vglIn->clForceAsBuf){
 
   //First call to n-dimensional Dilate
   TimerStart();
-  vglClNdBinDilate(vglThresh,   vglDil, seCube);
+  vglClNdBinDilate(vglThresh, vglBin, seCube);
   vglClFlush();
   printf("First call to           Dilation nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional Dilate cube
@@ -453,20 +454,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilate(vglThresh,   vglBin2, seCube);
+    vglClNdBinDilate(vglThresh, vglBin, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d  Dilation nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglDil, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_dilate_std_cube";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Dilate sep.
   p = 0;
@@ -490,15 +491,15 @@ if (vglIn->clForceAsBuf){
   {
     vglClNdCopy(vglBin, vglBin2);
   }
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin2, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_dilate_std_sep";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Dilate cross
   p = 0;
@@ -506,20 +507,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilate(vglThresh, vglBin2, seCross);
+    vglClNdBinDilate(vglThresh, vglDil, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d Dilation nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_dilate_std_cross";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Dilate angle
   p = 0;
@@ -527,25 +528,25 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilate(vglThresh, vglBin2, seAngle);
+    vglClNdBinDilate(vglThresh, vglBin, seAngle);
   }
   vglClFlush();
   printf("Time spent on %8d Dilation nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_dilate_std_angle";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
 
   //First call to n-dimensional Dilate pack
   TimerStart();
-  vglClNdBinDilatePack(vglThresh, vglDil, seCube);
+  vglClNdBinDilatePack(vglThresh, vglBin, seCube);
   vglClFlush();
   printf("First call to           Dila pac nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional Dilate pack cube
@@ -554,20 +555,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilatePack(vglThresh, vglBin2, seCube);
+    vglClNdBinDilatePack(vglThresh, vglBin, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d  Dila pac nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_dilate_pack_cube";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Dilate pack sep.
   p = 0;
@@ -591,15 +592,15 @@ if (vglIn->clForceAsBuf){
   {
     vglClNdCopy(vglBin, vglBin2);
   }
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin2, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_dilate_pack_sep";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Dilate pack cross
   p = 0;
@@ -607,20 +608,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilatePack(vglThresh, vglBin2, seCross);
+    vglClNdBinDilatePack(vglThresh, vglBin, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d Dila pac nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_dilate_pack_cross";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Dilate pack angle
   p = 0;
@@ -628,20 +629,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilatePack(vglThresh, vglBin2, seAngle);
+    vglClNdBinDilatePack(vglThresh, vglBin, seAngle);
   }
   vglClFlush();
   printf("Time spent on %8d Dila pac nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_dilate_pack_angle";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
 
   ////////// Erosion 
@@ -649,7 +650,7 @@ if (vglIn->clForceAsBuf){
 
   //First call to n-dimensional Erode
   TimerStart();
-  vglClNdBinErode(vglThresh, vglBin, seCube);
+  vglClNdBinErode(vglDil, vglBin, seCube);
   vglClFlush();
   printf("First call to            Erosion nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional Erode cube
@@ -658,20 +659,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErode(vglThresh, vglBin2, seCube);
+    vglClNdBinErode(vglDil, vglBin, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d   Erosion nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_erode_std_cube";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Erode sep.
   p = 0;
@@ -679,7 +680,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErode(vglThresh, vglBin2, seCubeArr[1]);
+    vglClNdBinErode(vglDil, vglBin2, seCubeArr[1]);
     for(int i = 2; i <= ndim; i++)
     {
       if (i % 2 == 0)
@@ -694,15 +695,15 @@ if (vglIn->clForceAsBuf){
   {
     vglClNdCopy(vglBin, vglBin2);
   }
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin2, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_erode_std_sep";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Erode cross
   p = 0;
@@ -710,20 +711,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErode(vglThresh, vglBin2, seCross);
+    vglClNdBinErode(vglDil, vglBin, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d  Erosion nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_erode_std_cross";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Erode angle
   p = 0;
@@ -731,25 +732,25 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErode(vglThresh, vglBin2, seAngle);
+    vglClNdBinErode(vglDil, vglBin, seAngle);
   }
   vglClFlush();
   printf("Time spent on %8d  Erosion nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_erode_std_angle";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
 
   //First call to n-dimensional Erode pack
   TimerStart();
-  vglClNdBinErodePack(vglThresh, vglBin, seCube);
+  vglClNdBinErodePack(vglDil, vglBin, seCube);
   vglClFlush();
   printf("First call to            Ero pac nD cube:       %s\n", getTimeElapsedInSeconds());
   //Total time spent on n operations n-dimensional Erode pack cube
@@ -758,20 +759,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErodePack(vglThresh, vglBin2, seCube);
+    vglClNdBinErodePack(vglDil, vglBin, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d   Ero pac nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_erode_pack_cube";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Erode pack sep.
   p = 0;
@@ -779,7 +780,7 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErodePack(vglThresh, vglBin2, seCubeArr[1]);
+    vglClNdBinErodePack(vglDil, vglBin2, seCubeArr[1]);
     for(int i = 2; i <= ndim; i++)
     {
       if (i % 2 == 0)
@@ -794,15 +795,15 @@ if (vglIn->clForceAsBuf){
   {
     vglClNdCopy(vglBin, vglBin2);
   }
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin2, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_erode_pack_sep";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Erode pack cross
   p = 0;
@@ -810,20 +811,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErodePack(vglThresh, vglBin2, seCross);
+    vglClNdBinErodePack(vglDil, vglBin, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d  Ero pac nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_erode_pack_cross";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   //Total time spent on n operations n-dimensional Erode pack angle
   p = 0;
@@ -831,20 +832,20 @@ if (vglIn->clForceAsBuf){
   while (p < nSteps)
   {
     p++;
-    vglClNdBinErodePack(vglThresh, vglBin2, seAngle);
+    vglClNdBinErodePack(vglDil, vglBin, seAngle);
   }
   vglClFlush();
   printf("Time spent on %8d  Ero pac nD angle:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglClNdBinSwap(vglBin2, vglBin);
-  vglCheckContext(vglBin, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglBin, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglBin, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_erode_pack_angle";
-  saveResult(vglBin, outString, outPath, outFolder, i_0);
-  vglReshape(vglBin, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   
   ////////// Pixelwise
@@ -928,221 +929,6 @@ if (vglIn->clForceAsBuf){
   saveResult(vglBin, outString, outPath, outFolder, i_0);
   vglReshape(vglBin, vglShape1bit);
 
-}
-else
-{
-  // Benchmarks:
-  /*
-
-  //First call to n-dimensional mean
-  TimerStart();
-  vglCl3dConvolution(img, out, seMean->data, seMean->vglShape->getWidth(), seMean->vglShape->getHeight(), seMean->vglShape->getLength());
-  vglClFlush();
-  printf("First call to             Convolution 3D:       %s\n", getTimeElapsedInSeconds());
-  //Total time spent on n operations n-dimensional mean
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    vglCl3dConvolution(img, out, seMean->data, seMean->vglShape->getWidth(), seMean->vglShape->getHeight(), seMean->vglShape->getLength());
-  }
-  vglClFlush();
-  printf("Time spent on %8d    Convolution 3D:       %s \n", nSteps, getTimeElapsedInSeconds());
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clndbin_conv_mean";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
-
-  //Total time spent on n operations n-dimensional sep. mean
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    VglStrEl* se = seMeanArr[1];
-    vglCl3dConvolution(img, out2, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
-    for(int i = 2; i <= ndim; i++)
-    {
-      se = seMeanArr[i];
-      if (i % 2 == 0)
-        vglCl3dConvolution(out2, out, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
-      else
-        vglCl3dConvolution(out, out2, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
-    }
-  }
-  vglClFlush();
-  printf("Time spent on %8d     Conv. 3D sep.:       %s \n", nSteps, getTimeElapsedInSeconds());
-  if (ndim % 2 == 1)
-    vglCl3dCopy(out2, out);
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clndbin_conv_sep";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
-
-  //First call to n-dimensional dilation
-  TimerStart();
-  vglCl3dDilate(img, out, seCube->data, seCube->vglShape->getWidth(), seCube->vglShape->getHeight(), seCube->vglShape->getLength());
-  vglClFlush();
-  printf("First call to           Dilation 3D cube:       %s\n", getTimeElapsedInSeconds());
-  //Total time spent on n operations n-dimensional dilation
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    vglCl3dDilate(img, out, seCube->data, seCube->vglShape->getWidth(), seCube->vglShape->getHeight(), seCube->vglShape->getLength());
-  }
-  vglClFlush();
-  printf("Time spent on %8d  Dilation 3D cube:       %s \n", nSteps, getTimeElapsedInSeconds());
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clndbin_dilate_cube";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
-
-  //Total time spent on n operations n-dimensional sep. dilation
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    VglStrEl* se = seMeanArr[1];
-    vglCl3dDilate(img, out2, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
-    for(int i = 2; i <= ndim; i++)
-    {
-      se = seMeanArr[i];
-      if (i % 2 == 0)
-        vglCl3dDilate(out2, out, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
-      else
-        vglCl3dDilate(out, out2, se->data, se->vglShape->getWidth(), se->vglShape->getHeight(), se->vglShape->getLength());
-    }
-  }
-  vglClFlush();
-  printf("Time spent on %8d  Dilation nD sep.:       %s \n", nSteps, getTimeElapsedInSeconds());
-  if (ndim % 2 == 1)
-    vglCl3dCopy(out2, out);
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clndbin_conv_sep";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
-
-  //Total time spent on n operations n-dimensional dilation
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    vglCl3dDilate(img, out, seCross->data, seCross->vglShape->getWidth(), seCross->vglShape->getHeight(), seCross->vglShape->getLength());
-  }
-  vglClFlush();
-  printf("Time spent on %8d Dilation 3D cross:       %s \n", nSteps, getTimeElapsedInSeconds());
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clndbin_dilate_cross";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
-
-  //First call to n-dimensional negation
-  TimerStart();
-  vglCl3dNot(img, out);
-  vglClFlush();
-  printf("First call to                   Negation:       %s\n", getTimeElapsedInSeconds());
-  //Total time spent on n operations n-dimensional negation
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    vglCl3dNot(img, out);
-  }
-  vglClFlush();
-  printf("Time spent on %8d          Negation:       %s \n", nSteps, getTimeElapsedInSeconds());
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clndbin_invert";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
-
-  float thresh = 30.0/255.0;
-  //First call to n-dimensional threshold
-  TimerStart();
-  vglCl3dThreshold(img, out, thresh);
-  vglClFlush();
-  printf("First call to                  Threshold:       %s\n", getTimeElapsedInSeconds());
-  //Total time spent on n operations n-dimensional negation
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    vglCl3dThreshold(img, out, thresh);
-  }
-  vglClFlush();
-  printf("Time spent on %8d         Threshold:       %s \n", nSteps, getTimeElapsedInSeconds());
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clndbin_thresh";
-  saveResult(out, outString, outPath, outFolder, i_0);
-
-
-  //First call to n-dimensional copy
-  TimerStart();
-  vglCl3dCopy(img, out);
-  vglClFlush();
-  printf("First call to                       Copy:       %s\n", getTimeElapsedInSeconds());
-  //Total time spent on n operations n-dimensional negation
-  p = 0;
-  TimerStart();
-  while (p < nSteps)
-  {
-    p++;
-    vglCl3dCopy(img, out);
-  }
-  vglClFlush();
-  printf("Time spent on %8d              Copy:       %s \n", nSteps, getTimeElapsedInSeconds());
-
-  vglCheckContext(out, VGL_RAM_CONTEXT);
-  if (ndim <= 2)
-  {
-    vglReshape(out, origVglShape);
-  }
-  outFolder = (char*) "clndbin_copy";
-  saveResult(out, outString, outPath, outFolder, i_0);
-  */
-}
-
   //First call to n-dimensional Copy CPU->GPU
   vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
   TimerStart();
@@ -1161,15 +947,15 @@ else
   }
   vglClFlush();
   printf("Time spent on %8d     Copy CPU->GPU:       %s \n", nSteps, getTimeElapsedInSeconds());
-
-  vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglThresh, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglThresh, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_upload";
-  saveResult(vglThresh, outString, outPath, outFolder, i_0);
-  vglReshape(vglThresh, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
 
   //First call to n-dimensional Copy GPU->CPU
@@ -1191,14 +977,15 @@ else
   vglClFlush();
   printf("Time spent on %8d     Copy GPU->CPU:       %s \n", nSteps, getTimeElapsedInSeconds());
 
-  vglCheckContext(vglThresh, VGL_RAM_CONTEXT);
+  vglClNdBinSwap(vglThresh, vglSwap);
+  vglCheckContext(vglSwap, VGL_RAM_CONTEXT);
   if (ndim <= 2)
   {
-    vglReshape(vglThresh, vglShapeOrig1bit);
+    vglReshape(vglSwap, vglShapeOrig1bit);
   }
   outFolder = (char*) "clndbin_download";
-  saveResult(vglThresh, outString, outPath, outFolder, i_0);
-  vglReshape(vglThresh, vglShape1bit);
+  saveResult(vglSwap, outString, outPath, outFolder, i_0);
+  vglReshape(vglSwap, vglShape1bit);
 
   return 0;
 }

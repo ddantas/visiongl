@@ -24,18 +24,6 @@ __kernel void vglCl3dBinToGray(__read_only image3d_t img_input,
     uint4 p = read_imageui(img_input, smp, (int4)(coords.x, coords.y, coords.z, 0));
     for (int bit = 0; bit < VGL_PACK_SIZE_BITS; bit++)
     {
-      int off;
-      if (VGL_PACK_SIZE_BYTES == 1)
-      {
-        off = 7 - bit;
-      }
-      else
-      {
-        int byte = bit / 8;
-        int rem = bit - 8 * byte;
-        off = byte * 8 + 7 - rem;
-      }
-
       uint4 result_bit;
       result_bit.x = p.x & (1 << bit);
       if (result_bit.x)
@@ -43,8 +31,7 @@ __kernel void vglCl3dBinToGray(__read_only image3d_t img_input,
       else
         result.x = 0.0;
 
-      if (VGL_PACK_SIZE_BITS * coords.x + off < out_shape->shape[1])
-        write_imagef(img_output, (int4)(VGL_PACK_SIZE_BITS * coords.x + off, coords.y, coords.z, 0), result);
-
+      if (VGL_PACK_SIZE_BITS * coords.x + bit < out_shape->shape[1])
+        write_imagef(img_output, (int4)(VGL_PACK_SIZE_BITS * coords.x + bit, coords.y, coords.z, 0), result);
     }
 }

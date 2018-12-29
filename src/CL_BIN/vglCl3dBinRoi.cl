@@ -14,9 +14,6 @@ __kernel void vglCl3dBinRoi(__write_only image3d_t img_output,
     const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | //Natural coordinates
                           CLK_ADDRESS_CLAMP_TO_EDGE |   //Clamp to next edge
                           CLK_FILTER_NEAREST;           //Don't interpolate
-
-if (coords.y == 0 && coords.z == 0)
-  printf("%d\n", coords.x);  
    
     uint4 result = 0;
     for (int bit = 0; bit < VGL_PACK_SIZE_BITS; bit++)
