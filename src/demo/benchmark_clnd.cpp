@@ -6,6 +6,7 @@
 #include "cl2cpp_ND.h"
 #include "glsl2cpp_shaders.h"
 
+#include "vglConst.h"
 #include "vglShape.h"
 #include "vglStrEl.h"
 
@@ -19,8 +20,14 @@ int saveResult(VglImage* out, char* outString, char* outPath, char* outFolder, i
   char *cmd         = (char*) malloc(strlen(outPath) + 255);
   char* outFilename = (char*) malloc(strlen(outPath) + 255);
 
-  sprintf(cmd, "mkdir -p %s/%s", outPath, outFolder);
-  system(cmd);
+  sprintf(cmd, "%s %s%s%s", MKDIR, outPath, DIRSEP, outFolder);
+  int retval = system(cmd);
+  if (retval)
+  {
+    fprintf(stderr, "%s: %s: Error = %d creating folder %s%s%s\n", __FILE__, __FUNCTION__, retval, outPath, DIRSEP, outFolder);
+    exit(1);
+  }
+  
   sprintf(outFilename, outString, outPath, outFolder);
   vglSaveNdImage((char*) outFilename, out, i_0);
 }  

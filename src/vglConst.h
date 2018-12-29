@@ -38,6 +38,14 @@
 #define VGL_SHAPE_HEIGHT    VGL_SHAPE_D2
 #define VGL_SHAPE_LENGTH    VGL_SHAPE_D3
 
+#if defined(WIN32) || defined(_WIN32) 
+  #define DIRSEP "\\"
+  #define MKDIR  "md"
+#else 
+  #define DIRSEP "/" 
+  #define MKDIR  "mkdir -p"
+#endif
+
 //CL
 //#ifdef __OPENCL__
   #define VGL_ARR_CLSTREL_SIZE 256
