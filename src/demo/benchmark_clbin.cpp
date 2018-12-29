@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
     printf("Time spent on %8d         BinToGray:           %s\n", nSteps, getTimeElapsedInSeconds());
 
     vglCheckContext(vglGray, VGL_RAM_CONTEXT);
-    sprintf(outFilename, "%s%s", outPath, "/out_clbin_togray.pbm");
+    sprintf(outFilename, "%s%s", outPath, "/out_clbin_togray.pgm");
     iplSavePgm(outFilename, vglGray->ipl);
 
     //First call to Not

@@ -63,7 +63,8 @@ obtained from the image file.\
   int nSteps = atoi(argv[4]);
   char *outPath = argv[5]; // name of the output folder
   char* outFolder;
-  char* outString   = (char*) "%s/%s/out_%%05d.pbm";
+  char* outString     = (char*) "%s/%s/out_%%05d.pbm";
+  char* outStringGray = (char*) "%s/%s/out_%%05d.pgm";
   printf("outString = %s\n", outString);
 
   //vglInit(10,10);
@@ -353,7 +354,7 @@ obtained from the image file.\
     vglReshape(vglGray, vglShapeOrig8bit);
   }
   outFolder = (char*) "clndbin_togray";
-  saveResult(vglGray, outString, outPath, outFolder, i_0);
+  saveResult(vglGray, outStringGray, outPath, outFolder, i_0);
   vglReshape(vglGray, vglShape8bit);
 
   //First call to n-dimensional swap
