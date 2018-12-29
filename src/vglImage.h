@@ -259,6 +259,7 @@ VglImage* vglCreateImage(CvSize size, int depth = IPL_DEPTH_8U, int nChannels = 
 VglImage* vglCreate3dImage(CvSize size, int depth, int nChannels, int nlength, int has_mipmap = 0);
 VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int has_mipmap = 0);
 void vglSaveImage(char* filename, VglImage* image);
+void vglSaveIplImage(char* filename, IplImage* image, int* params = 0);
 void vglSave3dImage(char* filename, VglImage* image, int lStart, int lEnd = -1);
 void vglSaveNdImage(char* filename, VglImage* image, int lStart, int lEnd = -1);
 VglImage* vglCloneImage(IplImage* img_in, int ndim = 2, int has_mipmap = 0);

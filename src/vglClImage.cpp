@@ -387,6 +387,9 @@ void vglClInit()
     cl.commandQueue = clCreateCommandQueue( cl.context, *cl.deviceId, 0, &err );
     vglClCheckError( err, (char*) "clCreateCommandQueue" );
 
+    printf("%s: %s: VGL_PACK_SIZE_BITS:  %d\n", __FILE__, __FUNCTION__, VGL_PACK_SIZE_BITS);
+    printf("%s: %s: VGL_PACK_SIZE_BYTES: %d\n", __FILE__, __FUNCTION__, VGL_PACK_SIZE_BYTES);
+    
     err = clGetDeviceInfo(cl.deviceId[id], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
     printf("%s: %s: CL_DEVICE_EXTENSIONS:\n%s\n", __FILE__, __FUNCTION__, msg);
     cl_ulong vlong;
