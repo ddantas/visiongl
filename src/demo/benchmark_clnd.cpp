@@ -156,7 +156,8 @@ obtained from the image file.\
 
   int p;
 
-if (img->clForceAsBuf){
+if (true){
+//if (img->clForceAsBuf){
   // Benchmarks:
 
 
@@ -264,7 +265,7 @@ if (img->clForceAsBuf){
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_conv_sep";
+  outFolder = (char*) "clnd_dilate_sep";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -365,6 +366,7 @@ if (img->clForceAsBuf){
 }
 else
 {
+  /*
   // Benchmarks:
 
 
@@ -476,7 +478,7 @@ else
   {
     vglReshape(out, origVglShape);
   }
-  outFolder = (char*) "clnd_conv_sep";
+  outFolder = (char*) "clnd_dilate_sep";
   saveResult(out, outString, outPath, outFolder, i_0);
 
 
@@ -574,6 +576,7 @@ else
   }
   outFolder = (char*) "clnd_copy";
   saveResult(out, outString, outPath, outFolder, i_0);
+  */
 }
   //First call to n-dimensional Copy CPU->GPU
   vglCheckContext(img, VGL_RAM_CONTEXT);

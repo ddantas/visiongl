@@ -27,14 +27,14 @@ __kernel void vglCl3dBlurSq3(__read_only image3d_t img_input, __write_only image
     int xi = 0;
     int yi = 0;
     int zi = 0;
-    for(xi = 0; xi < 3; xi++)
+    for(zi = 0; zi < 3; zi++)
     {
         for(yi = 0; yi < 3; yi++)
         {
-            for(zi = 0; zi < 3; zi++)
+            for(xi = 0; xi < 3; xi++)
             {
                 float4 p = read_imagef(img_input, smp, (int4)(coords.x + (xi-1),coords.y + (yi-1), coords.z + (zi-1), 0));
-                p.xyz *= convolution_window[(zi*9) + (xi*3) + yi];
+                p.xyz *= convolution_window[(zi*9) + (yi*3) + xi];
                 result += p;
             }
         }
