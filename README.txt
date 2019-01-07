@@ -18,10 +18,10 @@ comments:
 Shader code written in OpenCL require only the two first kinds of comments.
 
 The wrapper functions use a common variable type to store image data, called 
-VglImage. It contains space to store the image data in RAM, and handles to 
-store the image in both CUDA, OpenGL and OpenCL contexts. These contexts 
+VglImage. It contains space to store the image data in RAM, and handlers to 
+store the image in CUDA, OpenGL and OpenCL contexts. These contexts 
 are used under demand. If the image is used only in OpenGL context, the 
-CUDA handle will be empty (NULL or -1) and vice-versa.
+CUDA handler will be empty (NULL or -1) and vice-versa.
 
 
         Compilation
@@ -170,8 +170,7 @@ OpenCV function cvCaptureFromCAM. An OpenGL window shows four versions
 of the captured image after a few operations.
  
 demoio and demotiff: To run these examples, please compile VisionGL with
-TIFF support. In a previous section there are instructions about how
-to compile GDCM.
+TIFF support.
 
 demogdcm: To run this example, please compile VisionGL with
 GDCM support. In a previous section there are instructions about how
