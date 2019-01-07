@@ -301,7 +301,7 @@ void vglClInit()
     cl_uint num_platforms, num_devices;
     cl_device_type device_type = CL_DEVICE_TYPE_CPU;
     cl_uint id = 0;
-    cl_uint plat = 0;
+    cl_uint plat;
     err = clGetPlatformIDs(0, NULL, &num_platforms);
     vglClCheckError(err, (char*) "clGetPlatformIDs get number of platforms");
     cl.platformId = (cl_platform_id*)malloc(sizeof(cl_platform_id)*num_platforms);
@@ -313,7 +313,15 @@ void vglClInit()
     else if (num_platforms >= 1)
         printf("found %d platform(s) for opencl\n\n", num_platforms);
 
-    err = clGetDeviceIDs(cl.platformId[plat], device_type, 0, NULL, &num_devices);
+    for (plat = 0; plat < num_platforms; plat++)
+    {
+      err = clGetDeviceIDs(cl.platformId[plat], device_type, 0, NULL, &num_devices);
+      printf("platform[%d]: found %d device(s) for opencl\n\n", plat, num_devices);
+      if (err == CL_SUCCESS)
+      {
+	break;
+      }
+    }
     vglClCheckError(err, (char*) "clGetDeviceIDs get number of devices");
 
     if (num_devices == 0)
@@ -358,6 +366,10 @@ void vglClInit()
 #ifdef __linux__
     printf("glXGetCurrentContext() = %p\n", glXGetCurrentContext() );
     printf("glXGetCurrentDisplay() = %p\n", glXGetCurrentDisplay() );
+    if (not glXGetCurrentDisplay())
+    {
+      vglClInteropSetFalse();
+    }
     cl_context_properties properties1[] = {
           CL_GL_CONTEXT_KHR, (cl_context_properties) glXGetCurrentContext(),
           CL_GLX_DISPLAY_KHR, (cl_context_properties) glXGetCurrentDisplay(),
@@ -390,6 +402,17 @@ void vglClInit()
     printf("%s: %s: VGL_PACK_SIZE_BITS:  %d\n", __FILE__, __FUNCTION__, VGL_PACK_SIZE_BITS);
     printf("%s: %s: VGL_PACK_SIZE_BYTES: %d\n", __FILE__, __FUNCTION__, VGL_PACK_SIZE_BYTES);
     
+    err = clGetDeviceInfo(cl.deviceId[id], CL_DEVICE_NAME, msgLen, msg, NULL);
+    printf("%s: %s: CL_DEVICE_NAME: %s\n", __FILE__, __FUNCTION__, msg);
+    err = clGetDeviceInfo(cl.deviceId[id], CL_DEVICE_VENDOR, msgLen, msg, NULL);
+    printf("%s: %s: CL_DEVICE_VENDOR: %s\n", __FILE__, __FUNCTION__, msg);
+    err = clGetDeviceInfo(cl.deviceId[id], CL_DEVICE_PROFILE, msgLen, msg, NULL);
+    printf("%s: %s: CL_DEVICE_PROFILE: %s\n", __FILE__, __FUNCTION__, msg);
+    err = clGetDeviceInfo(cl.deviceId[id], CL_DEVICE_VERSION, msgLen, msg, NULL);
+    printf("%s: %s: CL_DEVICE_VERSION: %s\n", __FILE__, __FUNCTION__, msg);
+    err = clGetDeviceInfo(cl.deviceId[id], CL_DRIVER_VERSION, msgLen, msg, NULL);
+    printf("%s: %s: CL_DRIVER_VERSION: %s\n", __FILE__, __FUNCTION__, msg);
+
     err = clGetDeviceInfo(cl.deviceId[id], CL_DEVICE_EXTENSIONS, msgLen, msg, NULL);
     printf("%s: %s: CL_DEVICE_EXTENSIONS:\n%s\n", __FILE__, __FUNCTION__, msg);
     cl_ulong vlong;
@@ -595,7 +618,7 @@ void vglClUpload(VglImage* img)
             {
                 if (VGL_PACK_SIZE_BITS > 32)
                 {
-                  fprintf(stderr, "%s: %s: Error: VGL_PACK_SIZE_BITS = %d > 32, incompatible with OpenCL IMG. May spoil resulting images. Use vglClForceAsBuf(vglImage*) or recompile setting #define VGL_PACK_32 in vglConst.h.\n", __FILE__, __FUNCTION__);
+                  fprintf(stderr, "%s: %s: Error: VGL_PACK_SIZE_BITS = %d > 32, incompatible with OpenCL IMG. May spoil resulting images. Use vglClForceAsBuf(vglImage*) or recompile setting #define VGL_PACK_32 in vglConst.h.\n", __FILE__, __FUNCTION__, VGL_PACK_SIZE_BITS);
                   exit(1);
                 }
 
