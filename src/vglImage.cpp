@@ -564,9 +564,7 @@ VglImage* vglCreateImage(int* shape, int depth, int ndim /*=2*/, int has_mipmap 
   vglImage->filename = NULL;
 
 
-  //TODO: solve issue with ipl, vglReshape and rundemobenchmarkclbin
   if (ndim <= 2)
-  //if (0)
   {
     vglImage->ipl = cvCreateImage(cvSize(shape[1], shape[2]), depth, shape[0]);
   }
@@ -1021,6 +1019,7 @@ void vglReleaseImage(VglImage** p_image)
   }
 #endif
   delete(*p_image);
+  p_image = NULL;
 }
 
 /** Replace IplImage, stored inside a VglImage, with new IplImage.
@@ -1544,29 +1543,21 @@ int vglReshape(VglImage* img, VglShape* newShape)
   }
   if ( (img->ipl != NULL) && (newShape->ndim > 2) )
   {
-    //TODO: solve issue with ipl, vglReshape and rundemobenchmarkclbin
-    /*
-    fprintf(stderr, "******************************************************************************** \n");
-    
     int ws = newShape->findWidthStep(newShape->getBps(), newShape->getWidth(), newShape->getNChannels());
     if (img->ipl->widthStep != ws)
     {
       fprintf(stderr, "%s: %s: Error: ipl widthStep = %d != %d = new widthStep.\n", __FILE__, __FUNCTION__, ws, img->ipl->widthStep);
-      exit(1);
+      //exit(1);
     }
-    fprintf(stderr, "******************************************************************************** \n");
     img->vglShape = new VglShape(newShape);
     int size = img->getTotalSizeInBytes();
     img->ndarray = malloc(size);    
     memcpy(img->ndarray, (void*)img->ipl->imageData, size);
-    fprintf(stderr, "******************************************************************************** \n");
     cvReleaseImage(&img->ipl);
-    fprintf(stderr, "******************************************************************************** \n");
-    */
-    /**/ // original version
+    /*
     fprintf(stderr, "%s: %s: Error: unable to reshape ipl image to shape with more than 2 dimensions\n", __FILE__, __FUNCTION__);
     exit(1);
-    /**/
+    */
   }
   img->vglShape = new VglShape(newShape);
   delete(origShape);

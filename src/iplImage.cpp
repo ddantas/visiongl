@@ -47,8 +47,8 @@ void iplReleaseImage(IplImage** p_ipl)
     free(ipl->maskROI);
   if (ipl->tileInfo)
     free(ipl->tileInfo);
-
-  p_ipl = NULL;
+  
+  *p_ipl = NULL;
 }
 
 int iplFindBitsPerSample(int depth)
