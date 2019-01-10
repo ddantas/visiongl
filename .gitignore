@@ -1,5 +1,4 @@
-images/output/
-images/mitosis/
+images/
 src/AMDOpenCLDebug.log
 src/AMDOpenCLDebugAPIUsage.log
 src/OpenCL.dll
