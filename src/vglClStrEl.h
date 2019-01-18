@@ -16,7 +16,7 @@ typedef struct VglClStrEl{
 } VglClStrEl;
 #endif
 
-// API
+// C++
 #ifdef __OPENCL__
 typedef struct VglClStrEl{ 
   cl_float data[VGL_ARR_CLSTREL_SIZE];

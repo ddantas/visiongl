@@ -462,7 +462,7 @@ obtained from the image file.\
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilate(vglThresh, vglBin, seCube);
+    vglClNdBinDilate(vglThresh, vglDil, seCube);
   }
   vglClFlush();
   printf("Time spent on %8d  Dilation nD cube:       %s \n", nSteps, getTimeElapsedInSeconds());
@@ -515,7 +515,7 @@ obtained from the image file.\
   while (p < nSteps)
   {
     p++;
-    vglClNdBinDilate(vglThresh, vglDil, seCross);
+    vglClNdBinDilate(vglThresh, vglBin, seCross);
   }
   vglClFlush();
   printf("Time spent on %8d Dilation nD cross:       %s \n", nSteps, getTimeElapsedInSeconds());

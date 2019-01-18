@@ -470,6 +470,7 @@ void vglClBuildDebug(cl_int err, cl_program program)
 
 /** vglClUpload branch3d
 
+    TODO: eliminate call to deprecated functions: clCreateImage2D, clCreateImage3d
  */
 void vglClUpload(VglImage* img)
 {
@@ -657,16 +658,18 @@ void vglClUploadInterop(VglImage* img)
 
 void vglClUploadForce(VglImage* img)
 {
-    vglSetContext(img,VGL_RAM_CONTEXT);
-    vglUpload(img);
-    vglGlToCl(img);
+    vglSetContext(img, VGL_RAM_CONTEXT);
+    vglClUpload(img);
+    //vglUpload(img);
+    //vglGlToCl(img);
 }
 
 void vglClDownloadForce(VglImage* img)
 {
     vglSetContext(img,VGL_CL_CONTEXT);
-    vglClToGl(img);
-    vglDownloadFaster(img);
+    vglClDownload(img);
+    //vglClToGl(img);
+    //vglDownloadFaster(img);
 }
 
 void vglClDownloadInterop(VglImage* img)
@@ -681,7 +684,10 @@ void vglClDownloadInterop(VglImage* img)
     }
 }
 
+/** TODO: add comment
 
+    TODO: eliminate call to deprecated functions: clCreateFromGLTexture2D, clCreateFromGLTexture3D
+ */
 void vglClAlloc(VglImage* img)
 {
     glFlush();

@@ -436,6 +436,7 @@ void vglUpload(VglImage* image, int swapRGB){
 
 /** Create image with same format and data as img_in.
 
+    TODO: fix. Not working as expected.
  */
 VglImage* vglCopyCreateImage(VglImage* img_in)
 {
@@ -632,14 +633,17 @@ VglImage* vglCreateNdImage(int ndim, int* shape, int depth, int has_mipmap /*=0*
   return vglImage;
 }
 
+/** Save images with any dimension to disk
 
+    TODO: fix 2d.
+*/
 void vglSaveImage(char* filename, VglImage* image)
 {
   vglCheckContext(image, VGL_RAM_CONTEXT);
 
   if (image->ndim <= 2 && image->ipl != NULL)
   {
-
+    //vglSaveNdImage(filename, image, 0, 0);
   }
   else if (image->ndim == 3)
   {
