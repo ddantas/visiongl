@@ -22,6 +22,7 @@
 #include "dcmtk/dcmjpeg/djrplol.h"       /* for DJ_RPLossless */
 #include "dcmtk/dcmjpeg/djrploss.h"      /* for DJ_RPLossy */
 #include "dcmtk/dcmjpeg/dipijpeg.h"      /* for dcmimage JPEG plugin */
+#include "dcmtk/ofstd/ofcmdln.h"         /* for OFCmdUnsignedInt */
 
 
 /** \brief Convert depth from dcm's format to vgl's format.

@@ -7,7 +7,7 @@
 #ifndef __VGLSHAPE_H__
 #define __VGLSHAPE_H__
 
-//#include <vglImage.h>
+#include <vglConst.h>
 
 //CL
 #ifdef __OPENCL__

@@ -8,6 +8,8 @@
 
 //printf
 #include <stdio.h>
+//exit
+#include <cstdlib>
 
 /** /brief Common code for shape construction.
 

@@ -143,11 +143,11 @@ void display_fractal(void){
 
 int main(int argc, char** argv)
 {
-  int w = 1200;
-  int h = 860;
+  int w = 1000;
+  int h = 1000;
 
   window_list  = new VglNamedWindowList();
-  window_list->main_window_id = vglInit(1200, 860);
+  window_list->main_window_id = vglInit(w,h);
 
   glutDisplayFunc(demo_fractal);
   glutIdleFunc(demo_fractal);

@@ -10,6 +10,8 @@ FRACTAL_NAME         = fractal
 CAM_NAME             = cam
 GDCM_NAME            = gdcm
 DCMTK_NAME           = dcmtk
+CORE_NAME            = core
+CL_NAME              = cl
 CL3D_NAME            = cl3d
 CLND_NAME            = clnd
 TIFF_NAME            = tiff
@@ -56,6 +58,7 @@ endif
 ifeq ($(WITH_OPENCV), 1)
 	OPENCV_DEF        = -D__OPENCV__
 	OPENCV_PATH        = /usr/local/opencv
+	OPENCV_PATH        = /home/ddantas/bin/opencv_2.4.9_without_cuda_opencl/
 	OPENCV_INCLUDEPATH = $(OPENCV_PATH)/include/
 	OPENCV_LIBPATH     = $(OPENCV_PATH)/lib
 	OPENCV_INCLUDEDIR  = -I $(OPENCV_INCLUDEPATH)
@@ -84,7 +87,7 @@ endif
 
 ifeq ($(WITH_OPENCL), 1)
         OPENCL_PATH        = /opt/intel/opencl-1.2-4.4.0.117/lib64/
-        OPENCL_PATH        = /opt/AMDAPP
+        OPENCL_PATH        = /opt/AMDAPPSDK-2.9-1/
         #OPENCL_PATH        = /usr/local/cuda/
         OPENCL_INCLUDEPATH = $(OPENCL_PATH)/include/
         OPENCL_LIBPATH     = $(OPENCL_PATH)/lib/x86_64
@@ -186,6 +189,18 @@ LINUXAMD64_LIB = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_LIBPATH)/lib$(BINARY_NAME).so \
                           $(CUDA_FILES) $(VGL_FILES) $(OPENCL_FILES) \
                          $(LINUXAMD64_DIRS_LIBS) $(CUDA_DIRS_LIBS) 
+
+LINUXAMD64_TEST_CORE = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/test_$(CORE_NAME) \
+                         src/test/$(CORE_NAME).cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS)
+
+LINUXAMD64_TEST_CL = $(CC) $(COMPILER_FLAGS) \
+                        -o $(OUTPUT_BINPATH)/test_$(CL_NAME) \
+                         src/test/$(CL_NAME).cpp \
+                         -lvisiongl \
+                         $(LINUXAMD64_DIRS_LIBS)
 
 LINUXAMD64_DEMO_CL3D = $(CC) $(COMPILER_FLAGS) \
                         -o $(OUTPUT_BINPATH)/demo_$(CL3D_NAME) \
@@ -383,6 +398,12 @@ demobin:
 demokey:
 	$(LINUXAMD64_DEMO_KEY)
 
+testcore:
+	$(LINUXAMD64_TEST_CORE)
+
+testcl:
+	$(LINUXAMD64_TEST_CL)
+
 democl3d:
 	$(LINUXAMD64_DEMO_CL3D)
 
@@ -413,6 +434,12 @@ democolordeconv:
 .PHONY: lib
 
 
+runtestcore:
+	cd $(OUTPUT_BINPATH); ./test_$(CORE_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 /tmp
+
+runtestcl:
+	cd $(OUTPUT_BINPATH); ./test_$(CL_NAME) ../images/lena_gray.tif
+
 rundemocl3d:
 	cd $(OUTPUT_BINPATH); ./demo_$(CL3D_NAME) ../images/dicom/0003.dcm.%d.PGM 0 16 /tmp
 
@@ -434,22 +461,22 @@ rundemocuda:
 	cd $(OUTPUT_BINPATH); ./demo_$(CUDA_NAME) ../images/lena_std.tif /tmp/outputcuda.pgm
 
 rundemogdcm:
-	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm  
-	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/esopecho.dcm /tmp/outputgdcmrgb.dcm -c 
-	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/I_000032.dcm /tmp/outputgdcmybr.dcm -c
-	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm.%d.PGM /tmp/outputgdcmheader.dcm 0 3  
-	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/I_000003.dcm.%d.PGM /tmp/outputgdcmheadercor.dcm 0 3 -c 
-	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/E1154S7I_16bit.dcm /tmp/outputgdcm16_compress.dcm -c  
-	#cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/E1154S7I_16bit.dcm /tmp/outputgdcm16.dcm	
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm /tmp/outputgdcm.dcm
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/esopecho.dcm /tmp/outputgdcmrgb.dcm -c
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/I_000032.dcm /tmp/outputgdcmybr.dcm -c
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/0003.dcm.%d.PGM /tmp/outputgdcmheader.dcm 0 3
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/I_000003.dcm.%d.PGM /tmp/outputgdcmheadercor.dcm 0 3 -c
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/E1154S7I_16bit.dcm /tmp/outputgdcm16_compress.dcm -c
+	cd $(OUTPUT_BINPATH); ./demo_$(GDCM_NAME) ../images/dicom/E1154S7I_16bit.dcm /tmp/outputgdcm16.dcm
 
 rundemodcmtk:
 	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm /tmp/outputdcmtk.dcm -c
-	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/esopecho.dcm /tmp/outputdcmtkrgb.dcm -c 
-	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/I_000032.dcm /tmp/outputdcmtkybr.dcm -c
-	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm.%d.PGM /tmp/outputdcmtkheader.dcm 0 3 -c
-	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/I_000003.dcm.%d.PGM /tmp/outputdcmtkheadercor.dcm 0 3 -c
-	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/E1154S7I_16bit.dcm /tmp/outputdcmtk16_compress.dcm -c
-	#cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/E1154S7I_16bit.dcm /tmp/outputdcmtk16.dcm 
+	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/esopecho.dcm /tmp/outputdcmtkrgb.dcm -c
+	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/I_000032.dcm /tmp/outputdcmtkybr.dcm -c
+	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/0003.dcm.%d.PGM /tmp/outputdcmtkheader.dcm 0 3 -c
+	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/I_000003.dcm.%d.PGM /tmp/outputdcmtkheadercor.dcm 0 3 -c
+	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/E1154S7I_16bit.dcm /tmp/outputdcmtk16_compress.dcm -c
+	cd $(OUTPUT_BINPATH); ./demo_$(DCMTK_NAME) ../images/dicom/E1154S7I_16bit.dcm /tmp/outputdcmtk16.dcm
 
 rundemotiff:
 	cd $(OUTPUT_BINPATH); ./demo_$(TIFF_NAME) ../images/tif/E1154S7I_3d.tif /tmp/demo_tif_out.tif

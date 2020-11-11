@@ -144,8 +144,8 @@ the VisionGL makefile.
 
         Compilation with DCMTK
 
-Please download dcmtk-3.6.1_20131114 source code or later, available in:
-http://dicom.offis.de/download/dcmtk/snapshot/
+Please download dcmtk-3.6.5.zip source code or later, available in:
+https://dicom.offis.de/download/dcmtk/dcmtk365/
 
 Set the options below as follows:
 BUILD_SHARED_LIBS: ON
@@ -156,6 +156,21 @@ make
 sudo make install
 
 To compile VisionGL with support to DCMTK, please set WITH_DCMTK = 1 in 
+the VisionGL makefile.
+
+        Compilation with OpenCL
+
+Please download AMD-APP-SDK-v2.9.1-lnx64.tar.xz, available in:
+https://github.com/ghostlander/AMD-APP-SDK/releases
+
+Then run:
+tar -xf AMD-APP-SDK-v2.9.1-lnx64.tar.xz
+cd AMD-APP-SDK-v2.9.1-lnx64
+sudo ./install.sh
+
+The install path may be left as /opt.
+
+To compile VisionGL with support to OpenCL, please set WITH_OPENCL = 1 in
 the VisionGL makefile.
 
         About the demos

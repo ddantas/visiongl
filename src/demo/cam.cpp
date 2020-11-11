@@ -83,7 +83,12 @@ void display_cam(void)
 
     for (int i = 0; i < num_cam; i++)
     {
-        cvGrabFrame(capture[i]);
+        int ok = cvGrabFrame(capture[i]);
+	printf("cvGrabFrame returned %d\n", ok);
+	if (!ok)
+	{
+          continue;
+	}
         if (NUM_CHANNELS == 3)
 	{
             cvCopy(cvRetrieveFrame(capture[i]), img[i]->ipl);
