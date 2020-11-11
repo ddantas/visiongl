@@ -459,7 +459,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  =     "src/vglImage.cpp" "src/glsl2cpp_Stereo.h" "src/glsl2cpp_BG.h" "src/glsl2cpp_shaders.h" 
+INPUT                  =     "src/vglImage.cpp" "src/glsl2cpp_Stereo.h" "src/glsl2cpp_BG.h" "src/glsl2cpp_shaders.h" "src/cl2cpp_shaders.h" "src/cl2cpp_MM.h" "src/cl2cpp_ND.h" "src/cl2cpp_BIN.h" 
 
 
 
