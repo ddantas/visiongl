@@ -5,3 +5,6 @@ src/OpenCL.dll
 src/OpenCL.pdb
 bin/
 *~
+dox/
+lib/*.so
+include/*.h
