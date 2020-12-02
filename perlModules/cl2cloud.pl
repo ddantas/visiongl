@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+BEGIN {push @INC, '.'}
+
 use File::Basename;
 use perlModules::common qw( LineStartMultiLineComment
                LineStartSingleLineComment
